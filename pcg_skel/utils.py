@@ -3,6 +3,23 @@ from trimesh import creation
 from functools import reduce
 
 
+def chunk_dims(cv):
+    """Gets the size of a chunk in euclidean space
+
+    Parameters
+    ----------
+    cv : cloudvolume.CloudVolume
+        Chunkedgraph-targeted cloudvolume object
+
+    Returns
+    -------
+    np.array
+        3-element box dimensions of a chunk in nanometers.
+    """
+    dims = chunk_to_nm([1, 1, 1], cv) - chunk_to_nm([0, 0, 0], cv)
+    return np.squeeze(dims)
+
+
 def nm_to_chunk(xyz_nm, cv, voxel_resolution=[4, 4, 40]):
     """Map a location in euclidean space to a chunk
 

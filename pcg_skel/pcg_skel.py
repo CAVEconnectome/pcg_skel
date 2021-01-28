@@ -114,35 +114,177 @@ def refine_meshwork_vertices(nrn, cv, lvl2_anno='lvl2_ids', lvl2_col='lvl2_id', 
     return sk_utils.attach_new_skeleton(nrn, new_sk)
 
 
-def refine_skeleton_vertices(sk, cv, lvl2_ids, nan_rounds=20):
-    """Refine a skeleton by downloading level 2 meshes for each vertex
+def refine_meshwork(
+    nrn_ch,
+    cv,
+    l2_anno=None,
+    l2_col='lvl2_id',
+    l2dict_reversed=None,
+    refine_inds='skeleton',
+    scale_chunk_index=True,
+    root_location=None,
+    nan_rounds=20,
+    return_missing_ids=False,
+):
+    if l2_anno is not None:
+        # Build from a meshwork annotation
+        sk_l2_ids = nrn_ch.anno[lvl2_anno].df.loc[nrn_ch.skeleton.mesh_index][lvl2_col].values
+        l2dict_reversed = {ii: k for ii, k in enumerate(sk_l2_ids)}
+    if refine_inds == 'skeleton':
+        refine_inds_sk = 'all'
+    else:
+        continue
+        # Do the remapping
+    new_sk = refine_skeleton(nrn.skeleton,
+                             l2dict_reversed=l2dict_reversed,
+                             cv=cv,
+                             refine_inds=refine_inds_sk)
+
+
+def refine_vertices(
+    vertices,
+    l2dict_reversed,
+    cv,
+    refine_inds='all',
+    scale_chunk_index=True,
+    convert_missing=False,
+    return_missing_ids=True,
+):
+    """Refine vertices in chunk index space by converting to euclidean space using a combination of mesh downloading and simple chunk mapping.
 
     Parameters
     ----------
-    sk : meshparty.skeleton.Skeleton
-        Skeleton of level 2 ids with N vertices in chunkedgraph index space
+    vertices : array
+        Nx3 array of vertex locations in chunk index space
+    l2dict_reversed : dict or array
+        N-length mapping from vertex index to uint64 level 2 id.
     cv : cloudvolume.CloudVolume
-        A cloudvolume object with the level2 ids.
-    lvl2_ids : list-like
-        List of N level 2 ids in same order as vertices
-    nan_rounds : int, optional
-        Number of iterations of nan removal, by default 10
+        CloudVolume associated with the chunkedgraph instance
+    refine_inds : array, string, or None, optional
+        Array of indices to refine via mesh download and recentering, None, or 'all'. If 'all', does all vertices. By default 'all'.
+    scale_chunk_index : bool, optional
+        If True, moves chunk indices to the euclidean space (the center of the chunk) if not refined. by default True.
+    convert_missing : bool, optional
+        If True, vertices with missing meshes are converted to the center of their chunk. Otherwise, they are given nans. By default, False.
+    return_missing_ids : bool, optional
+        If True, returns a list of level 2 ids for which meshes were not found, by default True
 
     Returns
     -------
-    Skeleton
-        Skeleton with vertices updated to new locations
+    new_vertices : array
+        Nx3 array of remapped vertex locations in euclidean space
+    missing_ids : array, optional
+        List of level 2 ids without meshes. Only returned if return_missing_ids is True.
     """
-    lvl2_meshes = cv.mesh.get_meshes_on_bypass(lvl2_ids, allow_missing=True)
+    vertices = vertices.copy()
+    if refine_inds == 'all':
+        refine_inds = np.arange(0, len(vertices))
 
-    new_verts = np.vstack(
-        [sk_utils.get_centered_mesh(lvl2_meshes.get(k, None))
-         for k in lvl2_ids]
+    if refine_inds is not None:
+        l2ids = [l2dict_reversed[k] for k in refine_inds]
+        pt_locs, missing_ids = lvl2_fragment_locs(
+            l2ids, cv, return_missing=True)
+
+        if convert_missing:
+            missing_inds = np.any(np.isnan(pt_locs), axis=1)
+            vertices[refine_inds[~missing_inds]] = pt_locs[~missing_inds]
+        else:
+            vertices[refine_inds] = pt_locs
+
+    if scale_chunk_index:
+        # Move unrfined vertices to center of chunks
+        other_inds = np.full(len(vertices), True)
+        if refine_inds is not None and refine_inds != 'all':
+            other_inds[refine_inds[~missing_inds]] = False
+        vertices[other_inds] = (
+            utils.chunk_to_nm(vertices[other_inds], cv) +
+            utils.chunk_dims(cv) // 2
+        )
+    if return_missing_ids:
+        return vertices, missing_ids
+    else:
+        return vertices
+
+
+def refine_skeleton(
+    sk_ch,
+    l2dict_reversed,
+    cv,
+    refine_inds='all',
+    scale_chunk_index=True,
+    root_location=None,
+    nan_rounds=20,
+    return_missing_ids=False,
+):
+    """Refine skeletons in chunk index space to Euclidean space.
+
+    Parameters
+    ----------
+    sk_ch : meshparty.skeleton.Skeleton
+        Skeleton in chunk index space
+    l2dict_reversed : dict
+        Mapping between skeleton vertex index and level 2 id.
+    cv : cloudvolume.CloudVolume
+        Associated cloudvolume
+    refine_inds : str, None or list-like, optional
+        Skeleton indices to refine, 'all', or None. If 'all', does all skeleton indices.
+        If None, downloads no index but can use other options.
+        By default 'all'.
+    scale_chunk_index : bool, optional
+        If True, maps unrefined chunk index locations to the center of the chunk in
+        Euclidean space, by default True
+    root_location : list-like, optional
+        3-element euclidean space location to which to map the root vertex location, by default None
+    nan_rounds : int, optional
+        Number of passes to smooth over any missing values by averaging proximate vertex locations.
+        Only used if refine_inds is 'all'. Default is 20.
+    return_missing_ids : bool, optional
+        If True, returns ids of any missing level 2 meshes. Default is False
+
+    Returns
+    -------
+    meshparty.skeleton.Skeleton
+        Skeleton with remapped vertex locations
+    """
+
+    verts = sk_ch.vertices
+    if refine_inds == 'all':
+        refine_inds = np.arange(0, len(verts))
+
+    if refine_inds is not None:
+        l2ids = [l2dict_reversed[k] for k in refine_inds]
+        pt_locs, missing_ids = lvl2_fragment_locs(
+            l2ids, cv, return_missing=True)
+
+        missing_inds = np.any(np.isnan(pt_locs), axis=1)
+        verts[refine_inds[~missing_inds]] = pt_locs[~missing_inds]
+
+    if scale_chunk_index:
+        other_inds = np.full(len(verts), True)
+        if refine_inds is not None and refine_inds != 'all':
+            other_inds[refine_inds[~missing_inds]] = False
+        verts[other_inds] = (
+            utils.chunk_to_nm(verts[other_inds], cv) +
+            utils.chunk_dims(cv) // 2
+        )  # Move to center of chunks
+
+    if root_location is not None:
+        verts[sk_ch.root] = root_location
+
+    l2_sk = skeleton.Skeleton(
+        vertices=verts,
+        edges=sk_ch.edges,
+        root=sk_ch.root,
+        remove_zero_length_edges=False,
     )
-    sk._rooted._vertices = new_verts
-    sk._vertices = new_verts
-    sk_utils.fix_nan_verts(sk, num_rounds=nan_rounds)
-    return sk
+
+    if refine_inds == 'all':
+        sk_utils.fix_nan_verts(l2_sk, num_rounds=nan_rounds)
+
+    if return_missing_ids:
+        return l2_sk, missing_ids
+    else:
+        return l2_sk
 
 
 def collapse_pcg_meshwork(soma_pt, nrn, soma_r):
@@ -319,3 +461,55 @@ def cg_space_skeleton(root_id,
         return out_list[0]
     else:
         return tuple(out_list)
+
+
+def lvl2_fragment_locs(l2_ids, cv, return_missing=True):
+    """ Look up representitive location for a list of level 2 ids.
+
+    The representitive point for a mesh is the mesh vertex nearest to the
+    centroid of the mesh fragment.
+
+    Parameters
+    ----------
+    l2_ids : list-like
+        List of N level 2 ids
+    cv : cloudvolume.CloudVolume
+        Associated cloudvolume object
+    return_missing : bool, optional
+        If True, returns ids of missing meshes. Default is True
+
+    Returns
+    -------
+    l2means : np.array   
+        Nx3 list of point locations. Missing mesh fragments get a nan for each component.
+    missing_ids : np.array
+        List of level 2 ids that were not found.
+    """
+    l2meshes = cv.mesh.get_meshes_on_bypass(l2_ids, allow_missing=True)
+    l2means = []
+    missing_ids = []
+    for l2id in l2_ids:
+        try:
+            l2m = np.mean(l2meshes[l2id].vertices, axis=0)
+            _, ii = spatial.cKDTree(l2meshes[l2id].vertices).query(l2m)
+            l2means.append(l2meshes[l2id].vertices[ii])
+        except:
+            missing_ids.append(l2id)
+            l2means.append(np.array([np.nan, np.nan, np.nan]))
+    if len(l2means) > 0:
+        l2means = np.vstack(l2means)
+    else:
+        l2means = np.empty((0, 3), dtype=float)
+    return l2means, missing_ids
+
+
+def lvl2_branch_fragment_locs(sk_ch, lvl2dict_reversed, cv):
+    br_minds = sk_ch.mesh_index[sk_ch.branch_points_undirected]
+    branch_l2s = list(map(lambda x: lvl2dict_reversed[x], br_minds))
+    return lvl2_fragment_locs(branch_l2s, cv)
+
+
+def lvl2_end_fragment_locs(sk_ch, lvl2dict_reversed, cv):
+    ep_minds = sk_ch.mesh_index[sk_ch.end_points_undirected]
+    ep_l2s = list(map(lambda x: lvl2dict_reversed[x], ep_minds))
+    return lvl2_fragment_locs(ep_l2s, cv)
