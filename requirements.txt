@@ -1,0 +1,8 @@
+numpy
+scipy
+pandas
+trimesh
+meshparty > 2.4
+annotationframeworkclient
+fastremap
+cloudvolume
