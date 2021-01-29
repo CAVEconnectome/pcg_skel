@@ -37,7 +37,7 @@ for i_l in del_ls[::-1]:
 
 setuptools.setup(
     name="pcg_skel",
-    version=find_version("annotationframeworkclient", "__init__.py"),
+    version=find_version("pcg_skel", "__init__.py"),
     author="Casey Schneider-mizell",
     author_email="caseys@alleninstitute.org",
     description="Skeletonization using the pychunkedgraph",

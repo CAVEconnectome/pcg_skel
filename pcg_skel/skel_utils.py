@@ -1,6 +1,15 @@
 import numpy as np
 
 
+def filter_l2dict(sk_ch, l2dict_mesh_r):
+    """Converts a reverse level 2 dict for a mesh into one for a skeleton
+    """
+    l2dict_sk_r = {ii: l2dict_mesh_r[mind]
+                   for ii, mind in enumerate(sk_ch.mesh_index)}
+    l2dict_sk = {v: k for v, k in l2dict_sk_r.items()}
+    return l2dict_sk, l2dict_sk_r
+
+
 def fix_nan_verts(sk, num_rounds=20):
     """ Replace vertices with locations that are nan with mean of neighbor locations
     """

@@ -2,7 +2,7 @@ numpy
 scipy
 pandas
 trimesh
-meshparty > 2.4
+meshparty>=1.10.0
 annotationframeworkclient
 fastremap
-cloudvolume
+cloud-volume>=3.6.0
