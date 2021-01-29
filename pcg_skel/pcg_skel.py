@@ -351,7 +351,65 @@ def pcg_skeleton(root_id,
                  return_missing_ids=False,
                  nan_rounds=20,
                  n_parallel=1):
+    """Create a euclidean-space skeleton from the pychunkedgraph
 
+    Parameters
+    ----------
+    root_id : uint64
+        Root id of the neuron to skeletonize
+    client : annotationframeworkclient.FrameworkClientFull or None, optional
+        Pre-specified framework client for the pcg. If this is not set, datastack_name must be provided. By default None
+    datastack_name : str or None, optional
+        If no client is specified, a FrameworkClient is created with this datastack name, by default None
+    cv : cloudvolume.CloudVolume or None, optional
+        Prespecified cloudvolume instance. If None, uses the client info to make one, by default None
+    refine : 'all', 'ep', 'bp', 'epbp', 'bpep', or None, optional
+        Selects how to refine vertex locations by downloading mesh chunks. Unrefined vertices are placed in the
+        center of their chunk in euclidean space.
+        * 'all' refines all vertex locations. (Default)
+        * 'ep' refines end points only
+        * 'bp' refines branch points only
+        * 'bpep' or 'epbp' refines both branch and end points.
+        * None refines no points.
+    root_point : array-like or None, optional
+        3 element xyz location for the location to set the root in units set by root_point_resolution,
+        by default None. If None, a distal tip is selected.
+    root_point_resolution : array-like, optional
+        Resolution in euclidean space of the root_point, by default [4, 4, 40]
+    root_point_search_radius : int, optional
+        Distance in euclidean space to look for segmentation when finding the root vertex, by default 300
+    invalidation_d : int, optional
+        Invalidation radius in hops for the mesh skeletonization along the chunk adjacency graph, by default 3
+    return_mesh : bool, optional
+        If True, returns the mesh in chunk index space, by default False
+    return_l2dict : bool, optional
+        If True, returns the tuple (l2dict, l2dict_r), by default False.
+        l2dict maps all neuron level2 ids to skeleton vertices. l2dict_r maps skeleton indices to their direct level 2 id.
+    return_l2dict_mesh : bool, optional
+        If True, returns the tuple (l2dict_mesh, l2dict_mesh_r), by default False.
+        l2dict_mesh maps neuron level 2 ids to mesh vertices, l2dict_r maps mesh indices to level 2 ids.
+    return_missing_ids : bool, optional
+        If True, returns level 2 ids that were missing in the chunkedgraph, by default False. This can be useful
+        for submitting remesh requests in case of errors.
+    nan_rounds : int, optional
+        Maximum number of rounds of smoothing to eliminate missing vertex locations in the event of a
+        missing level 2 mesh, by default 20. This is only used when refine=='all'.
+    n_parallel : int, optional
+        Number of parallel downloads passed to cloudvolume, by default 1
+
+    Returns
+    -------
+    sk_l2 : meshparty.skeleton.Skeleton
+        Skeleton with vertices in euclidean space
+    mesh_l2 : meshparty.mesh.Mesh, optional
+        Mesh with vertices in chunk index space. Only if return_mesh is True.
+    (l2dict, l2dict_r) : (dict, dict), optional
+        Mappings between level 2 ids and skeleton indices. Only if return_l2dict is True.
+    (l2dict_mesh, l2dict_mesh_r) : (dict, dict), optional
+        Mappings between level 2 ids and mesh indices. Only if return_l2dict_mesh is True.
+    missing_ids : np.array, optional
+        List of level 2 ids with missing mesh fragments. Only if return_missing_ids is True.
+   """
     if client is None:
         client = FrameworkClient(datastack_name)
 
@@ -409,15 +467,3 @@ def pcg_skeleton(root_id,
         return output[0]
     else:
         return tuple(output)
-
-
-def lvl2_branch_fragment_locs(sk_ch, lvl2dict_reversed, cv):
-    br_minds = sk_ch.mesh_index[sk_ch.branch_points_undirected]
-    branch_l2s = list(map(lambda x: lvl2dict_reversed[x], br_minds))
-    return chunk_tools.lvl2_fragment_locs(branch_l2s, cv)
-
-
-def lvl2_end_fragment_locs(sk_ch, lvl2dict_reversed, cv):
-    ep_minds = sk_ch.mesh_index[sk_ch.end_points_undirected]
-    ep_l2s = list(map(lambda x: lvl2dict_reversed[x], ep_minds))
-    return chunk_tools.lvl2_fragment_locs(ep_l2s, cv)

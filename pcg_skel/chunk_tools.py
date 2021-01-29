@@ -54,11 +54,15 @@ def refine_vertices(
         else:
             missing_inds = np.full(len(pt_locs), False)
             vertices[refine_inds] = pt_locs
+    else:
+        refine_inds = np.array([])
+        missing_inds = np.array([], dtype=bool)
+        missing_ids = np.array([], dtype=int)
 
     if scale_chunk_index and len(refine_inds) != len(vertices):
         # Move unrefined vertices to center of chunks
         other_inds = np.full(len(vertices), True)
-        if refine_inds is not None:
+        if len(refine_inds) > 0:
             other_inds[refine_inds[~missing_inds]] = False
         vertices[other_inds] = (
             utils.chunk_to_nm(vertices[other_inds], cv) +
