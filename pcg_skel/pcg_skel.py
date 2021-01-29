@@ -4,137 +4,16 @@ import fastremap
 import numpy as np
 import pandas as pd
 from annotationframeworkclient import FrameworkClient, chunkedgraph, frameworkclient
-from meshparty import mesh_filters, skeleton, skeletonize, trimesh_io
+from meshparty import mesh_filters, skeleton, skeletonize, trimesh_io, meshwork
 from scipy import sparse, spatial
 
 from . import chunk_tools
 from . import skel_utils as sk_utils
 from . import utils
+from . import pcg_anno
 
 DEFAULT_VOXEL_RESOLUTION = [4, 4, 40]
-
-
-# def refine_meshwork_vertices(nrn, cv, lvl2_anno='lvl2_ids', lvl2_col='lvl2_id', nan_rounds=20):
-#     """Refine the skeleton of a meshwork via level 2 meshes
-
-#     Parameters
-#     ----------
-#     nrn : meshwork.Meshwork
-#         Meshwork object with vertices in chunkedgraph index space
-#     cv : cloudvolume.CloudVolume
-#         CloudVolume with meshes
-#     lvl2_anno : str, optional
-#         Name of annotation with level 2 ids, by default 'lvl2_ids'
-#     lvl2_col : str, optional
-#         Column name in annotation with level 2 ids, by default 'lvl2_id'
-#     nan_rounds : int, optional
-#         Number of rounds of removing nan vertices, by default 20
-
-#     Returns
-#     -------
-#     nrn
-#         Meshwork object with updated skeleton
-#     """
-#     lvl2_ids = nrn.anno[lvl2_anno].df.loc[nrn.skeleton.mesh_index][lvl2_col].values
-#     new_sk = refine_skeleton_vertices(
-#         nrn.skeleton, cv, lvl2_ids, nan_rounds=nan_rounds)
-#     return sk_utils.attach_new_skeleton(nrn, new_sk)
-
-
-# def refine_meshwork(
-#     nrn_ch,
-#     cv,
-#     l2_anno=None,
-#     l2_col='lvl2_id',
-#     l2dict_reversed=None,
-#     refine_inds='skeleton',
-#     scale_chunk_index=True,
-#     root_location=None,
-#     nan_rounds=20,
-#     return_missing_ids=False,
-# ):
-#     if l2_anno is not None:
-#         # Build from a meshwork annotation
-#         sk_l2_ids = nrn_ch.anno[lvl2_anno].df.loc[nrn_ch.skeleton.mesh_index][lvl2_col].values
-#         l2dict_reversed = {ii: k for ii, k in enumerate(sk_l2_ids)}
-#     if refine_inds == 'skeleton':
-#         refine_inds_sk = 'all'
-#     else:
-
-#         # Do the remapping
-#     new_sk = refine_skeleton(nrn_ch.skeleton,
-#                              l2dict_reversed=l2dict_reversed,
-#                              cv=cv,
-#                              refine_inds=refine_inds_sk)
-
-
-def collapse_pcg_meshwork(soma_pt, nrn, soma_r):
-    """Use soma point vertex and collapse soma as sphere
-
-    Parameters
-    ----------
-    soma_pt : array
-        3-element location of soma center (in nm)
-    nrn: meshwork.Meshwork
-        Coarse meshwork with skeleton
-    soma_r : float
-        Soma collapse radius (in nm)
-
-    Returns
-    -------
-    skeleton
-        New skeleton with updated properties
-    """
-    new_skeleton = collapse_pcg_skeleton(soma_pt, nrn.skeleton, soma_r)
-    sk_utils.attach_new_skeleton(nrn, new_skeleton)
-    return nrn
-
-
-def collapse_pcg_skeleton(soma_pt, sk, soma_r):
-    """Use soma point vertex and collapse soma as sphere
-
-    Parameters
-    ----------
-    soma_pt : array
-        3-element location of soma center (in nm)
-    sk: skeleton.Skeleton
-        Coarse skeleton
-    soma_r : float
-        Soma collapse radius (in nm)
-
-    Returns
-    -------
-    skeleton
-        New skeleton with updated properties
-    """
-    soma_verts, _ = skeletonize.soma_via_sphere(
-        soma_pt, sk.vertices, sk.edges, soma_r)
-    min_soma_vert = np.argmin(np.linalg.norm(
-        sk.vertices[soma_verts] - soma_pt, axis=1))
-    root_vert = soma_verts[min_soma_vert]
-
-    new_v, new_e, new_skel_map, vert_filter, root_ind = skeletonize.collapse_soma_skeleton(soma_verts[soma_verts != root_vert],
-                                                                                           soma_pt,
-                                                                                           sk.vertices,
-                                                                                           sk.edges,
-                                                                                           sk.mesh_to_skel_map,
-                                                                                           collapse_index=root_vert,
-                                                                                           return_soma_ind=True,
-                                                                                           return_filter=True)
-
-    new_mesh_index = sk.mesh_index[vert_filter]
-    new_skeleton = skeleton.Skeleton(
-        new_v, new_e, root=root_ind, mesh_to_skel_map=new_skel_map, mesh_index=new_mesh_index)
-    return new_skeleton
-
-
-def _adjust_meshwork(nrn, cv):
-    """Transform vertices in chunk index space to euclidean"""
-
-    nrn._mesh.vertices = utils.chunk_to_nm(nrn._mesh.vertices, cv)
-    nrn._skeleton._rooted._vertices = utils.chunk_to_nm(
-        nrn._skeleton._rooted.vertices, cv)
-    nrn._skeleton._vertices = utils.chunk_to_nm(nrn._skeleton.vertices, cv)
+DEFAULT_COLLAPSE_RADIUS = 7500.0
 
 
 def build_spatial_graph(lvl2_edge_graph, cv):
@@ -483,3 +362,118 @@ def pcg_skeleton(root_id,
         return output[0]
     else:
         return tuple(output)
+
+
+def pcg_meshwork(root_id,
+                 datastack_name=None,
+                 client=None,
+                 cv=None,
+                 refine='all',
+                 root_point=None,
+                 root_point_resolution=[4, 4, 40],
+                 root_point_search_radius=300,
+                 collapse_soma=False,
+                 collapse_radius=DEFAULT_COLLAPSE_RADIUS,
+                 synapses=None,
+                 synapse_table=None,
+                 remove_self_synapse=True,
+                 invalidation_d=3,
+                 n_parallel=4,
+                 ):
+
+    if client is None:
+        client = FrameworkClient(datastack_name)
+    if cv is None:
+        cv = cloudvolume.CloudVolume(client.info.segmentation_source(), parallel=n_parallel,
+                                     use_https=True, progress=False, bounded=False)
+
+    sk_l2, mesh_chunk, (l2dict_mesh, l2dict_mesh_r) = pcg_skeleton(root_id,
+                                                                   client=client,
+                                                                   cv=cv,
+                                                                   root_point=root_point,
+                                                                   root_point_resolution=root_point_resolution,
+                                                                   root_point_search_radius=root_point_search_radius,
+                                                                   collapse_soma=collapse_soma,
+                                                                   collapse_radius=collapse_radius,
+                                                                   refine=refine,
+                                                                   invalidation_d=invalidation_d,
+                                                                   n_parallel=n_parallel,
+                                                                   return_mesh=True,
+                                                                   return_l2dict_mesh=True)
+
+    nrn = meshwork.Meshwork(mesh_chunk, seg_id=root_id, skeleton=sk_l2)
+
+    if synapses is not None and synapse_table is not None:
+        if synapses == 'pre':
+            pre, post = True, False
+        elif synapses == 'post':
+            pre, post = False, True
+        elif synapses == 'all':
+            pre, post = True, True
+        else:
+            raise ValueError(
+                'Synapses must be one of "pre", "post", or "all".')
+
+        pre_syn_df, post_syn_df = pcg_anno.get_level2_synapses(root_id,
+                                                               l2dict_mesh,
+                                                               client,
+                                                               synapse_table,
+                                                               remove_self=remove_self_synapse,
+                                                               pre=pre,
+                                                               post=post,
+                                                               )
+        if pre_syn_df is not None:
+            nrn.anno.add_annotations(
+                'pre_syn', pre_syn_df, index_column='pre_pt_mesh_ind')
+        if post_syn_df is not None:
+            nrn.anno.add_annotations(
+                'post_syn', post_syn_df, index_column='post_pt_mesh_ind')
+
+    lvl2_df = pd.DataFrame({'lvl2_id': list(l2dict_mesh.keys()),
+                            'mesh_ind': list(l2dict_mesh.values())})
+    nrn.anno.add_annotations('lvl2_ids', lvl2_df, index_column='mesh_ind')
+
+    _adjust_meshwork(nrn, cv)
+
+    return nrn
+
+
+def _adjust_meshwork(nrn, cv):
+    """Transform vertices in chunk index space to euclidean"""
+    nrn._mesh.vertices = utils.chunk_to_nm(nrn._mesh.vertices, cv)
+
+
+def collapse_pcg_skeleton(soma_pt, sk, soma_r):
+    """Use soma point vertex and collapse soma as sphere
+    Parameters
+    ----------
+    soma_pt : array
+        3-element location of soma center (in nm)
+    sk: skeleton.Skeleton
+        Coarse skeleton
+    soma_r : float
+        Soma collapse radius (in nm)
+    Returns
+    -------
+    skeleton
+        New skeleton with updated properties
+    """
+    soma_verts, _ = skeletonize.soma_via_sphere(
+        soma_pt, sk.vertices, sk.edges, soma_r)
+    min_soma_vert = np.argmin(np.linalg.norm(
+        sk.vertices[soma_verts] - soma_pt, axis=1))
+    root_vert = soma_verts[min_soma_vert]
+
+    new_v, new_e, new_skel_map, vert_filter, root_ind = skeletonize.collapse_soma_skeleton(soma_verts[soma_verts != root_vert],
+                                                                                           soma_pt,
+                                                                                           sk.vertices,
+                                                                                           sk.edges,
+                                                                                           sk.mesh_to_skel_map,
+                                                                                           collapse_index=root_vert,
+                                                                                           return_soma_ind=True,
+                                                                                           return_filter=True)
+
+    new_mesh_index = sk.mesh_index[vert_filter]
+    new_skeleton = skeleton.Skeleton(
+        new_v, new_e, root=root_ind, mesh_to_skel_map=new_skel_map, mesh_index=new_mesh_index)
+    return new_skeleton

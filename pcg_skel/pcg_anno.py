@@ -52,7 +52,10 @@ def annotation_to_level2_id(df,
         df = df.copy()
 
     for col, l2_col in zip(sv_columns, l2_columns):
-        level2_ids = pcg_client.get_roots(df[col].values, stop_level=2)
+        level2_ids = pcg_client.get_roots(df[col].values,
+                                          stop_level=2,
+                                          timestamp=client.materialize.get_timestamp()
+                                          )
         df[l2_col] = level2_ids
     return df
 
@@ -109,11 +112,18 @@ def _mapped_synapses(root_id, client, l2dict, side, synapse_table, remove_self):
     syn_df = annotation_to_mesh_index(syn_df,
                                       l2dict,
                                       level2_id_col=f'{side}_pt_level2_id',
+                                      mesh_index_col=f'{side}_pt_mesh_ind',
                                       inplace=True)
     return syn_df
 
 
-def get_level2_synapses(root_id, l2dict, client, synapse_table, remove_self=True, pre=True, post=True):
+def get_level2_synapses(root_id,
+                        l2dict,
+                        client,
+                        synapse_table,
+                        remove_self=True,
+                        pre=True,
+                        post=True):
 
     if pre is True:
         pre_syn_df = _mapped_synapses(
@@ -129,27 +139,27 @@ def get_level2_synapses(root_id, l2dict, client, synapse_table, remove_self=True
     return pre_syn_df, post_syn_df
 
 
-def _get_level2_synapses(root_id, l2dict, client, synapse_table):
-    pre_syn_df = client.materialize.query_table(
-        synapse_table, filter_equal_dict={'pre_pt_root_id': root_id})
-    pre_syn_df = pre_syn_df.query(
-        'pre_pt_root_id != post_pt_root_id').reset_index(drop=True)
+# def _get_level2_synapses(root_id, l2dict, client, synapse_table):
+#     pre_syn_df = client.materialize.query_table(
+#         synapse_table, filter_equal_dict={'pre_pt_root_id': root_id})
+#     pre_syn_df = pre_syn_df.query(
+#         'pre_pt_root_id != post_pt_root_id').reset_index(drop=True)
 
-    post_syn_df = client.materialize.query_table(
-        synapse_table, filter_equal_dict={'post_pt_root_id': root_id})
-    post_syn_df = post_syn_df.query(
-        'pre_pt_root_id != post_pt_root_id').reset_index(drop=True)
+#     post_syn_df = client.materialize.query_table(
+#         synapse_table, filter_equal_dict={'post_pt_root_id': root_id})
+#     post_syn_df = post_syn_df.query(
+#         'pre_pt_root_id != post_pt_root_id').reset_index(drop=True)
 
-    pre_lvl2ids = client.chunkedgraph.get_roots(
-        pre_syn_df['pre_pt_supervoxel_id'].values, stop_level=2, timestamp=client.materialize.get_timestamp())
-    post_lvl2ids = client.chunkedgraph.get_roots(
-        post_syn_df['post_pt_supervoxel_id'].values, stop_level=2, timestamp=client.materialize.get_timestamp())
+#     pre_lvl2ids = client.chunkedgraph.get_roots(
+#         pre_syn_df['pre_pt_supervoxel_id'].values, stop_level=2, timestamp=client.materialize.get_timestamp())
+#     post_lvl2ids = client.chunkedgraph.get_roots(
+#         post_syn_df['post_pt_supervoxel_id'].values, stop_level=2, timestamp=client.materialize.get_timestamp())
 
-    pre_syn_df['pre_level2_id'] = pre_lvl2ids
-    post_syn_df['post_level2_id'] = post_lvl2ids
+#     pre_syn_df['pre_level2_id'] = pre_lvl2ids
+#     post_syn_df['post_level2_id'] = post_lvl2ids
 
-    pre_syn_df['pre_mind'] = pre_syn_df['pre_level2_id'].apply(
-        lambda x: l2dict[x])
-    post_syn_df['post_mind'] = post_syn_df['post_level2_id'].apply(
-        lambda x: l2dict[x])
-    return pre_syn_df, post_syn_df
+#     pre_syn_df['pre_mind'] = pre_syn_df['pre_level2_id'].apply(
+#         lambda x: l2dict[x])
+#     post_syn_df['post_mind'] = post_syn_df['post_level2_id'].apply(
+#         lambda x: l2dict[x])
+#     return pre_syn_df, post_syn_df
