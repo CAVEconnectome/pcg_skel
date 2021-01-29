@@ -371,11 +371,25 @@ def pcg_skeleton(root_id,
                                                                                             return_mesh_l2dict=True,
                                                                                             return_l2dict=True,
                                                                                             n_parallel=n_parallel)
+    if refine == 'all':
+        refine_inds = 'all'
+    elif refine == 'bp':
+        refine_inds = sk_ch.branch_points_undirected
+    elif refine == 'ep':
+        refine_inds = sk_ch.end_points_undirected
+    elif refine == 'epbp' or refine == 'bpep':
+        refine_inds = np.concatenate(
+            (sk_ch.end_points_undirected, sk_ch.branch_points_undirected))
+    elif refine is None:
+        refine_inds = None
+    else:
+        raise ValueError(
+            '"refine" must be one of "all", "bp", "ep", "epbp"/"bpep", or None')
 
     sk_l2, missing_ids = refine_chunk_index_skeleton(sk_ch,
                                                      l2dict_r,
                                                      cv=cv,
-                                                     refine_inds=refine,
+                                                     refine_inds=refine_inds,
                                                      scale_chunk_index=True,
                                                      root_location=root_point,
                                                      nan_rounds=nan_rounds,
