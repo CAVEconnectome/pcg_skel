@@ -344,6 +344,8 @@ def pcg_skeleton(root_id,
                  root_point=None,
                  root_point_resolution=[4, 4, 40],
                  root_point_search_radius=300,
+                 collapse_soma=False,
+                 collapse_radius=10_000.0,
                  invalidation_d=3,
                  return_mesh=False,
                  return_l2dict=False,
@@ -378,6 +380,11 @@ def pcg_skeleton(root_id,
         Resolution in euclidean space of the root_point, by default [4, 4, 40]
     root_point_search_radius : int, optional
         Distance in euclidean space to look for segmentation when finding the root vertex, by default 300
+    collapse_soma : bool, optional,
+        If True, collapses vertices within a given radius of the root point into the root vertex, typically to better
+        represent primary neurite branches. Requires a specified root_point. Default if False.
+    collapse_radius : float, optional
+        Max distance in euclidean space for soma collapse. Default is 10,000 nm (10 microns).
     invalidation_d : int, optional
         Invalidation radius in hops for the mesh skeletonization along the chunk adjacency graph, by default 3
     return_mesh : bool, optional
@@ -444,14 +451,23 @@ def pcg_skeleton(root_id,
         raise ValueError(
             '"refine" must be one of "all", "bp", "ep", "epbp"/"bpep", or None')
 
+    if root_point is not None:
+        root_point_euc = root_point * np.array([root_point_resolution])
+    else:
+        root_point_euc = None
     sk_l2, missing_ids = refine_chunk_index_skeleton(sk_ch,
                                                      l2dict_r,
                                                      cv=cv,
                                                      refine_inds=refine_inds,
                                                      scale_chunk_index=True,
-                                                     root_location=root_point,
+                                                     root_location=root_point_euc,
                                                      nan_rounds=nan_rounds,
                                                      return_missing_ids=True)
+
+    if collapse_soma and root_point is not None:
+        sk_l2 = collapse_pcg_skeleton(sk_l2.vertices[sk_l2.root],
+                                      sk_l2,
+                                      collapse_radius)
 
     output = [sk_l2]
     if return_mesh:
