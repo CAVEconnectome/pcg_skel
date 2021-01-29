@@ -10,6 +10,15 @@ def filter_l2dict(sk_ch, l2dict_mesh_r):
     return l2dict_sk, l2dict_sk_r
 
 
+def propagate_l2dict(sk_ch, l2dict_mesh):
+    """Propagate a l2dict for a mesh to an l2dict for a skeleton, with multiple
+    level 2 ids potentially mapping to each skeleton index
+    """
+    l2dict_long = {l2dict_mesh[k]: sk_ch.mesh_to_skel_map[v]
+                   for k, v in l2dict_mesh.items()}
+    return l2dict_long
+
+
 def fix_nan_verts(sk, num_rounds=20):
     """ Replace vertices with locations that are nan with mean of neighbor locations
     """

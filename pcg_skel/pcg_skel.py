@@ -248,10 +248,10 @@ def chunk_index_skeleton(root_id,
     out_list = [sk_ch]
     if return_mesh:
         out_list.append(mesh_chunk)
-    if return_mesh_l2dict:
-        out_list.append((l2dict_mesh, l2dict_r_mesh))
     if return_l2dict:
         out_list.append((l2dict, l2dict_r))
+    if return_mesh_l2dict:
+        out_list.append((l2dict_mesh, l2dict_r_mesh))
     if len(out_list) == 1:
         return out_list[0]
     else:
@@ -323,6 +323,8 @@ def refine_chunk_index_skeleton(
         edges=sk_ch.edges,
         root=sk_ch.root,
         remove_zero_length_edges=False,
+        mesh_index=sk_ch.mesh_index,
+        mesh_to_skel_map=sk_ch.mesh_to_skel_map,
     )
 
     if refine_inds == 'all':
@@ -340,9 +342,12 @@ def pcg_skeleton(root_id,
                  cv=None,
                  refine='all',
                  root_point=None,
+                 root_point_resolution=[4, 4, 40],
+                 root_point_search_radius=300,
                  invalidation_d=3,
                  return_mesh=False,
-                 return_l2dict=True,
+                 return_l2dict=False,
+                 return_l2dict_mesh=False,
                  return_missing_ids=False,
                  nan_rounds=20,
                  n_parallel=1):
@@ -354,18 +359,21 @@ def pcg_skeleton(root_id,
         cv = cloudvolume.CloudVolume(client.info.segmentation_source(), parallel=n_parallel,
                                      use_https=True, progress=False, bounded=False)
 
-    sk_ch, mesh_ch, (l2dict, l2dict_reversed) = chunk_index_skeleton(root_id,
-                                                                     client=client,
-                                                                     datastack_name=datastack_name,
-                                                                     cv=cv,
-                                                                     root_point=root_point,
-                                                                     invalidation_d=invalidation_d,
-                                                                     return_mesh=True,
-                                                                     return_l2dict=True,
-                                                                     n_parallel=n_parallel)
+    sk_ch, mesh_ch, (l2dict, l2dict_r), (l2dict_mesh, l2dict_mesh_r) = chunk_index_skeleton(root_id,
+                                                                                            client=client,
+                                                                                            datastack_name=datastack_name,
+                                                                                            cv=cv,
+                                                                                            root_point=root_point,
+                                                                                            root_point_resolution=root_point_resolution,
+                                                                                            root_point_search_radius=root_point_search_radius,
+                                                                                            invalidation_d=invalidation_d,
+                                                                                            return_mesh=True,
+                                                                                            return_mesh_l2dict=True,
+                                                                                            return_l2dict=True,
+                                                                                            n_parallel=n_parallel)
 
     sk_l2, missing_ids = refine_chunk_index_skeleton(sk_ch,
-                                                     l2dict_reversed,
+                                                     l2dict_r,
                                                      cv=cv,
                                                      refine_inds=refine,
                                                      scale_chunk_index=True,
@@ -377,7 +385,10 @@ def pcg_skeleton(root_id,
     if return_mesh:
         output.append(mesh_ch)
     if return_l2dict:
-        output.append((l2dict, l2dict_reversed))
+        output.append((sk_utils.propagate_l2dict(
+            sk_l2, l2dict_mesh), l2dict_r))
+    if return_l2dict_mesh:
+        output.append((l2dict_mesh, l2dict_mesh_r))
     if return_missing_ids:
         output.append(missing_ids)
     if len(output) == 1:
