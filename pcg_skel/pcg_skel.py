@@ -380,7 +380,54 @@ def pcg_meshwork(root_id,
                  invalidation_d=3,
                  n_parallel=4,
                  ):
+    """Generate a meshwork file based on the level 2 graph.
 
+    Parameters
+    ----------
+    root_id : int
+        Root id of an object in the pychunkedgraph. 
+    datastack_name : str or None, optional
+        Datastack name to use to initialize a client, if none is provided. By default None.
+    client : annotationframeworkclient.FrameworkClientFull or None, optional
+        Initialized annotationframeworkclient. If None is given, will use the datastack_name to create one. By default None
+    cv : cloudvolume.CloudVolume or None, optional
+        Initialized cloudvolume. If none is given, the client info will be used to create one. By default None
+    refine : 'all', 'ep', 'bp', 'epbp'/'bpep', or None, optional
+        Selects how to refine vertex locations by downloading mesh chunks.
+        Unrefined vertices are placed in the center of their chunk in euclidean space.
+        * 'all' refines all vertex locations. (Default)
+        * 'ep' refines end points only
+        * 'bp' refines branch points only
+        * 'bpep' or 'epbp' refines both branch and end points.
+        * None refines no points.
+    root_point : array-like or None, optional
+        3 element xyz location for the location to set the root in units set by root_point_resolution,
+        by default None. If None, a distal tip is selected.
+    root_point_resolution : array-like, optional
+        Resolution in euclidean space of the root_point, by default [4, 4, 40]
+    root_point_search_radius : int, optional
+        Distance in euclidean space to look for segmentation when finding the root vertex, by default 300
+    collapse_soma : bool, optional,
+        If True, collapses vertices within a given radius of the root point into the root vertex, typically to better
+        represent primary neurite branches. Requires a specified root_point. Default if False.
+    collapse_radius : float, optional
+        Max distance in euclidean space for soma collapse. Default is 10,000 nm (10 microns).
+    synapses : 'pre', 'post', 'all', or None, optional
+        If not None, queries the synapse_table for presynaptic synapses (if 'pre'),  postsynaptic sites (if 'post'), or both (if 'all'). By default None
+    synapse_table : str, optional
+        Name of the synapse table to query if synapses are requested, by default None
+    remove_self_synapse : bool, optional
+        If True, filters out synapses whose pre- and postsynaptic root ids are the same neuron, by default True
+    invalidation_d : int, optional
+        Invalidation radius in hops for the mesh skeletonization along the chunk adjacency graph, by default 3
+    n_parallel : int, optional
+        Number of parallel downloads passed to cloudvolume, by default 1
+
+    Returns
+    -------
+    meshparty.meshwork.Meshwork
+        Meshwork object with skeleton based on the level 2 graph. See documentation for details.
+    """
     if client is None:
         client = FrameworkClient(datastack_name)
     if cv is None:
