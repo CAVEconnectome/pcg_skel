@@ -18,7 +18,7 @@ For clarity, I'll define a few terms:
 
 * *L2 mesh*: The fragment of mesh associated with a level 2 id.
 
-* *Chunk index/chunk index space*: The integer 3-d index of a chunk in the chunk index space, i.e. the grid that covers the volume.
+* *Chunk index/chunk index space*: The integer 3-d index of a chunk in the the grid that covers the volume, i.e. the chunk index space.
 
 * *Euclidean position/Euclidean space*: A position in nanometers / biological space.
 
