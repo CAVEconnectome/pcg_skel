@@ -18,7 +18,7 @@ For clarity, I'll define a few terms:
 
 * *L2 mesh*: The fragment of mesh associated with a level 2 id.
 
-* *Chunk index/chunk index space*: The integer 3-d index of a chunk in the chunk index space, i.e. the grid that covers the volume.
+* *Chunk index/chunk index space*: The integer 3-d index of a chunk in the the grid that covers the volume, i.e. the chunk index space.
 
 * *Euclidean position/Euclidean space*: A position in nanometers / biological space.
 
@@ -178,9 +178,7 @@ By default, synapses whose pre- and post-synaptic ids are both the same root id 
 A minimal example to get the skeleton of an arbitrary neuron with root id `864691135761488438` and soma at the voxel-space location `253870, 236989, 20517` in the Minnie dataset:
 
 ```python
-from meshparty import trimesh_vtk
 from annotationframeworkclient import FrameworkClient
-import cloudvolume
 import pcg_skel
 
 client = FrameworkClient('minnie65_phase3_v1')
