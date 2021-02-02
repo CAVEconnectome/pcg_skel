@@ -2,6 +2,10 @@ import numpy as np
 from scipy import spatial
 import cloudvolume
 from . import utils
+import multiwrapper.multiprocessing_utils as mu
+
+UnshardedMeshSource = cloudvolume.datasource.graphene.mesh.unsharded.GrapheneUnshardedMeshSource
+ShardedMeshSource = cloudvolume.datasource.graphene.mesh.sharded.GrapheneShardedMeshSource
 
 
 def refine_vertices(
@@ -55,7 +59,7 @@ def refine_vertices(
             missing_inds = np.full(len(pt_locs), False)
             vertices[refine_inds] = pt_locs
     else:
-        refine_inds = np.array([])
+        refine_inds = np.array([], dtype=int)
         missing_inds = np.array([], dtype=bool)
         missing_ids = np.array([], dtype=int)
 
@@ -170,7 +174,10 @@ def lvl2_fragment_locs(l2_ids, cv, return_missing=True):
     missing_ids : np.array
         List of level 2 ids that were not found.
     """
-    l2meshes = cv.mesh.get_meshes_on_bypass(l2_ids, allow_missing=True)
+    if isinstance(cv.mesh, ShardedMeshSource):
+        l2meshes = download_l2meshes_sharded(l2_ids, cv)
+    else:
+        l2meshes = download_l2meshes_unsharded(l2_ids, cv)
     l2means = []
     missing_ids = []
     for l2id in l2_ids:
@@ -186,3 +193,48 @@ def lvl2_fragment_locs(l2_ids, cv, return_missing=True):
     else:
         l2means = np.empty((0, 3), dtype=float)
     return l2means, missing_ids
+
+
+def _download_l2meshes_multi(args):
+    root_id, cv = args
+    return _download_l2meshes(root_id, cv)
+
+
+def _download_l2meshes(mesh_ids, cv):
+    try:
+        ms = cv.mesh.get(
+            mesh_ids, deduplicate_chunk_boundaries=False, allow_missing=True)
+    except:
+        ms = {}
+    if len(ms) == 0:
+        return {mesh_id: None for mesh_id in mesh_ids}
+    else:
+        return ms
+
+
+def download_l2meshes_unsharded(l2ids, cv, n_split=10):
+    args = []
+
+    splits = np.ceil(len(l2ids)/n_split)
+    l2id_groups = np.array_split(l2ids, int(splits))
+    for l2id_group in l2id_groups:
+        args.append((l2id_group, cv))
+
+    if cv.parallel > 1:
+        progress = cv.progress
+        cv.progress = False
+
+        meshes_indiv = mu.multithread_func(
+            _download_l2meshes_multi, args, n_threads=cv.parallel)
+        meshes_all_dict = {}
+        for mdicts in meshes_indiv:
+            meshes_all_dict.update(mdicts)
+
+        cv.progress = progress
+        return meshes_all_dict
+    else:
+        return cv.mesh.get(l2ids, allow_missing=True, deduplicate_chunk_boundaries=False)
+
+
+def download_l2meshes_sharded(l2ids, cv):
+    return cv.mesh.get_meshes_on_bypass(l2ids, allow_missing=True)

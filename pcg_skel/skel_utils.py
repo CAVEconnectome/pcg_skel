@@ -1,4 +1,5 @@
 import numpy as np
+import warnings
 
 
 def filter_l2dict(sk_ch, l2dict_mesh_r):
@@ -34,8 +35,10 @@ def fix_nan_verts(sk, num_rounds=20):
             if len(neib_inds) == 0:
                 continue
             if np.any(neib_inds):
-                new_verts[ii] = np.nanmean(
-                    sk.vertices[neib_inds], axis=0) + np.array([0, 0, 1])
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    new_verts[ii] = np.nanmean(
+                        sk.vertices[neib_inds], axis=0) + np.array([0, 0, 1])
         sk._rooted._vertices[nanvinds] = new_verts
         sk._vertices[nanvinds] = new_verts
 

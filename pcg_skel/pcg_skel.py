@@ -119,7 +119,7 @@ def chunk_index_skeleton(root_id,
 
     sk_ch = skeletonize.skeletonize_mesh(
         mesh_chunk, invalidation_d=invalidation_d,
-        collapse_soma=False, compute_radius=False,
+        collapse_soma=False, compute_radius=False, cc_vertex_thresh=0,
         root_index=root_mesh_index, remove_zero_length_edges=False)
 
     l2dict, l2dict_r = sk_utils.filter_l2dict(sk_ch, l2dict_r_mesh)
