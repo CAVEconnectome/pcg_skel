@@ -1,7 +1,7 @@
 import numpy as np
 from scipy import spatial
 import cloudvolume
-from . import utils
+from . import utils, chunk_cache
 import multiwrapper.multiprocessing_utils as mu
 
 UnshardedMeshSource = cloudvolume.datasource.graphene.mesh.unsharded.GrapheneUnshardedMeshSource
@@ -16,6 +16,7 @@ def refine_vertices(
     scale_chunk_index=True,
     convert_missing=False,
     return_missing_ids=True,
+    cache=None,
 ):
     """Refine vertices in chunk index space by converting to euclidean space using a combination of mesh downloading and simple chunk mapping.
 
@@ -50,7 +51,7 @@ def refine_vertices(
     if refine_inds is not None:
         l2ids = [l2dict_reversed[k] for k in refine_inds]
         pt_locs, missing_ids = lvl2_fragment_locs(
-            l2ids, cv, return_missing=True)
+            l2ids, cv, return_missing=True, cache=cache)
 
         if convert_missing:
             missing_inds = np.any(np.isnan(pt_locs), axis=1)
@@ -152,7 +153,7 @@ def get_closest_lvl2_chunk(
         return lvl2_id
 
 
-def lvl2_fragment_locs(l2_ids, cv, return_missing=True):
+def lvl2_fragment_locs(l2_ids, cv, return_missing=True, cache=None):
     """ Look up representitive location for a list of level 2 ids.
 
     The representitive point for a mesh is the mesh vertex nearest to the
@@ -174,10 +175,35 @@ def lvl2_fragment_locs(l2_ids, cv, return_missing=True):
     missing_ids : np.array
         List of level 2 ids that were not found.
     """
-    if isinstance(cv.mesh, ShardedMeshSource):
-        l2meshes = download_l2meshes_sharded(l2_ids, cv)
+
+    l2_ids = np.array(l2_ids)
+    l2means = np.full((len(l2_ids), 3), np.nan, dtype=np.float)
+    if cache is not None:
+        l2means_cached, is_cached = chunk_cache.lookup_cached_ids(
+            l2_ids, cache_file=cache)
     else:
-        l2meshes = download_l2meshes_unsharded(l2_ids, cv)
+        l2means_cached = np.zeros((0, 3), dtype=np.float)
+        is_cached = np.full(len(l2_ids), False, dtype=np.bool)
+
+    l2means[is_cached] = l2means_cached
+
+    if np.any(~is_cached):
+        l2means_dl, missing_ids = download_lvl2_locs(l2_ids[~is_cached], cv)
+        l2means[~is_cached] = l2means_dl
+        if cache is not None:
+            chunk_cache.save_ids_to_cache(
+                l2_ids[~is_cached], l2means_dl, cache)
+    else:
+        missing_ids = []
+    return l2means, missing_ids
+
+
+def download_lvl2_locs(l2_ids, cv):
+    if isinstance(cv.mesh, ShardedMeshSource):
+        l2meshes = download_l2meshes(l2_ids, cv, sharded=True)
+    else:
+        l2meshes = download_l2meshes(l2_ids, cv, sharded=False)
+
     l2means = []
     missing_ids = []
     for l2id in l2_ids:
@@ -195,12 +221,42 @@ def lvl2_fragment_locs(l2_ids, cv, return_missing=True):
     return l2means, missing_ids
 
 
-def _download_l2meshes_multi(args):
+def download_l2meshes(l2ids, cv, n_split=10, sharded=False):
+    if cv.parallel > 1:
+        splits = np.ceil(len(l2ids)/n_split)
+        l2id_groups = np.array_split(l2ids, int(splits))
+        args = []
+        for l2id_group in l2id_groups:
+            args.append((l2id_group, cv))
+
+        progress = cv.progress
+        cv.progress = False
+
+        if sharded:
+            meshes_indiv = mu.multithread_func(
+                _download_l2meshes_sharded_multi, args, n_threads=cv.parallel)
+        else:
+            meshes_indiv = mu.multithread_func(
+                _download_l2meshes_unsharded_multi, args, n_threads=cv.parallel)
+        meshes_all_dict = {}
+        for mdicts in meshes_indiv:
+            meshes_all_dict.update(mdicts)
+
+        cv.progress = progress
+        return meshes_all_dict
+    else:
+        if sharded:
+            return cv.mesh.get_meshes_on_bypass(l2ids, allow_missing=True)
+        else:
+            return cv.mesh.get(l2ids, allow_missing=True, deduplicate_chunk_boundaries=False)
+
+
+def _download_l2meshes_unsharded_multi(args):
     root_id, cv = args
-    return _download_l2meshes(root_id, cv)
+    return _download_l2meshes_unsharded(root_id, cv)
 
 
-def _download_l2meshes(mesh_ids, cv):
+def _download_l2meshes_unsharded(mesh_ids, cv):
     try:
         ms = cv.mesh.get(
             mesh_ids, deduplicate_chunk_boundaries=False, allow_missing=True)
@@ -212,28 +268,21 @@ def _download_l2meshes(mesh_ids, cv):
         return ms
 
 
-def download_l2meshes_unsharded(l2ids, cv, n_split=10):
-    args = []
+def _download_l2meshes_sharded_multi(args):
+    mesh_ids, cv = args
+    return _download_l2meshes_sharded(mesh_ids, cv)
 
-    splits = np.ceil(len(l2ids)/n_split)
-    l2id_groups = np.array_split(l2ids, int(splits))
-    for l2id_group in l2id_groups:
-        args.append((l2id_group, cv))
 
-    if cv.parallel > 1:
-        progress = cv.progress
-        cv.progress = False
-
-        meshes_indiv = mu.multithread_func(
-            _download_l2meshes_multi, args, n_threads=cv.parallel)
-        meshes_all_dict = {}
-        for mdicts in meshes_indiv:
-            meshes_all_dict.update(mdicts)
-
-        cv.progress = progress
-        return meshes_all_dict
+def _download_l2meshes_sharded(mesh_ids, cv):
+    cv.parallel = 1
+    try:
+        ms = cv.mesh.get_meshes_on_bypass(mesh_ids, allow_missing=True)
+    except:
+        ms = {}
+    if len(ms) == 0:
+        return {mesh_id: None for mesh_id in mesh_ids}
     else:
-        return cv.mesh.get(l2ids, allow_missing=True, deduplicate_chunk_boundaries=False)
+        return ms
 
 
 def download_l2meshes_sharded(l2ids, cv):

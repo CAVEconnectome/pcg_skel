@@ -146,6 +146,7 @@ def refine_chunk_index_skeleton(
     root_location=None,
     nan_rounds=20,
     return_missing_ids=False,
+    cache=None,
 ):
     """Refine skeletons in chunk index space to Euclidean space.
 
@@ -171,6 +172,8 @@ def refine_chunk_index_skeleton(
         Only used if refine_inds is 'all'. Default is 20.
     return_missing_ids : bool, optional
         If True, returns ids of any missing level 2 meshes. Default is False
+    cache : str
+        Filename for a sqlite database storing locations associated with level 2 ids.
 
     Returns
     -------
@@ -188,7 +191,8 @@ def refine_chunk_index_skeleton(
                                              refine_inds=refine_inds,
                                              scale_chunk_index=scale_chunk_index,
                                              convert_missing=convert_missing,
-                                             return_missing_ids=return_missing_ids)
+                                             return_missing_ids=return_missing_ids,
+                                             cache=cache)
     if return_missing_ids:
         new_verts, missing_ids = refine_out
     else:
@@ -231,6 +235,7 @@ def pcg_skeleton(root_id,
                  return_l2dict_mesh=False,
                  return_missing_ids=False,
                  nan_rounds=20,
+                 cache=None,
                  n_parallel=1):
     """Create a euclidean-space skeleton from the pychunkedgraph
 
@@ -280,6 +285,8 @@ def pcg_skeleton(root_id,
     nan_rounds : int, optional
         Maximum number of rounds of smoothing to eliminate missing vertex locations in the event of a
         missing level 2 mesh, by default 20. This is only used when refine=='all'.
+    cache : str or None, optional
+        Filename to a sqlite database with cached lookups for l2 ids. Optional, default is None.
     n_parallel : int, optional
         Number of parallel downloads passed to cloudvolume, by default 1
 
@@ -341,7 +348,8 @@ def pcg_skeleton(root_id,
                                                      scale_chunk_index=True,
                                                      root_location=root_point_euc,
                                                      nan_rounds=nan_rounds,
-                                                     return_missing_ids=True)
+                                                     return_missing_ids=True,
+                                                     cache=cache)
 
     if collapse_soma and root_point is not None:
         sk_l2 = collapse_pcg_skeleton(sk_l2.vertices[sk_l2.root],
@@ -378,7 +386,8 @@ def pcg_meshwork(root_id,
                  synapse_table=None,
                  remove_self_synapse=True,
                  invalidation_d=3,
-                 n_parallel=4,
+                 cache=None,
+                 n_parallel=None,
                  ):
     """Generate a meshwork file based on the level 2 graph.
 
@@ -420,6 +429,8 @@ def pcg_meshwork(root_id,
         If True, filters out synapses whose pre- and postsynaptic root ids are the same neuron, by default True
     invalidation_d : int, optional
         Invalidation radius in hops for the mesh skeletonization along the chunk adjacency graph, by default 3
+    cache : str or None, optional
+        Filename to a sqlite database with cached lookups for l2 ids. Optional, default is None.
     n_parallel : int, optional
         Number of parallel downloads passed to cloudvolume, by default 1
 
@@ -446,7 +457,8 @@ def pcg_meshwork(root_id,
                                                                    invalidation_d=invalidation_d,
                                                                    n_parallel=n_parallel,
                                                                    return_mesh=True,
-                                                                   return_l2dict_mesh=True)
+                                                                   return_l2dict_mesh=True,
+                                                                   cache=cache)
 
     nrn = meshwork.Meshwork(mesh_chunk, seg_id=root_id, skeleton=sk_l2)
 

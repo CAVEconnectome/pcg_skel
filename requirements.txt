@@ -6,3 +6,5 @@ meshparty>=1.10.0
 annotationframeworkclient>=2.4.1
 fastremap
 cloud-volume>=3.6.0
+sqlitedict
+orjson
