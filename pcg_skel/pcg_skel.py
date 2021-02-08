@@ -147,6 +147,7 @@ def refine_chunk_index_skeleton(
     nan_rounds=20,
     return_missing_ids=False,
     cache=None,
+    save_to_cache=False,
 ):
     """Refine skeletons in chunk index space to Euclidean space.
 
@@ -192,7 +193,8 @@ def refine_chunk_index_skeleton(
                                              scale_chunk_index=scale_chunk_index,
                                              convert_missing=convert_missing,
                                              return_missing_ids=return_missing_ids,
-                                             cache=cache)
+                                             cache=cache,
+                                             save_to_cache=save_to_cache)
     if return_missing_ids:
         new_verts, missing_ids = refine_out
     else:
@@ -236,6 +238,7 @@ def pcg_skeleton(root_id,
                  return_missing_ids=False,
                  nan_rounds=20,
                  cache=None,
+                 save_to_cache=False,
                  n_parallel=1):
     """Create a euclidean-space skeleton from the pychunkedgraph
 
@@ -349,7 +352,8 @@ def pcg_skeleton(root_id,
                                                      root_location=root_point_euc,
                                                      nan_rounds=nan_rounds,
                                                      return_missing_ids=True,
-                                                     cache=cache)
+                                                     cache=cache,
+                                                     save_to_cache=save_to_cache)
 
     if collapse_soma and root_point is not None:
         sk_l2 = collapse_pcg_skeleton(sk_l2.vertices[sk_l2.root],

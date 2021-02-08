@@ -17,6 +17,7 @@ def refine_vertices(
     convert_missing=False,
     return_missing_ids=True,
     cache=None,
+    save_to_cache=False,
 ):
     """Refine vertices in chunk index space by converting to euclidean space using a combination of mesh downloading and simple chunk mapping.
 
@@ -51,7 +52,7 @@ def refine_vertices(
     if refine_inds is not None:
         l2ids = [l2dict_reversed[k] for k in refine_inds]
         pt_locs, missing_ids = lvl2_fragment_locs(
-            l2ids, cv, return_missing=True, cache=cache)
+            l2ids, cv, return_missing=True, cache=cache, save_to_cache=save_to_cache)
 
         if convert_missing:
             missing_inds = np.any(np.isnan(pt_locs), axis=1)
@@ -153,7 +154,7 @@ def get_closest_lvl2_chunk(
         return lvl2_id
 
 
-def lvl2_fragment_locs(l2_ids, cv, return_missing=True, cache=None):
+def lvl2_fragment_locs(l2_ids, cv, return_missing=True, cache=None, save_to_cache=False):
     """ Look up representitive location for a list of level 2 ids.
 
     The representitive point for a mesh is the mesh vertex nearest to the
@@ -190,7 +191,7 @@ def lvl2_fragment_locs(l2_ids, cv, return_missing=True, cache=None):
     if np.any(~is_cached):
         l2means_dl, missing_ids = download_lvl2_locs(l2_ids[~is_cached], cv)
         l2means[~is_cached] = l2means_dl
-        if cache is not None:
+        if cache is not None and save_to_cache:
             chunk_cache.save_ids_to_cache(
                 l2_ids[~is_cached], l2means_dl, cache)
     else:
