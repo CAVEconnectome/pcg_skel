@@ -207,7 +207,7 @@ Conveniently, the level 2 ids let us follow this intuition.
 While a neuron's root id changes for each proofreading event, the level 2 id only changes if an edit occurs exactly within that region.
 Therefore, once we've looked up a level 2 id once, we can cache it and save time for future iterations on the same neuron.
 
-The current implementation of caching uses (SQLiteDict)[https://github.com/piskvorky/sqlitedict], a simple means of using a sqlite file as a persistent key-value store.
+The current implementation of caching uses [SQLiteDict](https://github.com/piskvorky/sqlitedict), a simple means of using a sqlite file as a persistent key-value store.
 The cache is used with the functions `refine_vertices`, `pcg_skeleton`, and `pcg_meshwork` if you specify the filename of the sqlite database.
 For example,
 
