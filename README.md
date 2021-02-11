@@ -199,9 +199,34 @@ Most of the time is spent in refinement.
 If you just select the `refine="epbp"` argument, it only refines the 79 branch and end points and accordingly takes a mere 12.5 seconds.
 It is worth exploring sparse refinement options and interpolation if processing time is extremely important.
 
+## Caching
+
+A common use case is to have a set of neurons that you are analyzing while proofreading is still ongoing.
+However, because proofreading events leave most of the neuron unchanged we shouldn't need to do more than update new locations.
+Conveniently, the level 2 ids let us follow this intuition.
+While a neuron's root id changes for each proofreading event, the level 2 id only changes if an edit occurs exactly within that region.
+Therefore, once we've looked up a level 2 id once, we can cache it and save time for future iterations on the same neuron.
+
+The current implementation of caching uses (SQLiteDict)[https://github.com/piskvorky/sqlitedict], a simple means of using a sqlite file as a persistent key-value store.
+The cache is used with the functions `refine_vertices`, `pcg_skeleton`, and `pcg_meshwork` if you specify the filename of the sqlite database.
+For example,
+
+```python
+sk_l2 = pcg_skel.pcg_skeleton(oid,
+                              client=client,
+                              refine='all',
+                              ...,
+                              cache='l2_cache.sqlite',
+                              )
+```
+
+Note that if the database is not yet present, it will be created automatically.
+
+In order to avoid unintentional changes, new locations are not saved to the database by default.
+If you want to save new ids to the database as you are skeletonizing files, set the additional parameter `save_to_cache=True`.
+For adding data to the database post-hoc, please use the function `chunk_cache.save_ids_to_cache()`.
+
 ## To-dos: 
 
-* Add cached l2 id lookups to never download the same fragments twice.
-
 * Improve/document/test tooling for additional annotations.
-
+* Alternative key-value stores for caching
