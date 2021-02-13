@@ -1,11 +1,9 @@
-import time
 import cloudvolume
 import fastremap
 import numpy as np
 import pandas as pd
-from annotationframeworkclient import FrameworkClient, chunkedgraph, frameworkclient
-from meshparty import mesh_filters, skeleton, skeletonize, trimesh_io, meshwork
-from scipy import sparse, spatial
+from annotationframeworkclient import FrameworkClient
+from meshparty import skeleton, skeletonize, trimesh_io, meshwork
 
 from . import chunk_tools
 from . import skel_utils as sk_utils
@@ -146,6 +144,7 @@ def refine_chunk_index_skeleton(
     root_location=None,
     nan_rounds=20,
     return_missing_ids=False,
+    segmentation_fallback=True,
     cache=None,
     save_to_cache=False,
 ):
@@ -193,6 +192,7 @@ def refine_chunk_index_skeleton(
                                              scale_chunk_index=scale_chunk_index,
                                              convert_missing=convert_missing,
                                              return_missing_ids=return_missing_ids,
+                                             segmentation_fallback=segmentation_fallback,
                                              cache=cache,
                                              save_to_cache=save_to_cache)
     if return_missing_ids:
@@ -237,6 +237,7 @@ def pcg_skeleton(root_id,
                  return_l2dict_mesh=False,
                  return_missing_ids=False,
                  nan_rounds=20,
+                 segmentation_fallback=True,
                  cache=None,
                  save_to_cache=False,
                  n_parallel=1):
@@ -288,6 +289,9 @@ def pcg_skeleton(root_id,
     nan_rounds : int, optional
         Maximum number of rounds of smoothing to eliminate missing vertex locations in the event of a
         missing level 2 mesh, by default 20. This is only used when refine=='all'.
+    segmentation_fallback : bool, optional
+        If True, uses the segmentation in cases of missing level 2 meshes. This is slower but more robust.
+        Default is True.
     cache : str or None, optional
         Filename to a sqlite database with cached lookups for l2 ids. Optional, default is None.
     n_parallel : int, optional
@@ -352,6 +356,7 @@ def pcg_skeleton(root_id,
                                                      root_location=root_point_euc,
                                                      nan_rounds=nan_rounds,
                                                      return_missing_ids=True,
+                                                     segmentation_fallback=segmentation_fallback,
                                                      cache=cache,
                                                      save_to_cache=save_to_cache)
 
@@ -390,6 +395,7 @@ def pcg_meshwork(root_id,
                  synapse_table=None,
                  remove_self_synapse=True,
                  invalidation_d=3,
+                 segmentation_fallback=True,
                  cache=None,
                  n_parallel=None,
                  ):
@@ -462,6 +468,7 @@ def pcg_meshwork(root_id,
                                                                    n_parallel=n_parallel,
                                                                    return_mesh=True,
                                                                    return_l2dict_mesh=True,
+                                                                   segmentation_fallback=segmentation_fallback,
                                                                    cache=cache)
 
     nrn = meshwork.Meshwork(mesh_chunk, seg_id=root_id, skeleton=sk_l2)
@@ -538,5 +545,5 @@ def collapse_pcg_skeleton(soma_pt, sk, soma_r):
 
     new_mesh_index = sk.mesh_index[vert_filter]
     new_skeleton = skeleton.Skeleton(
-        new_v, new_e, root=root_ind, mesh_to_skel_map=new_skel_map, mesh_index=new_mesh_index)
+        new_v, new_e, root=root_ind, mesh_to_skel_map=new_skel_map, mesh_index=new_mesh_index, remove_zero_length_edges=False)
     return new_skeleton

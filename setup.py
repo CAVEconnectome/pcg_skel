@@ -5,7 +5,7 @@ import codecs
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-with open(path.join(here, 'README.md'), encoding='utf-8') as f:
+with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 
@@ -48,5 +48,6 @@ setuptools.setup(
     install_requires=required,
     include_package_data=True,
     dependency_links=dependency_links,
+    url='https://github.com/AllenInstitute/pcg_skel',
     packages=["pcg_skel"]
 )
