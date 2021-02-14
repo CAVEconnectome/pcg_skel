@@ -368,6 +368,7 @@ def chunk_location_from_segmentation(l2id, cv, mip=0):
 
     if len(x) == 0 and mip > 0:
         # If too small for the requested mip level, jump to the highest mip level
+        del sv_vol
         return chunk_location_from_segmentation(l2id, cv, mip=0)
 
     xyz = np.vstack((x, y, z)).T * np.array(sv_vol.resolution)
