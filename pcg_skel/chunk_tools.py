@@ -19,6 +19,7 @@ def refine_vertices(
     cache=None,
     save_to_cache=False,
     segmentation_fallback=True,
+    fallback_mip=2,
 ):
     """Refine vertices in chunk index space by converting to euclidean space using a combination of mesh downloading and simple chunk mapping.
 
@@ -49,14 +50,18 @@ def refine_vertices(
         List of level 2 ids without meshes. Only returned if return_missing_ids is True.
     """
     vertices = vertices.copy()
-    if refine_inds == 'all':
-        refine_inds = np.arange(0, len(vertices))
+
+    if isinstance(refine_inds, str):
+        if refine_inds == 'all':
+            refine_inds = np.arange(0, len(vertices))
+        else:
+            raise ValueError('Invalid value for refine_inds')
 
     if refine_inds is not None:
         l2ids = [l2dict_reversed[k] for k in refine_inds]
         pt_locs, missing_ids = lvl2_fragment_locs(
             l2ids, cv, return_missing=True, cache=cache, save_to_cache=save_to_cache,
-            segmentation_fallback=segmentation_fallback)
+            segmentation_fallback=segmentation_fallback, fallback_mip=fallback_mip)
 
         if convert_missing:
             missing_inds = np.any(np.isnan(pt_locs), axis=1)
@@ -158,7 +163,7 @@ def get_closest_lvl2_chunk(
         return lvl2_id
 
 
-def lvl2_fragment_locs(l2_ids, cv, return_missing=True, segmentation_fallback=True,
+def lvl2_fragment_locs(l2_ids, cv, return_missing=True, segmentation_fallback=True, fallback_mip=2,
                        cache=None, save_to_cache=False):
     """ Look up representitive location for a list of level 2 ids.
 
@@ -204,7 +209,7 @@ def lvl2_fragment_locs(l2_ids, cv, return_missing=True, segmentation_fallback=Tr
 
     if np.any(~is_cached):
         l2means_dl, missing_ids = download_lvl2_locs(
-            l2_ids[~is_cached], cv, segmentation_fallback)
+            l2_ids[~is_cached], cv, segmentation_fallback, fallback_mip)
         l2means[~is_cached] = l2means_dl
         if cache is not None and save_to_cache:
             chunk_cache.save_ids_to_cache(
@@ -218,7 +223,7 @@ def lvl2_fragment_locs(l2_ids, cv, return_missing=True, segmentation_fallback=Tr
         return l2means
 
 
-def download_lvl2_locs(l2_ids, cv, segmentation_fallback):
+def download_lvl2_locs(l2_ids, cv, segmentation_fallback, fallback_mip=2):
     if isinstance(cv.mesh, ShardedMeshSource):
         l2meshes = download_l2meshes(l2_ids, cv, sharded=True)
     else:
@@ -230,7 +235,8 @@ def download_lvl2_locs(l2_ids, cv, segmentation_fallback):
         args.append((l2id,
                      l2meshes.get(l2id, None),
                      f'graphene://{cv.meta.table_path}',
-                     segmentation_fallback))
+                     segmentation_fallback,
+                     fallback_mip))
 
     print(f'Downloading {len(l2_ids)} locations with parallel={cv.parallel}')
     l2means = mu.multithread_func(
@@ -246,11 +252,11 @@ def download_lvl2_locs(l2_ids, cv, segmentation_fallback):
 
 
 def _localize_l2_id_multi(args):
-    l2id, l2mesh, cv_path, segmentation_fallback = args
-    return _localize_l2_id(l2id, l2mesh, cv_path, segmentation_fallback)
+    l2id, l2mesh, cv_path, segmentation_fallback, fallback_mip = args
+    return _localize_l2_id(l2id, l2mesh, cv_path, segmentation_fallback, fallback_mip)
 
 
-def _localize_l2_id(l2id, l2mesh, cv_path, segmentation_fallback):
+def _localize_l2_id(l2id, l2mesh, cv_path, segmentation_fallback, fallback_mip):
     if l2mesh is not None:
         l2m_abs = np.mean(l2mesh.vertices, axis=0)
         _, ii = spatial.cKDTree(l2mesh.vertices).query(l2m_abs)
@@ -259,7 +265,8 @@ def _localize_l2_id(l2id, l2mesh, cv_path, segmentation_fallback):
         if segmentation_fallback:
             cv = cloudvolume.CloudVolume(
                 cv_path, bounded=False, progress=False, use_https=True, mip=0)
-            l2m = chunk_location_from_segmentation(l2id, cv)
+            l2m = chunk_location_from_segmentation(l2id, cv, mip=fallback_mip)
+            del cv
         else:
             l2m = np.array([np.nan, np.nan, np.nan])
     return l2m
@@ -332,7 +339,7 @@ def download_l2meshes_sharded(l2ids, cv):
     return cv.mesh.get_meshes_on_bypass(l2ids, allow_missing=True)
 
 
-def chunk_location_from_segmentation(l2id, cv):
+def chunk_location_from_segmentation(l2id, cv, mip=0):
     """Representative level 2 id location using the segmentation.
     This is typically slower than the mesh approach, but is more robust.
 
@@ -351,10 +358,17 @@ def chunk_location_from_segmentation(l2id, cv):
     loc_ch = np.array(cv.mesh.meta.meta.decode_chunk_position(l2id))
     loc_vox = np.atleast_2d(loc_ch) * cv.graph_chunk_size + \
         np.array(cv.voxel_offset)
-    bbox = cloudvolume.Bbox(loc_vox[0], loc_vox[0] + cv.graph_chunk_size)
 
-    sv_vol = cv.download(bbox, agglomerate=True, stop_layer=2,  mip=0)
-    x, y, z = np.where(sv_vol.squeeze() == l2id)
+    bbox = cloudvolume.Bbox(loc_vox[0], loc_vox[0] + cv.graph_chunk_size)
+    bbox_mip = cv.bbox_to_mip(bbox, 0, mip)
+
+    sv_vol, _ = cv.download(bbox_mip, segids=(l2id,), mip=mip, renumber=True)
+    sv_vol = sv_vol > 0
+    x, y, z = np.where(sv_vol.squeeze())
+
+    if len(x) == 0 and mip > 0:
+        # If too small for the requested mip level, jump to the highest mip level
+        return chunk_location_from_segmentation(l2id, cv, mip=0)
 
     xyz = np.vstack((x, y, z)).T * np.array(sv_vol.resolution)
 
@@ -362,4 +376,5 @@ def chunk_location_from_segmentation(l2id, cv):
     xyz_box = xyz[np.argmin(np.linalg.norm(xyz-xyz_mean, axis=1))]
     xyz_rep = np.array(sv_vol.bounds.minpt) * \
         np.array(sv_vol.resolution) + xyz_box
+    del sv_vol
     return xyz_rep

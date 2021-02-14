@@ -145,6 +145,7 @@ def refine_chunk_index_skeleton(
     nan_rounds=20,
     return_missing_ids=False,
     segmentation_fallback=True,
+    fallback_mip=2,
     cache=None,
     save_to_cache=False,
 ):
@@ -193,6 +194,7 @@ def refine_chunk_index_skeleton(
                                              convert_missing=convert_missing,
                                              return_missing_ids=return_missing_ids,
                                              segmentation_fallback=segmentation_fallback,
+                                             fallback_mip=fallback_mip,
                                              cache=cache,
                                              save_to_cache=save_to_cache)
     if return_missing_ids:
@@ -238,6 +240,7 @@ def pcg_skeleton(root_id,
                  return_missing_ids=False,
                  nan_rounds=20,
                  segmentation_fallback=True,
+                 fallback_mip=2,
                  cache=None,
                  save_to_cache=False,
                  n_parallel=1):
@@ -357,6 +360,7 @@ def pcg_skeleton(root_id,
                                                      nan_rounds=nan_rounds,
                                                      return_missing_ids=True,
                                                      segmentation_fallback=segmentation_fallback,
+                                                     fallback_mip=fallback_mip,
                                                      cache=cache,
                                                      save_to_cache=save_to_cache)
 
@@ -396,6 +400,7 @@ def pcg_meshwork(root_id,
                  remove_self_synapse=True,
                  invalidation_d=3,
                  segmentation_fallback=True,
+                 fallback_mip=2,
                  cache=None,
                  n_parallel=None,
                  ):
@@ -469,6 +474,7 @@ def pcg_meshwork(root_id,
                                                                    return_mesh=True,
                                                                    return_l2dict_mesh=True,
                                                                    segmentation_fallback=segmentation_fallback,
+                                                                   fallback_mip=fallback_mip,
                                                                    cache=cache)
 
     nrn = meshwork.Meshwork(mesh_chunk, seg_id=root_id, skeleton=sk_l2)
