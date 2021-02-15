@@ -245,6 +245,7 @@ sk_l2 = pcg_skel.pcg_skeleton(oid,
 
 Setting `segmentation_fallback=True` activates the capability, and setting `fallback_mip` will choose the MIP-level to use (2 by default).
 If the chosen MIP does not have voxels for the L2 id in it, it will try 0 next.
+Segmentation-based points will be cached if both features are used.
 
 Note that this approach is much slower and more memory intensive than using the mesh fragments.
 I have found it to take 4-8 seconds per vertex with the current implementation, although parallelation helps.
