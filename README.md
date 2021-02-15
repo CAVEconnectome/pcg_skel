@@ -226,7 +226,30 @@ In order to avoid unintentional changes, new locations are not saved to the data
 If you want to save new ids to the database as you are skeletonizing files, set the additional parameter `save_to_cache=True`.
 For adding data to the database post-hoc, please use the function `chunk_cache.save_ids_to_cache()`.
 
-## To-dos: 
+## Segmentation-based localization
+
+Localizing level 2 ids with mesh fragments is much faster than downloading the segmentation for a whole chunk just to get a few supervoxels, but sometimes mesh fragments don't exist.
+This can occur for both good reasons (the L2 object is too small to get a mesh) and due to bugs in the meshing backend.
+However, if you really want to get such locations correct, falling back to the segmentation is available.
+
+You can use this by setting the `segmentation_fallback` option on any of the functions that localize vertices.
+For example,
+
+```python
+sk_l2 = pcg_skel.pcg_skeleton(oid,
+                              ...,
+                              segmentation_fallback=True,
+                              fallback_mip=2,
+                              )
+```
+
+Setting `segmentation_fallback=True` activates the capability, and setting `fallback_mip` will choose the MIP-level to use (2 by default).
+If the chosen MIP does not have voxels for the L2 id in it, it will try 0 next.
+
+Note that this approach is much slower and more memory intensive than using the mesh fragments.
+I have found it to take 4-8 seconds per vertex with the current implementation, although parallelation helps.
+
+## To-dos
 
 * Improve/document/test tooling for additional annotations.
 * Alternative key-value stores for caching

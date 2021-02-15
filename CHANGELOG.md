@@ -2,6 +2,16 @@
 
 This project is under active development and, while breaking changes will be avoided where possible, no promises are made until version 1 is released.
 
+## [0.0.3] - 2021-02-13
+
+### Changed
+
+* Choose your mip level when falling back to segmentation.
+This saves a bit of time on the download, and if the level-2 object has been downsampled out of existence at this mip level, it will rerun at mip-0 where it must exist.
+
+* More aggressive handling of segmentation memory use. Requires cloudvolume renumber mode.
+
+
 ## [0.0.2] - 2021-02-13
 
 ### Added
