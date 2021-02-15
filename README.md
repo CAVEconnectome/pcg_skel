@@ -183,8 +183,8 @@ import pcg_skel
 
 client = FrameworkClient('minnie65_phase3_v1')
 
-oid = 864691135407403977
-root_point = [253870, 236989, 20517]
+oid = 123456789 # Some root id
+root_point = [253870, 236989, 20517] # root point in vertex coordinates
 sk_l2 = pcg_skel.pcg_skeleton(oid,
                               client=client,
                               refine='all',
@@ -194,7 +194,7 @@ sk_l2 = pcg_skel.pcg_skeleton(oid,
                               n_parallel=8)
 ```
 
-This took 78 seconds on my computer and generated a skeleton with 1310 vertices, all refined through the mesh fragments.
+To generate a skeleton with 1310 vertices took about 80 seconds on a 2019 MacBook Pro, all refined through the mesh fragments.
 Most of the time is spent in refinement.
 If you just select the `refine="epbp"` argument, it only refines the 79 branch and end points and accordingly takes a mere 12.5 seconds.
 It is worth exploring sparse refinement options and interpolation if processing time is extremely important.
@@ -207,7 +207,7 @@ Conveniently, the level 2 ids let us follow this intuition.
 While a neuron's root id changes for each proofreading event, the level 2 id only changes if an edit occurs exactly within that region.
 Therefore, once we've looked up a level 2 id once, we can cache it and save time for future iterations on the same neuron.
 
-The current implementation of caching uses (SQLiteDict)[https://github.com/piskvorky/sqlitedict], a simple means of using a sqlite file as a persistent key-value store.
+The current implementation of caching uses [SQLiteDict](https://github.com/piskvorky/sqlitedict), a simple means of using a sqlite file as a persistent key-value store.
 The cache is used with the functions `refine_vertices`, `pcg_skeleton`, and `pcg_meshwork` if you specify the filename of the sqlite database.
 For example,
 
