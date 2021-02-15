@@ -2,13 +2,13 @@
 
 Save time by generating robust neuronal skeletons directly from a ChunkedGraph dynamic segmentations!
 
-## What you need:
+## What you need
 
 For skeletons you just need a dynamic segmentation running on a [PyChunkedGraph](https://github.com/seung-lab/PyChunkedGraph) server.
 
 To also use annotations, you also need a database backend running the [MaterializationEngine](https://github.com/seung-lab/MaterializationEngine).
 
-## Key terms:
+## Key terms
 
 Ids in the PCG combine information about chunk level, spatial location, and unique object id.
 This package uses the highest-resolution chunking, level 2, to derive neuronal topology and approximate spatial extent.
@@ -26,11 +26,12 @@ For clarity, I'll define a few terms:
 
 * *Refinement*: Mapping the position of an L2 object from its chunk position to a more representitive point on the mesh.
 
-## How to use:
+## How to use
 
 There are a few potentially useful functions with progressively more features:
 
 ### chunk_index_skeleton
+
 This function returns a meshparty skeleton with vertices given in chunk index space.
 
 ```python
@@ -48,7 +49,7 @@ def chunk_index_skeleton(root_id,
                          n_parallel=1):
 ```
 
-_Notes:_
+#### Notes
 
 * A `FrameworkClient` or `datastack_name` must be provided, and a cloudvolume object is suggested for performance reasons, especially if running in bulk.
 
@@ -81,7 +82,7 @@ def refine_chunk_index_skeleton(
 ):
 ```
 
-_Notes:_
+#### Notes
 
 * `sk_ch` is assumed to have positions in chunk index space.
 
@@ -121,7 +122,7 @@ def pcg_skeleton(root_id,
                  n_parallel=1):
 ```
 
-_Notes_:
+#### Notes
 
 * `refine` can take five values to determine which vertices to refine.
     1. `"all"`: Refine all vertices
@@ -160,7 +161,8 @@ def pcg_meshwork(root_id,
                  n_parallel=4,
                  ):
 ```
-_Notes_:
+
+#### Notes
 
 * The resulting meshwork file comes back with a "mesh" made out of the level 2 graph with vertices mapped to their chunk positions, a skeleton with `refine` and `collapse_soma` options as above, and one or more annotations.
 
@@ -173,7 +175,7 @@ Presynaptic synapses are in an annotation `"pre_syn"` and postsynaptic synapses 
 * If returning synapses, you must set the synapse table.
 By default, synapses whose pre- and post-synaptic ids are both the same root id are excluded, but this can be turned off by setting `remove_self_synapse` to `False`.
 
-## Example:
+## Example
 
 A minimal example to get the skeleton of an arbitrary neuron with root id `864691135761488438` and soma at the voxel-space location `253870, 236989, 20517` in the Minnie dataset:
 
@@ -213,10 +215,9 @@ For example,
 
 ```python
 sk_l2 = pcg_skel.pcg_skeleton(oid,
-                              client=client,
-                              refine='all',
                               ...,
                               cache='l2_cache.sqlite',
+                              save_to_cache=False,
                               )
 ```
 
@@ -254,3 +255,7 @@ I have found it to take 4-8 seconds per vertex with the current implementation, 
 
 * Improve/document/test tooling for additional annotations.
 * Alternative key-value stores for caching
+
+## Credit
+
+This work is by Casey Schneider-Mizell (caseys@alleninstitute.org) with suggestions from Sven Dorkenwald and Forrest Collman.
