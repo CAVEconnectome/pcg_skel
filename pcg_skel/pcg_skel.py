@@ -500,10 +500,10 @@ def pcg_meshwork(root_id,
                                                                )
         if pre_syn_df is not None:
             nrn.anno.add_annotations(
-                'pre_syn', pre_syn_df, index_column='pre_pt_mesh_ind')
+                'pre_syn', pre_syn_df, index_column='pre_pt_mesh_ind', point_column = 'ctr_pt_position')
         if post_syn_df is not None:
             nrn.anno.add_annotations(
-                'post_syn', post_syn_df, index_column='post_pt_mesh_ind')
+                'post_syn', post_syn_df, index_column='post_pt_mesh_ind', point_column = 'ctr_pt_position')
 
     lvl2_df = pd.DataFrame({'lvl2_id': list(l2dict_mesh.keys()),
                             'mesh_ind': list(l2dict_mesh.values())})
