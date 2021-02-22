@@ -408,6 +408,7 @@ def pcg_meshwork(root_id,
                  segmentation_fallback=True,
                  fallback_mip=2,
                  cache=None,
+                 save_to_cache=False,
                  n_parallel=None,
                  ):
     """Generate a meshwork file based on the level 2 graph.
@@ -483,7 +484,8 @@ def pcg_meshwork(root_id,
                                                                    return_l2dict_mesh=True,
                                                                    segmentation_fallback=segmentation_fallback,
                                                                    fallback_mip=fallback_mip,
-                                                                   cache=cache)
+                                                                   cache=cache,
+                                                                   save_to_cache=save_to_cache)
 
     nrn = meshwork.Meshwork(mesh_chunk, seg_id=root_id, skeleton=sk_l2)
 

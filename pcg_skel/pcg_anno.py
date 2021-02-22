@@ -131,35 +131,9 @@ def get_level2_synapses(root_id,
     else:
         pre_syn_df = None
 
-    if pre is True:
+    if post is True:
         post_syn_df = _mapped_synapses(
             root_id, client, l2dict, 'post', synapse_table, remove_self=remove_self)
     else:
         post_syn_df = None
     return pre_syn_df, post_syn_df
-
-
-# def _get_level2_synapses(root_id, l2dict, client, synapse_table):
-#     pre_syn_df = client.materialize.query_table(
-#         synapse_table, filter_equal_dict={'pre_pt_root_id': root_id})
-#     pre_syn_df = pre_syn_df.query(
-#         'pre_pt_root_id != post_pt_root_id').reset_index(drop=True)
-
-#     post_syn_df = client.materialize.query_table(
-#         synapse_table, filter_equal_dict={'post_pt_root_id': root_id})
-#     post_syn_df = post_syn_df.query(
-#         'pre_pt_root_id != post_pt_root_id').reset_index(drop=True)
-
-#     pre_lvl2ids = client.chunkedgraph.get_roots(
-#         pre_syn_df['pre_pt_supervoxel_id'].values, stop_level=2, timestamp=client.materialize.get_timestamp())
-#     post_lvl2ids = client.chunkedgraph.get_roots(
-#         post_syn_df['post_pt_supervoxel_id'].values, stop_level=2, timestamp=client.materialize.get_timestamp())
-
-#     pre_syn_df['pre_level2_id'] = pre_lvl2ids
-#     post_syn_df['post_level2_id'] = post_lvl2ids
-
-#     pre_syn_df['pre_mind'] = pre_syn_df['pre_level2_id'].apply(
-#         lambda x: l2dict[x])
-#     post_syn_df['post_mind'] = post_syn_df['post_level2_id'].apply(
-#         lambda x: l2dict[x])
-#     return pre_syn_df, post_syn_df
