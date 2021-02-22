@@ -2,6 +2,25 @@
 
 This project is under active development and, while breaking changes will be avoided where possible, no promises are made until version 1 is released.
 
+## Unreleased
+
+### Added
+
+* `pcg_meshwork` takes the same `save_to_cache` argument as `pcg_skeleton`.
+
+### Changed
+
+* Voxel resolution is always inferred from the mip-0 resolution of the segmentation cloudvolume.
+Note that this means that if the segmentation mip-0 resolution is not the same as the normal working resolution, `root_point_resolution` must be explicitly set.
+
+* The package explicitly uses the authentication token set in the client to instantiate cloudvolume objects, enabling it to work with non-default tokens.
+
+* `pcg_meshwork` now sets the point column for synapses for better integration with meshwork features.
+
+### Fixed
+
+* Fixed bug in `get_level2_synapses` prevented `post=True`, `pre=False` situation from working correctly.
+
 ## [0.0.3] - 2021-02-13
 
 ### Changed
@@ -10,7 +29,6 @@ This project is under active development and, while breaking changes will be avo
 This saves a bit of time on the download, and if the level-2 object has been downsampled out of existence at this mip level, it will rerun at mip-0 where it must exist.
 
 * More aggressive handling of segmentation memory use. Requires cloudvolume renumber mode.
-
 
 ## [0.0.2] - 2021-02-13
 
