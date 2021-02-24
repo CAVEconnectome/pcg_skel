@@ -2,7 +2,7 @@
 
 This project is under active development and, while breaking changes will be avoided where possible, no promises are made until version 1 is released.
 
-## Unreleased
+## [0.0.4] - 2021-02-24
 
 ### Added
 
@@ -20,6 +20,8 @@ Note that this means that if the segmentation mip-0 resolution is not the same a
 ### Fixed
 
 * Fixed bug in `get_level2_synapses` prevented `post=True`, `pre=False` situation from working correctly.
+
+* Improved default parameters in call cases where a CloudVolume instance is initialized.
 
 ## [0.0.3] - 2021-02-13
 
