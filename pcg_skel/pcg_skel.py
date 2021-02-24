@@ -55,7 +55,7 @@ def chunk_index_skeleton(root_id,
                          return_mesh=False,
                          return_l2dict=False,
                          return_mesh_l2dict=False,
-                         root_point_resolution=[4, 4, 40],
+                         root_point_resolution=None,
                          root_point_search_radius=300,
                          n_parallel=1):
     """Generate a basic skeleton with chunked-graph index vertices.
@@ -94,7 +94,10 @@ def chunk_index_skeleton(root_id,
         client = FrameworkClient(datastack_name)
     if cv is None:
         cv = cloudvolume.CloudVolume(client.info.segmentation_source(), parallel=n_parallel,
-                                     use_https=True, progress=False, bounded=False)
+                                     use_https=True, progress=False, bounded=False, fill_missing=True, secrets={'token': client.auth.token})
+
+    if root_point_resolution is None:
+        root_point_resolution = cv.mip_resolution(0)
 
     lvl2_eg = client.chunkedgraph.level2_chunk_graph(root_id)
 
@@ -229,7 +232,7 @@ def pcg_skeleton(root_id,
                  cv=None,
                  refine='all',
                  root_point=None,
-                 root_point_resolution=[4, 4, 40],
+                 root_point_resolution=None,
                  root_point_search_radius=300,
                  collapse_soma=False,
                  collapse_radius=10_000.0,
@@ -317,8 +320,11 @@ def pcg_skeleton(root_id,
         client = FrameworkClient(datastack_name)
 
     if cv is None:
-        cv = cloudvolume.CloudVolume(client.info.segmentation_source(), parallel=n_parallel,
-                                     use_https=True, progress=False, bounded=False)
+        cv = cloudvolume.CloudVolume(client.info.segmentation_source(), parallel=n_parallel, fill_missing=True,
+                                     use_https=True, progress=False, bounded=False, secrets={'token': client.auth.token})
+
+    if root_point_resolution is None:
+        root_point_resolution = cv.mip_resolution(0)
 
     sk_ch, mesh_ch, (l2dict, l2dict_r), (l2dict_mesh, l2dict_mesh_r) = chunk_index_skeleton(root_id,
                                                                                             client=client,
@@ -391,7 +397,7 @@ def pcg_meshwork(root_id,
                  cv=None,
                  refine='all',
                  root_point=None,
-                 root_point_resolution=[4, 4, 40],
+                 root_point_resolution=None,
                  root_point_search_radius=300,
                  collapse_soma=False,
                  collapse_radius=DEFAULT_COLLAPSE_RADIUS,
@@ -402,6 +408,7 @@ def pcg_meshwork(root_id,
                  segmentation_fallback=True,
                  fallback_mip=2,
                  cache=None,
+                 save_to_cache=False,
                  n_parallel=None,
                  ):
     """Generate a meshwork file based on the level 2 graph.
@@ -458,7 +465,10 @@ def pcg_meshwork(root_id,
         client = FrameworkClient(datastack_name)
     if cv is None:
         cv = cloudvolume.CloudVolume(client.info.segmentation_source(), parallel=n_parallel,
-                                     use_https=True, progress=False, bounded=False)
+                                     use_https=True, progress=False, bounded=False, fill_missing=True,
+                                     secrets={'token': client.auth.token})
+    if root_point_resolution is None:
+        root_point_resolution = cv.mip_resolution(0)
 
     sk_l2, mesh_chunk, (l2dict_mesh, l2dict_mesh_r) = pcg_skeleton(root_id,
                                                                    client=client,
@@ -475,7 +485,8 @@ def pcg_meshwork(root_id,
                                                                    return_l2dict_mesh=True,
                                                                    segmentation_fallback=segmentation_fallback,
                                                                    fallback_mip=fallback_mip,
-                                                                   cache=cache)
+                                                                   cache=cache,
+                                                                   save_to_cache=save_to_cache)
 
     nrn = meshwork.Meshwork(mesh_chunk, seg_id=root_id, skeleton=sk_l2)
 
