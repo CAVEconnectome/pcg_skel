@@ -129,6 +129,7 @@ def get_closest_lvl2_chunk(
             client.info.segmentation_source(),
             use_https=True,
             bounded=False,
+            fill_missing=True,
             progress=False,
             secrets={'token': client.auth.token}
         )
@@ -270,7 +271,7 @@ def _localize_l2_id(l2id, l2mesh, cv_path, auth_token, segmentation_fallback, fa
     else:
         if segmentation_fallback:
             cv = cloudvolume.CloudVolume(
-                cv_path, bounded=False, progress=False, use_https=True, mip=0, secrets={'token': auth_token})
+                cv_path, bounded=False, progress=False, fill_missing=True, use_https=True, mip=0, secrets={'token': auth_token})
             l2m = chunk_location_from_segmentation(l2id, cv, mip=fallback_mip)
             del cv
         else:

@@ -94,7 +94,7 @@ def chunk_index_skeleton(root_id,
         client = FrameworkClient(datastack_name)
     if cv is None:
         cv = cloudvolume.CloudVolume(client.info.segmentation_source(), parallel=n_parallel,
-                                     use_https=True, progress=False, bounded=False, secrets={'token': client.auth.token})
+                                     use_https=True, progress=False, bounded=False, fill_missing=True, secrets={'token': client.auth.token})
 
     if root_point_resolution is None:
         root_point_resolution = cv.mip_resolution(0)
@@ -320,7 +320,7 @@ def pcg_skeleton(root_id,
         client = FrameworkClient(datastack_name)
 
     if cv is None:
-        cv = cloudvolume.CloudVolume(client.info.segmentation_source(), parallel=n_parallel,
+        cv = cloudvolume.CloudVolume(client.info.segmentation_source(), parallel=n_parallel, fill_missing=True,
                                      use_https=True, progress=False, bounded=False, secrets={'token': client.auth.token})
 
     if root_point_resolution is None:
@@ -465,7 +465,8 @@ def pcg_meshwork(root_id,
         client = FrameworkClient(datastack_name)
     if cv is None:
         cv = cloudvolume.CloudVolume(client.info.segmentation_source(), parallel=n_parallel,
-                                     use_https=True, progress=False, bounded=False, secrets={'token': client.auth.token})
+                                     use_https=True, progress=False, bounded=False, fill_missing=True,
+                                     secrets={'token': client.auth.token})
     if root_point_resolution is None:
         root_point_resolution = cv.mip_resolution(0)
 
