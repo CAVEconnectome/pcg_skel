@@ -94,7 +94,7 @@ def get_closest_lvl2_chunk(
     root_id,
     client,
     cv=None,
-    voxel_resolution=[4, 4, 40],
+    voxel_resolution=None,
     radius=200,
     return_point=False,
 ):
@@ -129,8 +129,13 @@ def get_closest_lvl2_chunk(
             client.info.segmentation_source(),
             use_https=True,
             bounded=False,
+            fill_missing=True,
             progress=False,
+            secrets={'token': client.auth.token}
         )
+
+    if voxel_resolution is None:
+        voxel_resolution = np.array(cv.mip_resolution(0))
 
     point = point * np.array(voxel_resolution)
     # Get the closest adjacent point for the root id within the radius.
@@ -146,9 +151,9 @@ def get_closest_lvl2_chunk(
     if not bool(np.any(vol > 0)):
         raise ValueError("No point of the root id is near the specified point")
 
-    ctr = offset * point * voxel_resolution
+    ctr = offset * mip_scaling  # Offset is at center of the volume.
     xyz = np.vstack(np.where(vol > 0)).T
-    xyz_nm = xyz * mip_scaling * voxel_resolution
+    xyz_nm = xyz * mip_scaling
 
     ind = np.argmin(np.linalg.norm(xyz_nm - ctr, axis=1))
     closest_pt = vol.bounds.minpt + xyz[ind]
@@ -158,7 +163,7 @@ def get_closest_lvl2_chunk(
     lvl2_id = client.chunkedgraph.get_root_id(closest_sv, level2=True)
 
     if return_point:
-        return lvl2_id, closest_pt * mip_scaling * voxel_resolution
+        return lvl2_id, closest_pt * mip_scaling
     else:
         return lvl2_id
 
@@ -231,10 +236,12 @@ def download_lvl2_locs(l2_ids, cv, segmentation_fallback, fallback_mip=2):
 
     l2means = []
     args = []
+    auth_token = cv.meta.auth_header['Authorization'][len('Bearer '):]
     for l2id in l2_ids:
         args.append((l2id,
                      l2meshes.get(l2id, None),
                      f'graphene://{cv.meta.table_path}',
+                     auth_token,
                      segmentation_fallback,
                      fallback_mip))
 
@@ -252,11 +259,11 @@ def download_lvl2_locs(l2_ids, cv, segmentation_fallback, fallback_mip=2):
 
 
 def _localize_l2_id_multi(args):
-    l2id, l2mesh, cv_path, segmentation_fallback, fallback_mip = args
-    return _localize_l2_id(l2id, l2mesh, cv_path, segmentation_fallback, fallback_mip)
+    l2id, l2mesh, cv_path, auth_token, segmentation_fallback, fallback_mip = args
+    return _localize_l2_id(l2id, l2mesh, cv_path, auth_token, segmentation_fallback, fallback_mip)
 
 
-def _localize_l2_id(l2id, l2mesh, cv_path, segmentation_fallback, fallback_mip):
+def _localize_l2_id(l2id, l2mesh, cv_path, auth_token, segmentation_fallback, fallback_mip):
     if l2mesh is not None:
         l2m_abs = np.mean(l2mesh.vertices, axis=0)
         _, ii = spatial.cKDTree(l2mesh.vertices).query(l2m_abs)
@@ -264,7 +271,7 @@ def _localize_l2_id(l2id, l2mesh, cv_path, segmentation_fallback, fallback_mip):
     else:
         if segmentation_fallback:
             cv = cloudvolume.CloudVolume(
-                cv_path, bounded=False, progress=False, use_https=True, mip=0)
+                cv_path, bounded=False, progress=False, fill_missing=True, use_https=True, mip=0, secrets={'token': auth_token})
             l2m = chunk_location_from_segmentation(l2id, cv, mip=fallback_mip)
             del cv
         else:
@@ -276,6 +283,7 @@ def download_l2meshes(l2ids, cv, n_split=10, sharded=False):
     if cv.parallel > 1:
         splits = np.ceil(len(l2ids)/n_split)
         l2id_groups = np.array_split(l2ids, int(splits))
+
         args = []
         for l2id_group in l2id_groups:
             args.append((l2id_group, cv))

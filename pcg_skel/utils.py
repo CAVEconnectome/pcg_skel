@@ -20,7 +20,7 @@ def chunk_dims(cv):
     return np.squeeze(dims)
 
 
-def nm_to_chunk(xyz_nm, cv, voxel_resolution=[4, 4, 40]):
+def nm_to_chunk(xyz_nm, cv):
     """Map a location in euclidean space to a chunk
 
     Parameters
@@ -37,15 +37,13 @@ def nm_to_chunk(xyz_nm, cv, voxel_resolution=[4, 4, 40]):
     np.array
         Nx3 array of chunk indices
     """
-    mip_scaling = cv.mip_resolution(
-        0) // np.array(voxel_resolution, dtype=int)
-    x_vox = np.atleast_2d(xyz_nm) / (np.array(mip_scaling)
-                                     * np.array(voxel_resolution))
+    voxel_resolution = np.array(cv.mip_resolution(0))
+    x_vox = np.atleast_2d(xyz_nm) / np.array(voxel_resolution)
     offset_vox = np.array(cv.mesh.meta.meta.voxel_offset(0))
     return (x_vox + offset_vox) / np.array(cv.mesh.meta.meta.graph_chunk_size)
 
 
-def chunk_to_nm(xyz_ch, cv, voxel_resolution=[4, 4, 40]):
+def chunk_to_nm(xyz_ch, cv):
     """Map a chunk location to Euclidean space
 
     Parameters
@@ -62,14 +60,9 @@ def chunk_to_nm(xyz_ch, cv, voxel_resolution=[4, 4, 40]):
     np.array
         Nx3 array of spatial points
     """
-    mip_scaling = cv.mip_resolution(
-        0) // np.array(voxel_resolution, dtype=int)
-
     x_vox = np.atleast_2d(xyz_ch) * cv.mesh.meta.meta.graph_chunk_size
     return (
-        (x_vox + np.array(cv.mesh.meta.meta.voxel_offset(0)))
-        * voxel_resolution
-        * mip_scaling
+        (x_vox + np.array(cv.mesh.meta.meta.voxel_offset(0))) * cv.mip_resolution(0)
     )
 
 
