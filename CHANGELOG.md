@@ -2,6 +2,15 @@
 
 This project is under active development and, while breaking changes will be avoided where possible, no promises are made until version 1 is released.
 
+## [0.0.5] - 2021-03-03
+
+### Fixed
+
+* The segmentation fallback method has been made more robust to level 2 chunk ids with very small supervoxels.
+
+* `nan_rounds` set to `None` is more correctly handled and the warning actually checks to see if any nans are left.
+
+
 ## [0.0.4] - 2021-02-24
 
 ### Added
