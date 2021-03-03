@@ -10,7 +10,6 @@ This project is under active development and, while breaking changes will be avo
 
 * `nan_rounds` set to `None` is more correctly handled and the warning actually checks to see if any nans are left.
 
-
 ## [0.0.4] - 2021-02-24
 
 ### Added
