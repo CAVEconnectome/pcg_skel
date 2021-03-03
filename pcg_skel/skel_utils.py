@@ -19,9 +19,11 @@ def propagate_l2dict(sk_ch, l2dict_mesh):
 
 def fix_nan_verts(sk, num_rounds=20):
     """Replace vertices with locations that are nan with mean of neighbor locations"""
+    if num_rounds is None:
+        num_rounds = 0
+
     nr = 0
     while nr < num_rounds:
-
         nanvinds = np.flatnonzero(np.isnan(sk.vertices[:, 0]))
         new_verts = sk.vertices[nanvinds]
 
@@ -45,7 +47,8 @@ def fix_nan_verts(sk, num_rounds=20):
 
         nr += 1
     else:
-        print(f"Could not fix all nans after {num_rounds} rounds")
+        if np.any(np.isnan(sk.vertices)):
+            print(f"Could not fix all nans after {num_rounds} rounds")
     pass
 
 

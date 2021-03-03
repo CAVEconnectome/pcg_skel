@@ -41,23 +41,24 @@ def build_spatial_graph(lvl2_edge_graph, cv):
     eg_arr_rm = fastremap.remap(lvl2_edge_graph, l2dict)
     l2dict_reversed = {ii: l2id for l2id, ii in l2dict.items()}
 
-    x_ch = [np.array(cv.mesh.meta.meta.decode_chunk_position(l))
-            for l in lvl2_ids]
+    x_ch = [np.array(cv.mesh.meta.meta.decode_chunk_position(l)) for l in lvl2_ids]
     return eg_arr_rm, l2dict, l2dict_reversed, x_ch
 
 
-def chunk_index_skeleton(root_id,
-                         client=None,
-                         datastack_name=None,
-                         cv=None,
-                         root_point=None,
-                         invalidation_d=3,
-                         return_mesh=False,
-                         return_l2dict=False,
-                         return_mesh_l2dict=False,
-                         root_point_resolution=None,
-                         root_point_search_radius=300,
-                         n_parallel=1):
+def chunk_index_skeleton(
+    root_id,
+    client=None,
+    datastack_name=None,
+    cv=None,
+    root_point=None,
+    invalidation_d=3,
+    return_mesh=False,
+    return_l2dict=False,
+    return_mesh_l2dict=False,
+    root_point_resolution=None,
+    root_point_search_radius=300,
+    n_parallel=1,
+):
     """Generate a basic skeleton with chunked-graph index vertices.
 
     Parameters
@@ -93,16 +94,22 @@ def chunk_index_skeleton(root_id,
     if client is None:
         client = FrameworkClient(datastack_name)
     if cv is None:
-        cv = cloudvolume.CloudVolume(client.info.segmentation_source(), parallel=n_parallel,
-                                     use_https=True, progress=False, bounded=False, fill_missing=True, secrets={'token': client.auth.token})
+        cv = cloudvolume.CloudVolume(
+            client.info.segmentation_source(),
+            parallel=n_parallel,
+            use_https=True,
+            progress=False,
+            bounded=False,
+            fill_missing=True,
+            secrets={"token": client.auth.token},
+        )
 
     if root_point_resolution is None:
         root_point_resolution = cv.mip_resolution(0)
 
     lvl2_eg = client.chunkedgraph.level2_chunk_graph(root_id)
 
-    eg, l2dict_mesh, l2dict_r_mesh, x_ch = build_spatial_graph(
-        lvl2_eg, cv)
+    eg, l2dict_mesh, l2dict_r_mesh, x_ch = build_spatial_graph(lvl2_eg, cv)
     mesh_chunk = trimesh_io.Mesh(vertices=x_ch, faces=[], link_edges=eg)
 
     if root_point is not None:
@@ -113,15 +120,21 @@ def chunk_index_skeleton(root_id,
             cv=None,
             radius=root_point_search_radius,
             voxel_resolution=root_point_resolution,
-            return_point=True)  # Need to have cv=None because of a cloudvolume inconsistency
+            return_point=True,
+        )  # Need to have cv=None because of a cloudvolume inconsistency
         root_mesh_index = l2dict_mesh[lvl2_root_chid]
     else:
         root_mesh_index = None
 
     sk_ch = skeletonize.skeletonize_mesh(
-        mesh_chunk, invalidation_d=invalidation_d,
-        collapse_soma=False, compute_radius=False, cc_vertex_thresh=0,
-        root_index=root_mesh_index, remove_zero_length_edges=False)
+        mesh_chunk,
+        invalidation_d=invalidation_d,
+        collapse_soma=False,
+        compute_radius=False,
+        cc_vertex_thresh=0,
+        root_index=root_mesh_index,
+        remove_zero_length_edges=False,
+    )
 
     l2dict, l2dict_r = sk_utils.filter_l2dict(sk_ch, l2dict_r_mesh)
 
@@ -142,7 +155,7 @@ def refine_chunk_index_skeleton(
     sk_ch,
     l2dict_reversed,
     cv,
-    refine_inds='all',
+    refine_inds="all",
     scale_chunk_index=True,
     root_location=None,
     nan_rounds=20,
@@ -189,17 +202,19 @@ def refine_chunk_index_skeleton(
     else:
         convert_missing = False
 
-    refine_out = chunk_tools.refine_vertices(sk_ch.vertices,
-                                             l2dict_reversed=l2dict_reversed,
-                                             cv=cv,
-                                             refine_inds=refine_inds,
-                                             scale_chunk_index=scale_chunk_index,
-                                             convert_missing=convert_missing,
-                                             return_missing_ids=return_missing_ids,
-                                             segmentation_fallback=segmentation_fallback,
-                                             fallback_mip=fallback_mip,
-                                             cache=cache,
-                                             save_to_cache=save_to_cache)
+    refine_out = chunk_tools.refine_vertices(
+        sk_ch.vertices,
+        l2dict_reversed=l2dict_reversed,
+        cv=cv,
+        refine_inds=refine_inds,
+        scale_chunk_index=scale_chunk_index,
+        convert_missing=convert_missing,
+        return_missing_ids=return_missing_ids,
+        segmentation_fallback=segmentation_fallback,
+        fallback_mip=fallback_mip,
+        cache=cache,
+        save_to_cache=save_to_cache,
+    )
     if return_missing_ids:
         new_verts, missing_ids = refine_out
     else:
@@ -217,7 +232,7 @@ def refine_chunk_index_skeleton(
         mesh_to_skel_map=sk_ch.mesh_to_skel_map,
     )
 
-    if refine_inds == 'all':
+    if refine_inds == "all":
         sk_utils.fix_nan_verts(l2_sk, num_rounds=nan_rounds)
 
     if return_missing_ids:
@@ -226,27 +241,30 @@ def refine_chunk_index_skeleton(
         return l2_sk
 
 
-def pcg_skeleton(root_id,
-                 client=None,
-                 datastack_name=None,
-                 cv=None,
-                 refine='all',
-                 root_point=None,
-                 root_point_resolution=None,
-                 root_point_search_radius=300,
-                 collapse_soma=False,
-                 collapse_radius=10_000.0,
-                 invalidation_d=3,
-                 return_mesh=False,
-                 return_l2dict=False,
-                 return_l2dict_mesh=False,
-                 return_missing_ids=False,
-                 nan_rounds=20,
-                 segmentation_fallback=True,
-                 fallback_mip=2,
-                 cache=None,
-                 save_to_cache=False,
-                 n_parallel=1):
+def pcg_skeleton(
+    root_id,
+    client=None,
+    datastack_name=None,
+    cv=None,
+    refine="all",
+    root_point=None,
+    root_point_resolution=None,
+    root_point_search_radius=300,
+    collapse_soma=False,
+    collapse_radius=10_000.0,
+    invalidation_d=3,
+    scale_chunk_index=False,
+    return_mesh=False,
+    return_l2dict=False,
+    return_l2dict_mesh=False,
+    return_missing_ids=False,
+    nan_rounds=20,
+    segmentation_fallback=True,
+    fallback_mip=2,
+    cache=None,
+    save_to_cache=False,
+    n_parallel=1,
+):
     """Create a euclidean-space skeleton from the pychunkedgraph
 
     Parameters
@@ -315,72 +333,89 @@ def pcg_skeleton(root_id,
         Mappings between level 2 ids and mesh indices. Only if return_l2dict_mesh is True.
     missing_ids : np.array, optional
         List of level 2 ids with missing mesh fragments. Only if return_missing_ids is True.
-   """
+    """
     if client is None:
         client = FrameworkClient(datastack_name)
 
     if cv is None:
-        cv = cloudvolume.CloudVolume(client.info.segmentation_source(), parallel=n_parallel, fill_missing=True,
-                                     use_https=True, progress=False, bounded=False, secrets={'token': client.auth.token})
+        cv = cloudvolume.CloudVolume(
+            client.info.segmentation_source(),
+            parallel=n_parallel,
+            fill_missing=True,
+            use_https=True,
+            progress=False,
+            bounded=False,
+            secrets={"token": client.auth.token},
+        )
 
     if root_point_resolution is None:
         root_point_resolution = cv.mip_resolution(0)
 
-    sk_ch, mesh_ch, (l2dict, l2dict_r), (l2dict_mesh, l2dict_mesh_r) = chunk_index_skeleton(root_id,
-                                                                                            client=client,
-                                                                                            datastack_name=datastack_name,
-                                                                                            cv=cv,
-                                                                                            root_point=root_point,
-                                                                                            root_point_resolution=root_point_resolution,
-                                                                                            root_point_search_radius=root_point_search_radius,
-                                                                                            invalidation_d=invalidation_d,
-                                                                                            return_mesh=True,
-                                                                                            return_mesh_l2dict=True,
-                                                                                            return_l2dict=True,
-                                                                                            n_parallel=n_parallel)
-    if refine == 'all':
-        refine_inds = 'all'
-    elif refine == 'bp':
+    (
+        sk_ch,
+        mesh_ch,
+        (l2dict, l2dict_r),
+        (l2dict_mesh, l2dict_mesh_r),
+    ) = chunk_index_skeleton(
+        root_id,
+        client=client,
+        datastack_name=datastack_name,
+        cv=cv,
+        root_point=root_point,
+        root_point_resolution=root_point_resolution,
+        root_point_search_radius=root_point_search_radius,
+        invalidation_d=invalidation_d,
+        return_mesh=True,
+        return_mesh_l2dict=True,
+        return_l2dict=True,
+        n_parallel=n_parallel,
+    )
+    if refine == "all":
+        refine_inds = "all"
+    elif refine == "bp":
         refine_inds = sk_ch.branch_points_undirected
-    elif refine == 'ep':
+    elif refine == "ep":
         refine_inds = sk_ch.end_points_undirected
-    elif refine == 'epbp' or refine == 'bpep':
+    elif refine == "epbp" or refine == "bpep":
         refine_inds = np.concatenate(
-            (sk_ch.end_points_undirected, sk_ch.branch_points_undirected))
+            (sk_ch.end_points_undirected, sk_ch.branch_points_undirected)
+        )
     elif refine is None:
         refine_inds = None
     else:
         raise ValueError(
-            '"refine" must be one of "all", "bp", "ep", "epbp"/"bpep", or None')
+            '"refine" must be one of "all", "bp", "ep", "epbp"/"bpep", or None'
+        )
 
     if root_point is not None:
         root_point_euc = root_point * np.array([root_point_resolution])
     else:
         root_point_euc = None
-    sk_l2, missing_ids = refine_chunk_index_skeleton(sk_ch,
-                                                     l2dict_r,
-                                                     cv=cv,
-                                                     refine_inds=refine_inds,
-                                                     scale_chunk_index=True,
-                                                     root_location=root_point_euc,
-                                                     nan_rounds=nan_rounds,
-                                                     return_missing_ids=True,
-                                                     segmentation_fallback=segmentation_fallback,
-                                                     fallback_mip=fallback_mip,
-                                                     cache=cache,
-                                                     save_to_cache=save_to_cache)
+    sk_l2, missing_ids = refine_chunk_index_skeleton(
+        sk_ch,
+        l2dict_r,
+        cv=cv,
+        refine_inds=refine_inds,
+        scale_chunk_index=scale_chunk_index,
+        root_location=root_point_euc,
+        nan_rounds=nan_rounds,
+        return_missing_ids=True,
+        segmentation_fallback=segmentation_fallback,
+        fallback_mip=fallback_mip,
+        cache=cache,
+        save_to_cache=save_to_cache,
+    )
 
     if collapse_soma and root_point is not None:
-        sk_l2 = collapse_pcg_skeleton(sk_l2.vertices[sk_l2.root],
-                                      sk_l2,
-                                      collapse_radius)
+        sk_l2 = collapse_pcg_skeleton(
+            sk_l2.vertices[sk_l2.root], sk_l2, collapse_radius
+        )
 
     output = [sk_l2]
     if return_mesh:
         output.append(mesh_ch)
     if return_l2dict:
-        output.append((sk_utils.propagate_l2dict(
-            sk_l2, l2dict_mesh), l2dict_r))
+        output.append((sk_utils.propagate_l2dict(sk_l2, l2dict_mesh), l2dict_r))
     if return_l2dict_mesh:
         output.append((l2dict_mesh, l2dict_mesh_r))
     if return_missing_ids:
@@ -391,32 +426,33 @@ def pcg_skeleton(root_id,
         return tuple(output)
 
 
-def pcg_meshwork(root_id,
-                 datastack_name=None,
-                 client=None,
-                 cv=None,
-                 refine='all',
-                 root_point=None,
-                 root_point_resolution=None,
-                 root_point_search_radius=300,
-                 collapse_soma=False,
-                 collapse_radius=DEFAULT_COLLAPSE_RADIUS,
-                 synapses=None,
-                 synapse_table=None,
-                 remove_self_synapse=True,
-                 invalidation_d=3,
-                 segmentation_fallback=True,
-                 fallback_mip=2,
-                 cache=None,
-                 save_to_cache=False,
-                 n_parallel=None,
-                 ):
+def pcg_meshwork(
+    root_id,
+    datastack_name=None,
+    client=None,
+    cv=None,
+    refine="all",
+    root_point=None,
+    root_point_resolution=None,
+    root_point_search_radius=300,
+    collapse_soma=False,
+    collapse_radius=DEFAULT_COLLAPSE_RADIUS,
+    synapses=None,
+    synapse_table=None,
+    remove_self_synapse=True,
+    invalidation_d=3,
+    segmentation_fallback=True,
+    fallback_mip=2,
+    cache=None,
+    save_to_cache=False,
+    n_parallel=None,
+):
     """Generate a meshwork file based on the level 2 graph.
 
     Parameters
     ----------
     root_id : int
-        Root id of an object in the pychunkedgraph. 
+        Root id of an object in the pychunkedgraph.
     datastack_name : str or None, optional
         Datastack name to use to initialize a client, if none is provided. By default None.
     client : annotationframeworkclient.FrameworkClientFull or None, optional
@@ -464,61 +500,78 @@ def pcg_meshwork(root_id,
     if client is None:
         client = FrameworkClient(datastack_name)
     if cv is None:
-        cv = cloudvolume.CloudVolume(client.info.segmentation_source(), parallel=n_parallel,
-                                     use_https=True, progress=False, bounded=False, fill_missing=True,
-                                     secrets={'token': client.auth.token})
+        cv = cloudvolume.CloudVolume(
+            client.info.segmentation_source(),
+            parallel=n_parallel,
+            use_https=True,
+            progress=False,
+            bounded=False,
+            fill_missing=True,
+            secrets={"token": client.auth.token},
+        )
     if root_point_resolution is None:
         root_point_resolution = cv.mip_resolution(0)
 
-    sk_l2, mesh_chunk, (l2dict_mesh, l2dict_mesh_r) = pcg_skeleton(root_id,
-                                                                   client=client,
-                                                                   cv=cv,
-                                                                   root_point=root_point,
-                                                                   root_point_resolution=root_point_resolution,
-                                                                   root_point_search_radius=root_point_search_radius,
-                                                                   collapse_soma=collapse_soma,
-                                                                   collapse_radius=collapse_radius,
-                                                                   refine=refine,
-                                                                   invalidation_d=invalidation_d,
-                                                                   n_parallel=n_parallel,
-                                                                   return_mesh=True,
-                                                                   return_l2dict_mesh=True,
-                                                                   segmentation_fallback=segmentation_fallback,
-                                                                   fallback_mip=fallback_mip,
-                                                                   cache=cache,
-                                                                   save_to_cache=save_to_cache)
+    sk_l2, mesh_chunk, (l2dict_mesh, l2dict_mesh_r) = pcg_skeleton(
+        root_id,
+        client=client,
+        cv=cv,
+        root_point=root_point,
+        root_point_resolution=root_point_resolution,
+        root_point_search_radius=root_point_search_radius,
+        collapse_soma=collapse_soma,
+        collapse_radius=collapse_radius,
+        refine=refine,
+        invalidation_d=invalidation_d,
+        n_parallel=n_parallel,
+        return_mesh=True,
+        return_l2dict_mesh=True,
+        segmentation_fallback=segmentation_fallback,
+        fallback_mip=fallback_mip,
+        cache=cache,
+        save_to_cache=save_to_cache,
+    )
 
     nrn = meshwork.Meshwork(mesh_chunk, seg_id=root_id, skeleton=sk_l2)
 
     if synapses is not None and synapse_table is not None:
-        if synapses == 'pre':
+        if synapses == "pre":
             pre, post = True, False
-        elif synapses == 'post':
+        elif synapses == "post":
             pre, post = False, True
-        elif synapses == 'all':
+        elif synapses == "all":
             pre, post = True, True
         else:
-            raise ValueError(
-                'Synapses must be one of "pre", "post", or "all".')
+            raise ValueError('Synapses must be one of "pre", "post", or "all".')
 
-        pre_syn_df, post_syn_df = pcg_anno.get_level2_synapses(root_id,
-                                                               l2dict_mesh,
-                                                               client,
-                                                               synapse_table,
-                                                               remove_self=remove_self_synapse,
-                                                               pre=pre,
-                                                               post=post,
-                                                               )
+        pre_syn_df, post_syn_df = pcg_anno.get_level2_synapses(
+            root_id,
+            l2dict_mesh,
+            client,
+            synapse_table,
+            remove_self=remove_self_synapse,
+            pre=pre,
+            post=post,
+        )
         if pre_syn_df is not None:
             nrn.anno.add_annotations(
-                'pre_syn', pre_syn_df, index_column='pre_pt_mesh_ind', point_column = 'ctr_pt_position')
+                "pre_syn",
+                pre_syn_df,
+                index_column="pre_pt_mesh_ind",
+                point_column="ctr_pt_position",
+            )
         if post_syn_df is not None:
             nrn.anno.add_annotations(
-                'post_syn', post_syn_df, index_column='post_pt_mesh_ind', point_column = 'ctr_pt_position')
+                "post_syn",
+                post_syn_df,
+                index_column="post_pt_mesh_ind",
+                point_column="ctr_pt_position",
+            )
 
-    lvl2_df = pd.DataFrame({'lvl2_id': list(l2dict_mesh.keys()),
-                            'mesh_ind': list(l2dict_mesh.values())})
-    nrn.anno.add_annotations('lvl2_ids', lvl2_df, index_column='mesh_ind')
+    lvl2_df = pd.DataFrame(
+        {"lvl2_id": list(l2dict_mesh.keys()), "mesh_ind": list(l2dict_mesh.values())}
+    )
+    nrn.anno.add_annotations("lvl2_ids", lvl2_df, index_column="mesh_ind")
 
     _adjust_meshwork(nrn, cv)
 
@@ -545,22 +598,34 @@ def collapse_pcg_skeleton(soma_pt, sk, soma_r):
     skeleton
         New skeleton with updated properties
     """
-    soma_verts, _ = skeletonize.soma_via_sphere(
-        soma_pt, sk.vertices, sk.edges, soma_r)
-    min_soma_vert = np.argmin(np.linalg.norm(
-        sk.vertices[soma_verts] - soma_pt, axis=1))
+    soma_verts, _ = skeletonize.soma_via_sphere(soma_pt, sk.vertices, sk.edges, soma_r)
+    min_soma_vert = np.argmin(np.linalg.norm(sk.vertices[soma_verts] - soma_pt, axis=1))
     root_vert = soma_verts[min_soma_vert]
 
-    new_v, new_e, new_skel_map, vert_filter, root_ind = skeletonize.collapse_soma_skeleton(soma_verts[soma_verts != root_vert],
-                                                                                           soma_pt,
-                                                                                           sk.vertices,
-                                                                                           sk.edges,
-                                                                                           sk.mesh_to_skel_map,
-                                                                                           collapse_index=root_vert,
-                                                                                           return_soma_ind=True,
-                                                                                           return_filter=True)
+    (
+        new_v,
+        new_e,
+        new_skel_map,
+        vert_filter,
+        root_ind,
+    ) = skeletonize.collapse_soma_skeleton(
+        soma_verts[soma_verts != root_vert],
+        soma_pt,
+        sk.vertices,
+        sk.edges,
+        sk.mesh_to_skel_map,
+        collapse_index=root_vert,
+        return_soma_ind=True,
+        return_filter=True,
+    )
 
     new_mesh_index = sk.mesh_index[vert_filter]
     new_skeleton = skeleton.Skeleton(
-        new_v, new_e, root=root_ind, mesh_to_skel_map=new_skel_map, mesh_index=new_mesh_index, remove_zero_length_edges=False)
+        new_v,
+        new_e,
+        root=root_ind,
+        mesh_to_skel_map=new_skel_map,
+        mesh_index=new_mesh_index,
+        remove_zero_length_edges=False,
+    )
     return new_skeleton
