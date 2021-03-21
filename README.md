@@ -185,7 +185,7 @@ import pcg_skel
 
 client = FrameworkClient('minnie65_phase3_v1')
 
-oid = 123456789 # Some root id
+oid = 864691135761488438 # Root id
 root_point = [253870, 236989, 20517] # root point in vertex coordinates
 sk_l2 = pcg_skel.pcg_skeleton(oid,
                               client=client,
