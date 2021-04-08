@@ -407,14 +407,17 @@ def chunk_location_from_segmentation(l2id, cv, mip=0):
     bbox = cloudvolume.Bbox(loc_vox[0], loc_vox[0] + cv.graph_chunk_size)
     bbox_mip = cv.bbox_to_mip(bbox, 0, mip)
 
-    sv_vol, _ = cv.download(bbox_mip, segids=(l2id,), mip=mip, renumber=True)
-    sv_vol = sv_vol > 0
-    x, y, z = np.where(sv_vol.squeeze())
+    try:
+        sv_vol, _ = cv.download(bbox_mip, segids=(l2id,), mip=mip, renumber=True)
+        sv_vol = sv_vol > 0
+        x, y, z = np.where(sv_vol.squeeze())
 
-    if len(x) == 0 and mip > 0:
-        # If too small for the requested mip level, jump to the highest mip level
-        del sv_vol
-        return chunk_location_from_segmentation(l2id, cv, mip=0)
+        if len(x) == 0 and mip > 0:
+            # If too small for the requested mip level, jump to the highest mip level
+            del sv_vol
+            return chunk_location_from_segmentation(l2id, cv, mip=0)
+    except:
+        return np.array([np.nan, np.nan, np.nan])
 
     xyz = np.vstack((x, y, z)).T * np.array(sv_vol.resolution)
 
