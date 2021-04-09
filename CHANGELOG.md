@@ -2,6 +2,16 @@
 
 This project is under active development and, while breaking changes will be avoided where possible, no promises are made until version 1 is released.
 
+## [Unreleased]
+
+### Fixed
+
+* Force bbox dimensions to be integers, which can happen with non-integer resolutions in cloudvolume.
+
+* `n_parallel = None` now defaults to `parallel = 1` in cloudvolume, avoiding an error.
+
+* `segmentation_fallback` defaults to False, because this method can be very slow.
+
 ## [0.0.5] - 2021-03-03
 
 ### Fixed
