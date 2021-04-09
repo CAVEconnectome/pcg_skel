@@ -150,8 +150,8 @@ def get_closest_lvl2_chunk(
     # Get the closest adjacent point for the root id within the radius.
     mip_scaling = np.array(cv.mip_resolution(0))
 
-    pt = np.array(point) // mip_scaling
-    offset = radius // mip_scaling
+    pt = np.array(np.array(point) // mip_scaling, np.int32)
+    offset = np.array(radius // mip_scaling, np.int32)
     lx = np.array(pt) - offset
     ux = np.array(pt) + offset
     bbox = cloudvolume.Bbox(lx.astype(int), ux.astype(int))
