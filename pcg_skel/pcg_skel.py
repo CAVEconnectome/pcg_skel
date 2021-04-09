@@ -93,6 +93,8 @@ def chunk_index_skeleton(
     """
     if client is None:
         client = FrameworkClient(datastack_name)
+    if n_parallel is None:
+        n_parallel = 1
     if cv is None:
         cv = cloudvolume.CloudVolume(
             client.info.segmentation_source(),
@@ -335,7 +337,8 @@ def pcg_skeleton(
     """
     if client is None:
         client = FrameworkClient(datastack_name)
-
+    if n_parallel is None:
+        n_parallel = 1
     if cv is None:
         cv = cloudvolume.CloudVolume(
             client.info.segmentation_source(),
@@ -496,8 +499,11 @@ def pcg_meshwork(
     meshparty.meshwork.Meshwork
         Meshwork object with skeleton based on the level 2 graph. See documentation for details.
     """
+
     if client is None:
         client = FrameworkClient(datastack_name)
+    if n_parallel is None:
+        n_parallel = 1
     if cv is None:
         cv = cloudvolume.CloudVolume(
             client.info.segmentation_source(),

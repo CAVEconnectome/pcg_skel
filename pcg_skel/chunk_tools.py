@@ -154,7 +154,7 @@ def get_closest_lvl2_chunk(
     offset = radius // mip_scaling
     lx = np.array(pt) - offset
     ux = np.array(pt) + offset
-    bbox = cloudvolume.Bbox(lx, ux)
+    bbox = cloudvolume.Bbox(lx.astype(int), ux.astype(int))
     vol = cv.download(bbox, segids=[root_id])
     vol = np.squeeze(vol)
     if not bool(np.any(vol > 0)):
