@@ -2,15 +2,21 @@
 
 This project is under active development and, while breaking changes will be avoided where possible, no promises are made until version 1 is released.
 
-## [Unreleased]
+## [0.0.6] - 2021-04-10
+
+### Added
+
+* Added `chunk_index_mesh` function to download a level 2 object graph with chunk index vertices.
+
+### Changed
+
+* `segmentation_fallback` defaults to False, because this method can be very slow.
 
 ### Fixed
 
 * Force bbox dimensions to be integers, which can happen with non-integer resolutions in cloudvolume.
 
 * `n_parallel = None` now defaults to `parallel = 1` in cloudvolume, avoiding an error.
-
-* `segmentation_fallback` defaults to False, because this method can be very slow.
 
 ## [0.0.5] - 2021-03-03
 
