@@ -45,6 +45,61 @@ def build_spatial_graph(lvl2_edge_graph, cv):
     return eg_arr_rm, l2dict, l2dict_reversed, x_ch
 
 
+def chunk_index_mesh(
+    root_id,
+    client=None,
+    datastack_name=None,
+    cv=None,
+    return_l2dict=False,
+):
+    """Download a mesh with chunk index vertices
+
+    Parameters
+    ----------
+    root_id : int
+        Root id to download.
+    client : FrameworkClient, optional
+        Preset FrameworkClient, by default None.
+    datastack_name : str or None, optional
+        Datastack to use to initialize a FrameworkClient, by default None.
+    cv : cloudvolume.CloudVolume or None, optional
+        Cloudvolume instance, by default None.
+    return_l2dict : bool, optional
+        If True, returns both a l2id to vertex dict and the reverse, by default False.
+
+    Returns
+    -------
+    mesh : trimesh_io.Mesh
+        Chunk graph represented as a mesh, with vertices at chunk index locations and edges in the link_edges attribute.
+    l2dict_mesh : dict
+        l2 id to mesh vertex index dictionary. Only returned if return_l2dict is True.
+    l2dict_r_mesh : dict
+        Mesh vertex index to l2 id dictionary. Only returned if return_l2dict is True.
+    """
+    if client is None:
+        client = FrameworkClient(datastack_name)
+    if cv is None:
+        cv = cloudvolume.CloudVolume(
+            client.info.segmentation_source(),
+            use_https=True,
+            progress=False,
+            bounded=False,
+            fill_missing=True,
+            secrets={"token": client.auth.token},
+        )
+    lvl2_eg = client.chunkedgraph.level2_chunk_graph(root_id)
+    eg, l2dict_mesh, l2dict_r_mesh, x_ch = build_spatial_graph(lvl2_eg, cv)
+    mesh_chunk = trimesh_io.Mesh(
+        vertices=x_ch,
+        faces=[[0, 0, 0]],  # Some functions fail if no faces are set.
+        link_edges=eg,
+    )
+    if return_l2dict:
+        return mesh_chunk, l2dict_mesh, l2dict_r_mesh
+    else:
+        return mesh_chunk
+
+
 def chunk_index_skeleton(
     root_id,
     client=None,
@@ -109,10 +164,14 @@ def chunk_index_skeleton(
     if root_point_resolution is None:
         root_point_resolution = cv.mip_resolution(0)
 
-    lvl2_eg = client.chunkedgraph.level2_chunk_graph(root_id)
+    # lvl2_eg = client.chunkedgraph.level2_chunk_graph(root_id)
 
-    eg, l2dict_mesh, l2dict_r_mesh, x_ch = build_spatial_graph(lvl2_eg, cv)
-    mesh_chunk = trimesh_io.Mesh(vertices=x_ch, faces=[], link_edges=eg)
+    # eg, l2dict_mesh, l2dict_r_mesh, x_ch = build_spatial_graph(lvl2_eg, cv)
+    # mesh_chunk = trimesh_io.Mesh(vertices=x_ch, faces=[], link_edges=eg)
+
+    mesh_chunk, l2dict_mesh, l2dict_r_mesh = chunk_index_mesh(
+        root_id, client=client, cv=cv, return_l2dict=True
+    )
 
     if root_point is not None:
         lvl2_root_chid, lvl2_root_loc = chunk_tools.get_closest_lvl2_chunk(
