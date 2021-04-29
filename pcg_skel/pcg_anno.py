@@ -2,13 +2,15 @@ import numpy as np
 from annotationframeworkclient import frameworkclient
 
 
-def annotation_to_level2_id(df,
-                            client,
-                            bound_pt_columns='pt',
-                            l2_suffix='_level2_id',
-                            sv_columns=None,
-                            l2_columns=None,
-                            inplace=False):
+def annotation_to_level2_id(
+    df,
+    client,
+    bound_pt_columns="pt",
+    l2_suffix="_level2_id",
+    sv_columns=None,
+    l2_columns=None,
+    inplace=False,
+):
     """Add or more level2_id columns to a dataframe based on supervoxel columns
 
     Parameters
@@ -37,11 +39,11 @@ def annotation_to_level2_id(df,
     if isinstance(bound_pt_columns, str):
         bound_pt_columns = [bound_pt_columns]
     if sv_columns is None:
-        sv_columns = [f'{c}_supervoxel_id' for c in bound_pt_columns]
+        sv_columns = [f"{c}_supervoxel_id" for c in bound_pt_columns]
         if l2_columns is None:
-            l2_columns = [f'{c}{l2_suffix}' for c in bound_pt_columns]
+            l2_columns = [f"{c}{l2_suffix}" for c in bound_pt_columns]
     elif l2_columns is None:
-        l2_columns = [f'{c}{l2_suffix}' for c in sv_columns]
+        l2_columns = [f"{c}{l2_suffix}" for c in sv_columns]
 
     if isinstance(client, frameworkclient.FrameworkClientFull):
         pcg_client = client.chunkedgraph
@@ -52,19 +54,20 @@ def annotation_to_level2_id(df,
         df = df.copy()
 
     for col, l2_col in zip(sv_columns, l2_columns):
-        level2_ids = pcg_client.get_roots(df[col].values,
-                                          stop_level=2,
-                                          timestamp=client.materialize.get_timestamp()
-                                          )
+        level2_ids = pcg_client.get_roots(
+            df[col].values, stop_layer=2, timestamp=client.materialize.get_timestamp()
+        )
         df[l2_col] = level2_ids
     return df
 
 
-def annotation_to_mesh_index(df,
-                             l2dict,
-                             level2_id_col='pt_level2_id',
-                             mesh_index_col='pt_mesh_ind',
-                             inplace=False):
+def annotation_to_mesh_index(
+    df,
+    l2dict,
+    level2_id_col="pt_level2_id",
+    mesh_index_col="pt_mesh_ind",
+    inplace=False,
+):
     """Map level2 ids to mesh indices.
 
     Parameters
@@ -99,41 +102,41 @@ def annotation_to_mesh_index(df,
 
 def _mapped_synapses(root_id, client, l2dict, side, synapse_table, remove_self):
     syn_df = client.materialize.query_table(
-        synapse_table, filter_equal_dict={f'{side}_pt_root_id': root_id}
+        synapse_table, filter_equal_dict={f"{side}_pt_root_id": root_id}
     )
 
     if remove_self:
-        syn_df = syn_df.query(
-            'pre_pt_root_id != post_pt_root_id').reset_index(drop=True)
-    syn_df = annotation_to_level2_id(syn_df,
-                                     client,
-                                     bound_pt_columns=f'{side}_pt',
-                                     inplace=True)
-    syn_df = annotation_to_mesh_index(syn_df,
-                                      l2dict,
-                                      level2_id_col=f'{side}_pt_level2_id',
-                                      mesh_index_col=f'{side}_pt_mesh_ind',
-                                      inplace=True)
+        syn_df = syn_df.query("pre_pt_root_id != post_pt_root_id").reset_index(
+            drop=True
+        )
+    syn_df = annotation_to_level2_id(
+        syn_df, client, bound_pt_columns=f"{side}_pt", inplace=True
+    )
+    syn_df = annotation_to_mesh_index(
+        syn_df,
+        l2dict,
+        level2_id_col=f"{side}_pt_level2_id",
+        mesh_index_col=f"{side}_pt_mesh_ind",
+        inplace=True,
+    )
     return syn_df
 
 
-def get_level2_synapses(root_id,
-                        l2dict,
-                        client,
-                        synapse_table,
-                        remove_self=True,
-                        pre=True,
-                        post=True):
+def get_level2_synapses(
+    root_id, l2dict, client, synapse_table, remove_self=True, pre=True, post=True
+):
 
     if pre is True:
         pre_syn_df = _mapped_synapses(
-            root_id, client, l2dict, 'pre', synapse_table, remove_self=remove_self)
+            root_id, client, l2dict, "pre", synapse_table, remove_self=remove_self
+        )
     else:
         pre_syn_df = None
 
     if post is True:
         post_syn_df = _mapped_synapses(
-            root_id, client, l2dict, 'post', synapse_table, remove_self=remove_self)
+            root_id, client, l2dict, "post", synapse_table, remove_self=remove_self
+        )
     else:
         post_syn_df = None
     return pre_syn_df, post_syn_df
