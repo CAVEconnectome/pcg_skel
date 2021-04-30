@@ -2,6 +2,12 @@
 
 This project is under active development and, while breaking changes will be avoided where possible, no promises are made until version 1 is released.
 
+## [0.0.7] - 2021-04-29
+
+### Fixed
+
+* Small behind the scenes fix to accomidate changes in AnnotationFrameworkClient API.
+
 ## [0.0.6] - 2021-04-10
 
 ### Added
