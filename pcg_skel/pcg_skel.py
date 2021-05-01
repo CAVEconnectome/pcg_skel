@@ -501,6 +501,7 @@ def pcg_meshwork(
     synapses=None,
     synapse_table=None,
     remove_self_synapse=True,
+    live_query=False,
     invalidation_d=3,
     segmentation_fallback=False,
     fallback_mip=2,
@@ -616,6 +617,7 @@ def pcg_meshwork(
             remove_self=remove_self_synapse,
             pre=pre,
             post=post,
+            live_query=live_query,
         )
         if pre_syn_df is not None:
             nrn.anno.add_annotations(

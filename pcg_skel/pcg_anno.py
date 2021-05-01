@@ -100,10 +100,17 @@ def annotation_to_mesh_index(
     return df
 
 
-def _mapped_synapses(root_id, client, l2dict, side, synapse_table, remove_self):
-    syn_df = client.materialize.query_table(
-        synapse_table, filter_equal_dict={f"{side}_pt_root_id": root_id}
-    )
+def _mapped_synapses(
+    root_id, client, l2dict, side, synapse_table, remove_self, live_query
+):
+    if live_query:
+        syn_df = client.materialize.live_query(
+            synapse_table, filter_equal_dict={f"{side}_pt_root_id": root_id}
+        )
+    else:
+        syn_df = client.materialize.query_table(
+            synapse_table, filter_equal_dict={f"{side}_pt_root_id": root_id}
+        )
 
     if remove_self:
         syn_df = syn_df.query("pre_pt_root_id != post_pt_root_id").reset_index(
@@ -123,20 +130,40 @@ def _mapped_synapses(root_id, client, l2dict, side, synapse_table, remove_self):
 
 
 def get_level2_synapses(
-    root_id, l2dict, client, synapse_table, remove_self=True, pre=True, post=True
+    root_id,
+    l2dict,
+    client,
+    synapse_table,
+    remove_self=True,
+    pre=True,
+    post=True,
+    live_query=False,
 ):
 
     if pre is True:
         pre_syn_df = _mapped_synapses(
-            root_id, client, l2dict, "pre", synapse_table, remove_self=remove_self
+            root_id,
+            client,
+            l2dict,
+            "pre",
+            synapse_table,
+            remove_self=remove_self,
+            live_query=live_query,
         )
     else:
         pre_syn_df = None
 
     if post is True:
         post_syn_df = _mapped_synapses(
-            root_id, client, l2dict, "post", synapse_table, remove_self=remove_self
+            root_id,
+            client,
+            l2dict,
+            "post",
+            synapse_table,
+            remove_self=remove_self,
+            live_query=live_query,
         )
     else:
         post_syn_df = None
+
     return pre_syn_df, post_syn_df
