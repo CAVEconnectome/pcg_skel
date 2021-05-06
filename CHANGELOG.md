@@ -2,6 +2,13 @@
 
 This project is under active development and, while breaking changes will be avoided where possible, no promises are made until version 1 is released.
 
+
+## [0.0.9] - 2021-05-06
+
+### Added
+
+* Get id under point.
+
 ## [0.0.8] - 2021-05-05
 
 ### Added
