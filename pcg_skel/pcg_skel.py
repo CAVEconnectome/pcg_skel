@@ -345,6 +345,7 @@ def pcg_skeleton(
         * 'bp' refines branch points only
         * 'bpep' or 'epbp' refines both branch and end points.
         * None refines no points.
+        * 'chunk' Keeps things in chunk index space.
     root_point : array-like or None, optional
         3 element xyz location for the location to set the root in units set by root_point_resolution,
         by default None. If None, a distal tip is selected.
@@ -441,17 +442,20 @@ def pcg_skeleton(
         refine_inds = np.concatenate(
             (sk_ch.end_points_undirected, sk_ch.branch_points_undirected)
         )
+    elif refine == "chunk":
+        refine_inds = None
     elif refine is None:
         refine_inds = None
     else:
         raise ValueError(
-            '"refine" must be one of "all", "bp", "ep", "epbp"/"bpep", or None'
+            '"refine" must be one of "all", "bp", "ep", "epbp"/"bpep", "chunk", or None'
         )
 
     if root_point is not None:
         root_point_euc = root_point * np.array([root_point_resolution])
     else:
         root_point_euc = None
+
     sk_l2, missing_ids = refine_chunk_index_skeleton(
         sk_ch,
         l2dict_r,
@@ -471,6 +475,9 @@ def pcg_skeleton(
         sk_l2 = collapse_pcg_skeleton(
             sk_l2.vertices[sk_l2.root], sk_l2, collapse_radius
         )
+
+    if refine == "chunk":
+        sk_l2._rooted._vertices = utils.nm_to_chunk(sk_l2.vertices, cv)
 
     output = [sk_l2]
     if return_mesh:
@@ -501,6 +508,8 @@ def pcg_meshwork(
     synapses=None,
     synapse_table=None,
     remove_self_synapse=True,
+    live_query=False,
+    timestamp=None,
     invalidation_d=3,
     segmentation_fallback=False,
     fallback_mip=2,
@@ -527,7 +536,8 @@ def pcg_meshwork(
         * 'ep' refines end points only
         * 'bp' refines branch points only
         * 'bpep' or 'epbp' refines both branch and end points.
-        * None refines no points.
+        * 'chunk' keeps vertices in chunk index space.
+        * None refines no points but maps them to the center of the chunk in euclidean space.
     root_point : array-like or None, optional
         3 element xyz location for the location to set the root in units set by root_point_resolution,
         by default None. If None, a distal tip is selected.
@@ -616,6 +626,8 @@ def pcg_meshwork(
             remove_self=remove_self_synapse,
             pre=pre,
             post=post,
+            live_query=live_query,
+            timestamp=timestamp,
         )
         if pre_syn_df is not None:
             nrn.anno.add_annotations(
@@ -637,7 +649,8 @@ def pcg_meshwork(
     )
     nrn.anno.add_annotations("lvl2_ids", lvl2_df, index_column="mesh_ind")
 
-    _adjust_meshwork(nrn, cv)
+    if refine != "chunk":
+        _adjust_meshwork(nrn, cv)
 
     return nrn
 

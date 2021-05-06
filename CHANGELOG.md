@@ -2,6 +2,18 @@
 
 This project is under active development and, while breaking changes will be avoided where possible, no promises are made until version 1 is released.
 
+## [0.0.8] - 2021-05-05
+
+### Added
+
+* Synapse querying for meshworks can use the live query option.
+
+* Setting `refine="chunk"` in skeleton or mesh creation returns vertices in chunk indices, but only after any potential soma collapse in euclidean coordinates.
+
+### Fixed
+
+* Utility function to convert nm to chunk index had plus that should have been a minus.
+
 ## [0.0.7] - 2021-04-29
 
 ### Fixed

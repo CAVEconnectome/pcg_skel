@@ -28,7 +28,7 @@ def nm_to_chunk(xyz_nm, cv):
     xyz_nm : array-like
         Nx3 array of spatial points
     cv : cloudvolume.CloudVolume
-        CloudVolume object associated with the chunked space 
+        CloudVolume object associated with the chunked space
     voxel_resolution : list, optional
         Voxel resolution, by default [4, 4, 40]
 
@@ -40,7 +40,7 @@ def nm_to_chunk(xyz_nm, cv):
     voxel_resolution = np.array(cv.mip_resolution(0))
     x_vox = np.atleast_2d(xyz_nm) / np.array(voxel_resolution)
     offset_vox = np.array(cv.mesh.meta.meta.voxel_offset(0))
-    return (x_vox + offset_vox) / np.array(cv.mesh.meta.meta.graph_chunk_size)
+    return (x_vox - offset_vox) / np.array(cv.mesh.meta.meta.graph_chunk_size)
 
 
 def chunk_to_nm(xyz_ch, cv):
@@ -51,7 +51,7 @@ def chunk_to_nm(xyz_ch, cv):
     xyz_ch : array-like
         Nx3 array of chunk indices
     cv : cloudvolume.CloudVolume
-        CloudVolume object associated with the chunked space 
+        CloudVolume object associated with the chunked space
     voxel_resolution : list, optional
         Voxel resolution, by default [4, 4, 40]
 
@@ -61,9 +61,7 @@ def chunk_to_nm(xyz_ch, cv):
         Nx3 array of spatial points
     """
     x_vox = np.atleast_2d(xyz_ch) * cv.mesh.meta.meta.graph_chunk_size
-    return (
-        (x_vox + np.array(cv.mesh.meta.meta.voxel_offset(0))) * cv.mip_resolution(0)
-    )
+    return (x_vox + np.array(cv.mesh.meta.meta.voxel_offset(0))) * cv.mip_resolution(0)
 
 
 def _tmat(xyz):
@@ -109,5 +107,5 @@ def chunk_mesh(xyz_ch, cv):
     dim = chunk_dims(cv)
 
     boxes = [chunk_box(xyz, dim) for xyz in verts_ch_nm]
-    boxes_all = reduce(lambda a, b: a+b, boxes)
+    boxes_all = reduce(lambda a, b: a + b, boxes)
     return boxes_all
