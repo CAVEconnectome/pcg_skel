@@ -98,6 +98,22 @@ def refine_vertices(
         return vertices
 
 
+def get_root_id_from_point(point, voxel_resolution, client):
+    cv = cloudvolume.CloudVolume(
+        client.info.segmentation_source(),
+        use_https=True,
+        bounded=False,
+        fill_missing=True,
+        progress=False,
+        secrets={"token": client.auth.token},
+    )
+    return int(
+        cv.download_point(
+            point, size=1, coord_resolution=voxel_resolution, agglomerate=True
+        )
+    )
+
+
 def get_closest_lvl2_chunk(
     point,
     root_id,
