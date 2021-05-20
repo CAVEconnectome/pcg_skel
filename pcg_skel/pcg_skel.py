@@ -479,6 +479,17 @@ def pcg_skeleton(
     if refine == "chunk":
         sk_l2._rooted._vertices = utils.nm_to_chunk(sk_l2.vertices, cv)
 
+    keys_list = ['root_id', 'refine', 'root_point', 'root_point_resolution','root_point_search_radius',
+    'collapse_soma', 'collapse_radius', 'invalidation_d','nan_rounds', 'segmentation_fallback',
+    'fallback_mip']
+
+    values_list = [root_id, refine, root_point, root_point_resolution,root_point_search_radius,
+    collapse_soma, collapse_radius, invalidation_d,nan_rounds, segmentation_fallback,
+    fallback_mip]
+    
+    sk_l2._store_parameters(keys_list, values_list)
+    sk_l2.set_seg_id(root_id)
+
     output = [sk_l2]
     if return_mesh:
         output.append(mesh_ch)
