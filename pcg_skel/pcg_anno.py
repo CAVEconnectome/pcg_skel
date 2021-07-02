@@ -1,5 +1,5 @@
 import datetime
-from annotationframeworkclient import frameworkclient
+from caveclient.frameworkclient import CAVEclientFull
 
 
 def annotation_to_level2_id(
@@ -17,7 +17,7 @@ def annotation_to_level2_id(
     ----------
     df : pandas.DataFrame
         DataFrame with one or more supervoxel columns
-    client : FrameworkClient or ChunkedgraphClient
+    client : CAVEclient or ChunkedgraphClient
         Client for interacting with the chunkedgraph
     bound_pt_columns : str or list-like, optional
         List of bound spatial point names, prefix only. E.g. 'pt' for an annotation with
@@ -45,7 +45,7 @@ def annotation_to_level2_id(
     elif l2_columns is None:
         l2_columns = [f"{c}{l2_suffix}" for c in sv_columns]
 
-    if isinstance(client, frameworkclient.FrameworkClientFull):
+    if isinstance(client, CAVEclientFull):
         pcg_client = client.chunkedgraph
     else:
         pcg_client = client
