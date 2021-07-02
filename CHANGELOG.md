@@ -1,8 +1,11 @@
 # Changelog
 
-This project is under active development and, while breaking changes will be avoided where possible, no promises are made until version 1 is released.
+This project attempts to use semantic versioning whereever possible.
+## [1.0.0] - 2021-05-06
 
+### Changed
 
+* PCGSkel now requires the use of `caveclient` instead of `annotationframeworkclient` as part of a general update to our suite of tools. Please install it via `pip install caveclient` and update your scripts accordingly, using `caveclient.CAVEclient` instead of `annotationframeworkclient.FrameworkClient`. The old client will no longer work with getting synapses.
 ## [0.0.9] - 2021-05-06
 
 ### Added
