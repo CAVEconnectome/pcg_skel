@@ -1,5 +1,14 @@
 import datetime
 from caveclient.frameworkclient import CAVEclientFull
+import warnings
+
+try:
+    from annotationframeworkclient.frameworkclient import FrameworkClientFull
+
+    check_afc = True
+except:
+    FrameworkClientFull = type(None)
+    check_afc = False
 
 
 def annotation_to_level2_id(
@@ -46,6 +55,13 @@ def annotation_to_level2_id(
         l2_columns = [f"{c}{l2_suffix}" for c in sv_columns]
 
     if isinstance(client, CAVEclientFull):
+        pcg_client = client.chunkedgraph
+    elif check_afc and isinstance(client, FrameworkClientFull):
+        warnings.warn(
+            DeprecationWarning(
+                "annotationframeworkclient is depricated. Please switch to using caveclient."
+            )
+        )
         pcg_client = client.chunkedgraph
     else:
         pcg_client = client
