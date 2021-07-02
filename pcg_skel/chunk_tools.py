@@ -131,8 +131,8 @@ def get_closest_lvl2_chunk(
         Point in voxel space.
     root_id : int
         Root id of the object
-    client : FrameworkClient
-        Framework client to access data
+    client : CAVEclient
+        CAVE client to access data
     cv : cloudvolume.CloudVolume or None, optional
         Cloudvolume associated with the dataset. One is created if None.
     voxel_resolution : list, optional

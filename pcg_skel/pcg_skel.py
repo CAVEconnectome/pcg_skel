@@ -1,8 +1,10 @@
+from typing import Iterable
 import cloudvolume
 import fastremap
 import numpy as np
 import pandas as pd
-from annotationframeworkclient import FrameworkClient
+from caveclient import CAVEclient
+
 from meshparty import skeleton, skeletonize, trimesh_io, meshwork
 
 from . import chunk_tools
@@ -12,6 +14,8 @@ from . import pcg_anno
 
 DEFAULT_VOXEL_RESOLUTION = [4, 4, 40]
 DEFAULT_COLLAPSE_RADIUS = 7500.0
+
+skeleton_type = "pcg_skel"
 
 
 def build_spatial_graph(lvl2_edge_graph, cv):
@@ -58,10 +62,10 @@ def chunk_index_mesh(
     ----------
     root_id : int
         Root id to download.
-    client : FrameworkClient, optional
-        Preset FrameworkClient, by default None.
+    client : CAVEclient, optional
+        Preset CAVEclient, by default None.
     datastack_name : str or None, optional
-        Datastack to use to initialize a FrameworkClient, by default None.
+        Datastack to use to initialize a CAVEclient, by default None.
     cv : cloudvolume.CloudVolume or None, optional
         Cloudvolume instance, by default None.
     return_l2dict : bool, optional
@@ -77,7 +81,7 @@ def chunk_index_mesh(
         Mesh vertex index to l2 id dictionary. Only returned if return_l2dict is True.
     """
     if client is None:
-        client = FrameworkClient(datastack_name)
+        client = CAVEclient(datastack_name)
     if cv is None:
         cv = cloudvolume.CloudVolume(
             client.info.segmentation_source(),
@@ -120,10 +124,10 @@ def chunk_index_skeleton(
     ----------
     root_id : np.uint64
         Neuron root id
-    client : annotationframeworkclient.FrameworkClient, optional
-        FrameworkClient for a datastack, by default None. If None, you must specify a datastack name.
+    client : caveclient.CAVEclient, optional
+        CAVEclient for a datastack, by default None. If None, you must specify a datastack name.
     datastack_name : str, optional
-        Datastack name to create a FrameworkClient, by default None. Only used if client is None.
+        Datastack name to create a CAVEclient, by default None. Only used if client is None.
     cv : cloudvolume.CloudVolume, optional
         CloudVolume associated with the object, by default None. If None, one is created based on the client info.
     root_point : array, optional
@@ -147,7 +151,7 @@ def chunk_index_skeleton(
         Level 2 id to vertex map, only if return_l2dict is True.
     """
     if client is None:
-        client = FrameworkClient(datastack_name)
+        client = CAVEclient(datastack_name)
     if n_parallel is None:
         n_parallel = 1
     if cv is None:
@@ -187,6 +191,7 @@ def chunk_index_skeleton(
     else:
         root_mesh_index = None
 
+    metameta = {"space": "chunk", "datastack": client.datastack_name}
     sk_ch = skeletonize.skeletonize_mesh(
         mesh_chunk,
         invalidation_d=invalidation_d,
@@ -195,6 +200,11 @@ def chunk_index_skeleton(
         cc_vertex_thresh=0,
         root_index=root_mesh_index,
         remove_zero_length_edges=False,
+        meta={
+            "root_id": root_id,
+            "skeleton_type": skeleton_type,
+            "meta": metameta,
+        },
     )
 
     l2dict, l2dict_r = sk_utils.filter_l2dict(sk_ch, l2dict_r_mesh)
@@ -291,7 +301,15 @@ def refine_chunk_index_skeleton(
         remove_zero_length_edges=False,
         mesh_index=sk_ch.mesh_index,
         mesh_to_skel_map=sk_ch.mesh_to_skel_map,
+        meta=sk_ch.meta,
     )
+    metameta = {
+        "space": "euclidean",
+    }
+    try:
+        l2_sk.meta.update_metameta(metameta)
+    except:
+        pass
 
     if refine_inds == "all":
         sk_utils.fix_nan_verts(l2_sk, num_rounds=nan_rounds)
@@ -331,10 +349,10 @@ def pcg_skeleton(
     ----------
     root_id : uint64
         Root id of the neuron to skeletonize
-    client : annotationframeworkclient.FrameworkClientFull or None, optional
-        Pre-specified framework client for the pcg. If this is not set, datastack_name must be provided. By default None
+    client : caveclient.CAVEclientFull or None, optional
+        Pre-specified cave client for the pcg. If this is not set, datastack_name must be provided. By default None
     datastack_name : str or None, optional
-        If no client is specified, a FrameworkClient is created with this datastack name, by default None
+        If no client is specified, a CAVEclient is created with this datastack name, by default None
     cv : cloudvolume.CloudVolume or None, optional
         Prespecified cloudvolume instance. If None, uses the client info to make one, by default None
     refine : 'all', 'ep', 'bp', 'epbp', 'bpep', or None, optional
@@ -396,7 +414,7 @@ def pcg_skeleton(
         List of level 2 ids with missing mesh fragments. Only if return_missing_ids is True.
     """
     if client is None:
-        client = FrameworkClient(datastack_name)
+        client = CAVEclient(datastack_name)
     if n_parallel is None:
         n_parallel = 1
     if cv is None:
@@ -471,6 +489,22 @@ def pcg_skeleton(
         save_to_cache=save_to_cache,
     )
 
+    if refine == "chunk" or refine is None:
+        refinement_method = None
+    elif segmentation_fallback:
+        refinement_method = "mesh_average_with_seg_fallback"
+    else:
+        refinement_method = "mesh_average"
+    metameta = {
+        "refinement": refine,
+        "refinement_method": refinement_method,
+        "nan_rounds": nan_rounds,
+    }
+    try:
+        sk_l2.meta.update_metameta(metameta)
+    except:
+        pass
+
     if collapse_soma and root_point is not None:
         sk_l2 = collapse_pcg_skeleton(
             sk_l2.vertices[sk_l2.root], sk_l2, collapse_radius
@@ -478,6 +512,10 @@ def pcg_skeleton(
 
     if refine == "chunk":
         sk_l2._rooted._vertices = utils.nm_to_chunk(sk_l2.vertices, cv)
+        try:
+            sk_l2.meta.update_metameta({"space": "chunk"})
+        except:
+            pass
 
     output = [sk_l2]
     if return_mesh:
@@ -525,8 +563,8 @@ def pcg_meshwork(
         Root id of an object in the pychunkedgraph.
     datastack_name : str or None, optional
         Datastack name to use to initialize a client, if none is provided. By default None.
-    client : annotationframeworkclient.FrameworkClientFull or None, optional
-        Initialized annotationframeworkclient. If None is given, will use the datastack_name to create one. By default None
+    client : caveclient.CAVEclientFull or None, optional
+        Initialized CAVE client. If None is given, will use the datastack_name to create one. By default None
     cv : cloudvolume.CloudVolume or None, optional
         Initialized cloudvolume. If none is given, the client info will be used to create one. By default None
     refine : 'all', 'ep', 'bp', 'epbp'/'bpep', or None, optional
@@ -570,7 +608,7 @@ def pcg_meshwork(
     """
 
     if client is None:
-        client = FrameworkClient(datastack_name)
+        client = CAVEclient(datastack_name)
     if n_parallel is None:
         n_parallel = 1
     if cv is None:
@@ -704,5 +742,14 @@ def collapse_pcg_skeleton(soma_pt, sk, soma_r):
         mesh_to_skel_map=new_skel_map,
         mesh_index=new_mesh_index,
         remove_zero_length_edges=False,
+        meta=sk.meta,
     )
+
+    new_skeleton.meta.soma_pt_x = soma_pt[0]
+    new_skeleton.meta.soma_pt_y = soma_pt[1]
+    new_skeleton.meta.soma_pt_z = soma_pt[2]
+    new_skeleton.meta.soma_radius = soma_r
+    new_skeleton.meta.collapse_soma = True
+    new_skeleton.meta.collapse_function = "sphere"
+
     return new_skeleton

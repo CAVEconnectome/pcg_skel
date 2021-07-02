@@ -2,8 +2,8 @@ numpy
 scipy
 pandas
 trimesh
-meshparty>=1.10.0
-annotationframeworkclient>=2.11.1
+meshparty>=1.12.0
+caveclient
 fastremap
 cloud-volume>=3.6.0
 sqlitedict

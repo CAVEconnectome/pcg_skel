@@ -1,7 +1,16 @@
 # Changelog
 
-This project is under active development and, while breaking changes will be avoided where possible, no promises are made until version 1 is released.
+This project attempts to use semantic versioning whereever possible.
 
+## [1.0.0] - 2021-07-02
+
+### Added
+
+* Support for metadata and meta-metadata parameters in meshparty. Now the choices made about refining a skeleton and skeletonizing a neuron will be stored in the final skeleton, enabling better control of data provenance.
+
+### Changed
+
+* PCGSkel now requires the use of `caveclient` instead of `annotationframeworkclient` as part of a general update to our suite of tools. Please install it via `pip install caveclient` and update your scripts accordingly, using `caveclient.CAVEclient` instead of `annotationframeworkclient.FrameworkClient`. The old client is now depricated, although no further work will go into keeping it functional.
 
 ## [0.0.9] - 2021-05-06
 

@@ -51,7 +51,7 @@ def chunk_index_skeleton(root_id,
 
 #### Notes
 
-* A `FrameworkClient` or `datastack_name` must be provided, and a cloudvolume object is suggested for performance reasons, especially if running in bulk.
+* A `CAVEclient` or `datastack_name` must be provided, and a cloudvolume object is suggested for performance reasons, especially if running in bulk.
 
 * If `root_point` is set, the function looks within `root_point_search_radius` for the closest point in the root_id segmentation and sets the associated level 2 ID as the root vertex. `root_point_search_radius` is in nanometers. `root_point` is in units of `root_point_resolution`, such that root_point * root_point_resolution should be correct in Euclidean space.
 
@@ -180,10 +180,10 @@ By default, synapses whose pre- and post-synaptic ids are both the same root id 
 A minimal example to get the skeleton of an arbitrary neuron with root id `864691135761488438` and soma at the voxel-space location `253870, 236989, 20517` in the Minnie dataset:
 
 ```python
-from annotationframeworkclient import FrameworkClient
+from caveclient import CAVEclient
 import pcg_skel
 
-client = FrameworkClient('minnie65_phase3_v1')
+client = CAVEclient('minnie65_phase3_v1')
 
 oid = 864691135761488438 # Root id
 root_point = [253870, 236989, 20517] # root point in vertex coordinates
