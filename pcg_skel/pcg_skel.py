@@ -235,6 +235,7 @@ def refine_chunk_index_skeleton(
     fallback_mip=2,
     cache=None,
     save_to_cache=False,
+    client=None,
 ):
     """Refine skeletons in chunk index space to Euclidean space.
 
@@ -285,6 +286,7 @@ def refine_chunk_index_skeleton(
         fallback_mip=fallback_mip,
         cache=cache,
         save_to_cache=save_to_cache,
+        client=client,
     )
     if return_missing_ids:
         new_verts, missing_ids = refine_out
@@ -311,7 +313,7 @@ def refine_chunk_index_skeleton(
     except:
         pass
 
-    if refine_inds == "all":
+    if isinstance(refine_inds, str) and refine_inds == "all":
         sk_utils.fix_nan_verts(l2_sk, num_rounds=nan_rounds)
 
     if return_missing_ids:
@@ -487,6 +489,7 @@ def pcg_skeleton(
         fallback_mip=fallback_mip,
         cache=cache,
         save_to_cache=save_to_cache,
+        client=client,
     )
 
     if refine == "chunk" or refine is None:
