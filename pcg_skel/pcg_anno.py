@@ -19,6 +19,7 @@ def annotation_to_level2_id(
     sv_columns=None,
     l2_columns=None,
     inplace=False,
+    timestamp=None,
 ):
     """Add or more level2_id columns to a dataframe based on supervoxel columns
 
@@ -34,11 +35,14 @@ def annotation_to_level2_id(
     l2_suffix : str, optional
         Suffix to use for new level 2 id column, by default '_level2_id'
     sv_columns : str or list-like, optional
-        , by default None
+        Explicit list of level 2 columns, not needed if using bound_pt_columns. By default None
     l2_columns : [type], optional
-        [description], by default None
+        Explicit list of desired level 2 columns, not needed if using bound_pt_columns. By default None
     inplace : bool, optional
-        [description], by default False
+        If True, change the dataframe in place, by default False
+    timestamp : datetime or None, optional
+        Timestamp to lookup the mapping. If None, uses the materialization version timestamp.
+        Default is None.
 
     Returns
     -------
@@ -53,6 +57,9 @@ def annotation_to_level2_id(
             l2_columns = [f"{c}{l2_suffix}" for c in bound_pt_columns]
     elif l2_columns is None:
         l2_columns = [f"{c}{l2_suffix}" for c in sv_columns]
+
+    if timestamp is None:
+        timestamp = client.materialize.get_timestamp()
 
     if isinstance(client, CAVEclientFull):
         pcg_client = client.chunkedgraph
@@ -71,7 +78,9 @@ def annotation_to_level2_id(
 
     for col, l2_col in zip(sv_columns, l2_columns):
         level2_ids = pcg_client.get_roots(
-            df[col].values, stop_layer=2, timestamp=client.materialize.get_timestamp()
+            df[col].values,
+            stop_layer=2,
+            timestamp=timestamp,
         )
         df[l2_col] = level2_ids
     return df
@@ -143,7 +152,11 @@ def _mapped_synapses(
             drop=True
         )
     syn_df = annotation_to_level2_id(
-        syn_df, client, bound_pt_columns=f"{side}_pt", inplace=True
+        syn_df,
+        client,
+        bound_pt_columns=f"{side}_pt",
+        inplace=True,
+        timestamp=timestamp,
     )
     syn_df = annotation_to_mesh_index(
         syn_df,
