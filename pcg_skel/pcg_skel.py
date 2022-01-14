@@ -235,6 +235,7 @@ def refine_chunk_index_skeleton(
     fallback_mip=2,
     cache=None,
     save_to_cache=False,
+    client=None,
 ):
     """Refine skeletons in chunk index space to Euclidean space.
 
@@ -260,8 +261,16 @@ def refine_chunk_index_skeleton(
         Only used if refine_inds is 'all'. Default is 20.
     return_missing_ids : bool, optional
         If True, returns ids of any missing level 2 meshes. Default is False
-    cache : str
-        Filename for a sqlite database storing locations associated with level 2 ids.
+    segmentation_fallback : bool, optional
+        If True, downloads the segmentation at mip level in fallback_mip to get a location. Very slow. Default is False.
+    fallback_mip : int, optional
+        The mip level used in segmentation fallback. Default is 2.
+    cache : str, optional
+        If set to 'service', uses the l2cache service if available available. Otherwise, a filename for a sqlite database storing locations associated with level 2 ids. Default is None.
+    save_to_cache : bool, optional
+        If using a sqlite database, setting this to True will add values to the cache as downloads occur.
+    client : CAVEclient, optional
+        If using the l2cache service, provides a client that can access it.
 
     Returns
     -------
@@ -285,6 +294,7 @@ def refine_chunk_index_skeleton(
         fallback_mip=fallback_mip,
         cache=cache,
         save_to_cache=save_to_cache,
+        client=client,
     )
     if return_missing_ids:
         new_verts, missing_ids = refine_out
@@ -311,7 +321,7 @@ def refine_chunk_index_skeleton(
     except:
         pass
 
-    if refine_inds == "all":
+    if isinstance(refine_inds, str) and refine_inds == "all":
         sk_utils.fix_nan_verts(l2_sk, num_rounds=nan_rounds)
 
     if return_missing_ids:
@@ -396,7 +406,7 @@ def pcg_skeleton(
         If True, uses the segmentation in cases of missing level 2 meshes. This is slower but more robust.
         Default is True.
     cache : str or None, optional
-        Filename to a sqlite database with cached lookups for l2 ids. Optional, default is None.
+        If set to 'service', uses the online l2cache service (if available). Otherwise, this is the filename of a sqlite database with cached lookups for l2 ids. Optional, default is None.
     n_parallel : int, optional
         Number of parallel downloads passed to cloudvolume, by default 1
 
@@ -487,6 +497,7 @@ def pcg_skeleton(
         fallback_mip=fallback_mip,
         cache=cache,
         save_to_cache=save_to_cache,
+        client=client,
     )
 
     if refine == "chunk" or refine is None:
@@ -597,7 +608,7 @@ def pcg_meshwork(
     invalidation_d : int, optional
         Invalidation radius in hops for the mesh skeletonization along the chunk adjacency graph, by default 3
     cache : str or None, optional
-        Filename to a sqlite database with cached lookups for l2 ids. Optional, default is None.
+        If set to 'service', uses the online l2cache service (if available). Otherwise, this is the filename of a sqlite database with cached lookups for l2 ids. Optional, default is None.
     n_parallel : int, optional
         Number of parallel downloads passed to cloudvolume, by default 1
 
