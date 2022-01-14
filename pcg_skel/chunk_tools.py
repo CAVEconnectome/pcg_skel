@@ -11,6 +11,8 @@ ShardedMeshSource = (
     cloudvolume.datasource.graphene.mesh.sharded.GrapheneShardedMeshSource
 )
 
+L2_SERVICE_NAME = "service"
+
 
 def refine_vertices(
     vertices,
@@ -24,6 +26,7 @@ def refine_vertices(
     save_to_cache=False,
     segmentation_fallback=True,
     fallback_mip=2,
+    client=None,
 ):
     """Refine vertices in chunk index space by converting to euclidean space using a combination of mesh downloading and simple chunk mapping.
 
@@ -71,6 +74,7 @@ def refine_vertices(
             save_to_cache=save_to_cache,
             segmentation_fallback=segmentation_fallback,
             fallback_mip=fallback_mip,
+            client=client,
         )
 
         if convert_missing:
@@ -195,12 +199,13 @@ def get_closest_lvl2_chunk(
 
 def lvl2_fragment_locs(
     l2_ids,
-    cv,
+    cv=None,
     return_missing=True,
     segmentation_fallback=True,
     fallback_mip=2,
     cache=None,
     save_to_cache=False,
+    client=None,
 ):
     """Look up representitive location for a list of level 2 ids.
 
@@ -224,6 +229,8 @@ def lvl2_fragment_locs(
     save_to_cache: bool, optional
         If True and a chace is set, automatically saves looked up locations to the cache.
         Default is False.
+    client : CAVEclient, optional
+        Client to be used if the remote service is being used.
 
     Returns
     -------
@@ -236,9 +243,14 @@ def lvl2_fragment_locs(
     l2_ids = np.array(l2_ids)
     l2means = np.full((len(l2_ids), 3), np.nan, dtype=np.float)
     if cache is not None:
-        l2means_cached, is_cached = chunk_cache.lookup_cached_ids(
-            l2_ids, cache_file=cache
-        )
+        if cache == L2_SERVICE_NAME:
+            l2means_cached, is_cached = chunk_cache.lookup_cached_ids(
+                l2_ids, remote_cache=True, client=client
+            )
+        else:
+            l2means_cached, is_cached = chunk_cache.lookup_cached_ids(
+                l2_ids, remote_cache=False, cache_file=cache
+            )
     else:
         l2means_cached = np.zeros((0, 3), dtype=np.float)
         is_cached = np.full(len(l2_ids), False, dtype=np.bool)
@@ -250,7 +262,7 @@ def lvl2_fragment_locs(
             l2_ids[~is_cached], cv, segmentation_fallback, fallback_mip
         )
         l2means[~is_cached] = l2means_dl
-        if cache is not None and save_to_cache:
+        if cache is not None and save_to_cache and cache != L2_SERVICE_NAME:
             chunk_cache.save_ids_to_cache(l2_ids[~is_cached], l2means_dl, cache)
     else:
         missing_ids = []
