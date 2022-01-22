@@ -667,6 +667,9 @@ def pcg_meshwork(
         else:
             raise ValueError('Synapses must be one of "pre", "post", or "all".')
 
+        if not timestamp:
+            timestamp = client.materialize.get_timestamp()
+
         pre_syn_df, post_syn_df = pcg_anno.get_level2_synapses(
             root_id,
             l2dict_mesh,
