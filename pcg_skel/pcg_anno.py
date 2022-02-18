@@ -179,8 +179,10 @@ def get_level2_synapses(
     live_query=False,
     timestamp=None,
 ):
+    live_query = timestamp is not None
+
     if timestamp is None:
-        timestamp = datetime.datetime.now()
+        timestamp = datetime.datetime.utcnow()
     if pre is True:
         pre_syn_df = _mapped_synapses(
             root_id,

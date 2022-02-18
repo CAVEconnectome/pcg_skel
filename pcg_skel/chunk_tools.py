@@ -273,7 +273,11 @@ def lvl2_fragment_locs(
         return l2means
 
 
-def download_lvl2_locs(l2_ids, cv, segmentation_fallback, fallback_mip=2):
+def download_lvl2_locs(
+    l2_ids, cv, segmentation_fallback, fallback_mip=2, n_threads=None
+):
+    if n_threads is None:
+        n_threads = cv.parallel
 
     l2meshes = download_l2meshes(
         l2_ids, cv, sharded=isinstance(cv.mesh, ShardedMeshSource)
@@ -294,7 +298,7 @@ def download_lvl2_locs(l2_ids, cv, segmentation_fallback, fallback_mip=2):
             )
         )
 
-    l2means = mu.multiprocess_func(_localize_l2_id_multi, args, n_threads=cv.parallel)
+    l2means = mu.multiprocess_func(_localize_l2_id_multi, args, n_threads=n_threads)
 
     if len(l2means) > 0:
         l2means = np.vstack(l2means)
@@ -340,8 +344,11 @@ def _localize_l2_id(
     return l2m
 
 
-def download_l2meshes(l2ids, cv, n_split=10, sharded=False):
-    if cv.parallel > 1:
+def download_l2meshes(l2ids, cv, n_split=30, sharded=False, n_threads=None):
+    if n_threads is None:
+        n_threads = cv.parallel
+
+    if n_threads > 1:
         splits = np.ceil(len(l2ids) / n_split)
         l2id_groups = np.array_split(l2ids, int(splits))
 
@@ -354,11 +361,11 @@ def download_l2meshes(l2ids, cv, n_split=10, sharded=False):
 
         if sharded:
             meshes_indiv = mu.multithread_func(
-                _download_l2meshes_sharded_multi, args, n_threads=cv.parallel
+                _download_l2meshes_sharded_multi, args, n_threads=n_threads
             )
         else:
             meshes_indiv = mu.multithread_func(
-                _download_l2meshes_unsharded_multi, args, n_threads=cv.parallel
+                _download_l2meshes_unsharded_multi, args, n_threads=n_threads
             )
         meshes_all_dict = {}
         for mdicts in meshes_indiv:
