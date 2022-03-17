@@ -1,5 +1,3 @@
-from typing import Iterable
-import cloudvolume
 import fastremap
 import numpy as np
 import pandas as pd
@@ -83,14 +81,8 @@ def chunk_index_mesh(
     if client is None:
         client = CAVEclient(datastack_name)
     if cv is None:
-        cv = cloudvolume.CloudVolume(
-            client.info.segmentation_source(),
-            use_https=True,
-            progress=False,
-            bounded=False,
-            fill_missing=True,
-            secrets={"token": client.auth.token},
-        )
+        cv = client.info.segmentation_cloudvolume(progress=False)
+
     lvl2_eg = client.chunkedgraph.level2_chunk_graph(root_id)
     eg, l2dict_mesh, l2dict_r_mesh, x_ch = build_spatial_graph(lvl2_eg, cv)
     mesh_chunk = trimesh_io.Mesh(
@@ -155,23 +147,10 @@ def chunk_index_skeleton(
     if n_parallel is None:
         n_parallel = 1
     if cv is None:
-        cv = cloudvolume.CloudVolume(
-            client.info.segmentation_source(),
-            parallel=n_parallel,
-            use_https=True,
-            progress=False,
-            bounded=False,
-            fill_missing=True,
-            secrets={"token": client.auth.token},
-        )
+        cv = client.info.segmentation_cloudvolume(progress=True, parallel=1)
 
     if root_point_resolution is None:
         root_point_resolution = cv.mip_resolution(0)
-
-    # lvl2_eg = client.chunkedgraph.level2_chunk_graph(root_id)
-
-    # eg, l2dict_mesh, l2dict_r_mesh, x_ch = build_spatial_graph(lvl2_eg, cv)
-    # mesh_chunk = trimesh_io.Mesh(vertices=x_ch, faces=[], link_edges=eg)
 
     mesh_chunk, l2dict_mesh, l2dict_r_mesh = chunk_index_mesh(
         root_id, client=client, cv=cv, return_l2dict=True
@@ -236,6 +215,7 @@ def refine_chunk_index_skeleton(
     cache=None,
     save_to_cache=False,
     client=None,
+    l2cache=False,
 ):
     """Refine skeletons in chunk index space to Euclidean space.
 
@@ -271,7 +251,8 @@ def refine_chunk_index_skeleton(
         If using a sqlite database, setting this to True will add values to the cache as downloads occur.
     client : CAVEclient, optional
         If using the l2cache service, provides a client that can access it.
-
+    l2cache : bool, optional,
+        Set to True if using a l2cache to localize vertices. Same as setting cache to 'service'. Default is False.
     Returns
     -------
     meshparty.skeleton.Skeleton
@@ -281,6 +262,9 @@ def refine_chunk_index_skeleton(
         convert_missing = True
     else:
         convert_missing = False
+
+    if l2cache:
+        cache = "service"
 
     refine_out = chunk_tools.refine_vertices(
         sk_ch.vertices,
@@ -352,6 +336,7 @@ def pcg_skeleton(
     cache=None,
     save_to_cache=False,
     n_parallel=1,
+    l2cache=False,
 ):
     """Create a euclidean-space skeleton from the pychunkedgraph
 
@@ -409,6 +394,8 @@ def pcg_skeleton(
         If set to 'service', uses the online l2cache service (if available). Otherwise, this is the filename of a sqlite database with cached lookups for l2 ids. Optional, default is None.
     n_parallel : int, optional
         Number of parallel downloads passed to cloudvolume, by default 1
+    l2cache : bool, optional
+        Set to True if using the l2cache. Equivalent to cache='service'. Default is False.
 
     Returns
     -------
@@ -428,15 +415,7 @@ def pcg_skeleton(
     if n_parallel is None:
         n_parallel = 1
     if cv is None:
-        cv = cloudvolume.CloudVolume(
-            client.info.segmentation_source(),
-            parallel=n_parallel,
-            fill_missing=True,
-            use_https=True,
-            progress=False,
-            bounded=False,
-            secrets={"token": client.auth.token},
-        )
+        cv = client.info.segmentation_cloudvolume(progress=True, parallel=1)
 
     if root_point_resolution is None:
         root_point_resolution = cv.mip_resolution(0)
@@ -498,6 +477,7 @@ def pcg_skeleton(
         cache=cache,
         save_to_cache=save_to_cache,
         client=client,
+        l2cache=l2cache,
     )
 
     if refine == "chunk" or refine is None:
@@ -565,6 +545,7 @@ def pcg_meshwork(
     cache=None,
     save_to_cache=False,
     n_parallel=None,
+    l2cache=False,
 ):
     """Generate a meshwork file based on the level 2 graph.
 
@@ -611,6 +592,8 @@ def pcg_meshwork(
         If set to 'service', uses the online l2cache service (if available). Otherwise, this is the filename of a sqlite database with cached lookups for l2 ids. Optional, default is None.
     n_parallel : int, optional
         Number of parallel downloads passed to cloudvolume, by default 1
+    l2cache : bool, optional
+        Set to True to use the l2cache. Equivalent to cache='service'.
 
     Returns
     -------
@@ -623,15 +606,7 @@ def pcg_meshwork(
     if n_parallel is None:
         n_parallel = 1
     if cv is None:
-        cv = cloudvolume.CloudVolume(
-            client.info.segmentation_source(),
-            parallel=n_parallel,
-            use_https=True,
-            progress=False,
-            bounded=False,
-            fill_missing=True,
-            secrets={"token": client.auth.token},
-        )
+        cv = client.info.segmentation_cloudvolume(progress=True, parallel=1)
     if root_point_resolution is None:
         root_point_resolution = cv.mip_resolution(0)
 
@@ -653,6 +628,7 @@ def pcg_meshwork(
         fallback_mip=fallback_mip,
         cache=cache,
         save_to_cache=save_to_cache,
+        l2cache=l2cache,
     )
 
     nrn = meshwork.Meshwork(mesh_chunk, seg_id=root_id, skeleton=sk_l2)

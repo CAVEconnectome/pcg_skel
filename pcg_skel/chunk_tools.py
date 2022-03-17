@@ -273,12 +273,7 @@ def lvl2_fragment_locs(
         return l2means
 
 
-def download_lvl2_locs(
-    l2_ids, cv, segmentation_fallback, fallback_mip=2, n_threads=None
-):
-    if n_threads is None:
-        n_threads = cv.parallel
-
+def download_lvl2_locs(l2_ids, cv, segmentation_fallback, fallback_mip=2):
     l2meshes = download_l2meshes(
         l2_ids, cv, sharded=isinstance(cv.mesh, ShardedMeshSource)
     )
@@ -298,7 +293,7 @@ def download_lvl2_locs(
             )
         )
 
-    l2means = mu.multiprocess_func(_localize_l2_id_multi, args, n_threads=n_threads)
+    l2means = mu.multiprocess_func(_localize_l2_id_multi, args, n_threads=1)
 
     if len(l2means) > 0:
         l2means = np.vstack(l2means)
@@ -344,80 +339,14 @@ def _localize_l2_id(
     return l2m
 
 
-def download_l2meshes(l2ids, cv, n_split=30, sharded=False, n_threads=None):
-    if n_threads is None:
-        n_threads = cv.parallel
-
-    if n_threads > 1:
-        splits = np.ceil(len(l2ids) / n_split)
-        l2id_groups = np.array_split(l2ids, int(splits))
-
-        args = []
-        for l2id_group in l2id_groups:
-            args.append((l2id_group, cv))
-
-        progress = cv.progress
-        cv.progress = False
-
-        if sharded:
-            meshes_indiv = mu.multithread_func(
-                _download_l2meshes_sharded_multi, args, n_threads=n_threads
-            )
-        else:
-            meshes_indiv = mu.multithread_func(
-                _download_l2meshes_unsharded_multi, args, n_threads=n_threads
-            )
-        meshes_all_dict = {}
-        for mdicts in meshes_indiv:
-            meshes_all_dict.update(mdicts)
-
-        cv.progress = progress
-        return meshes_all_dict
+def download_l2meshes(l2ids, cv, sharded=False):
+    cv.parallel = 1
+    if sharded:
+        return cv.mesh.get_meshes_on_bypass(l2ids, allow_missing=True)
     else:
-        if sharded:
-            return cv.mesh.get_meshes_on_bypass(l2ids, allow_missing=True)
-        else:
-            return cv.mesh.get(
-                l2ids, allow_missing=True, deduplicate_chunk_boundaries=False
-            )
-
-
-def _download_l2meshes_unsharded_multi(args):
-    root_id, cv = args
-    return _download_l2meshes_unsharded(root_id, cv)
-
-
-def _download_l2meshes_unsharded(mesh_ids, cv):
-    try:
-        ms = cv.mesh.get(
-            mesh_ids, deduplicate_chunk_boundaries=False, allow_missing=True
+        return cv.mesh.get(
+            l2ids, allow_missing=True, deduplicate_chunk_boundaries=False
         )
-    except:
-        ms = {}
-    if len(ms) == 0:
-        return {mesh_id: None for mesh_id in mesh_ids}
-    else:
-        return ms
-
-
-def _download_l2meshes_sharded_multi(args):
-    mesh_ids, cv = args
-    return _download_l2meshes_sharded(mesh_ids, cv)
-
-
-def _download_l2meshes_sharded(mesh_ids, cv):
-    try:
-        ms = cv.mesh.get_meshes_on_bypass(mesh_ids, allow_missing=True)
-    except:
-        ms = {}
-    if len(ms) == 0:
-        return {mesh_id: None for mesh_id in mesh_ids}
-    else:
-        return ms
-
-
-def download_l2meshes_sharded(l2ids, cv):
-    return cv.mesh.get_meshes_on_bypass(l2ids, allow_missing=True)
 
 
 def chunk_location_from_segmentation(l2id, cv, mip=0):

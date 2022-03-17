@@ -3,7 +3,7 @@ scipy
 pandas
 trimesh
 meshparty>=1.12.0
-caveclient
+caveclient>=4.12.4
 fastremap
 cloud-volume>=3.6.0
 sqlitedict
