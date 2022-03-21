@@ -5,18 +5,29 @@ from caveclient import CAVEclient
 
 from meshparty import skeleton, skeletonize, trimesh_io, meshwork
 
-from . import chunk_tools
+from . import chunk_tools, chunk_features
 from . import skel_utils as sk_utils
 from . import utils
 from . import pcg_anno
 
 DEFAULT_VOXEL_RESOLUTION = [4, 4, 40]
 DEFAULT_COLLAPSE_RADIUS = 7500.0
+DEFAULT_INVALIDATION_D = 7500
 
 skeleton_type = "pcg_skel"
 
 
-def build_spatial_graph(lvl2_edge_graph, cv):
+def build_graph_topology(lvl2_edge_graph):
+    """Extract the graph from the result of the lvl2_graph endpoint"""
+    lvl2_edge_graph = np.unique(np.sort(lvl2_edge_graph, axis=1), axis=0)
+    lvl2_ids = np.unique(lvl2_edge_graph)
+    l2dict = {l2id: ii for ii, l2id in enumerate(lvl2_ids)}
+    eg_arr_rm = fastremap.remap(lvl2_edge_graph, l2dict)
+    l2dict_reversed = {ii: l2id for l2id, ii in l2dict.items()}
+    return eg_arr_rm, l2dict, l2dict_reversed, lvl2_ids
+
+
+def build_spatial_graph(lvl2_edge_graph, cv, client=None, method="chunk"):
     """Extract spatial graph and level 2 id lookups from chunkedgraph "lvl2_graph" endpoint.
 
     Parameters
@@ -37,14 +48,106 @@ def build_spatial_graph(lvl2_edge_graph, cv):
     x_ch : np.array
         Mx3 array of vertex locations in chunk index space.
     """
-    lvl2_edge_graph = np.unique(np.sort(lvl2_edge_graph, axis=1), axis=0)
-    lvl2_ids = np.unique(lvl2_edge_graph)
-    l2dict = {l2id: ii for ii, l2id in enumerate(lvl2_ids)}
-    eg_arr_rm = fastremap.remap(lvl2_edge_graph, l2dict)
-    l2dict_reversed = {ii: l2id for l2id, ii in l2dict.items()}
-
-    x_ch = [np.array(cv.mesh.meta.meta.decode_chunk_position(l)) for l in lvl2_ids]
+    eg_arr_rm, l2dict, l2dict_reversed, lvl2_ids = build_graph_topology(lvl2_edge_graph)
+    if method == "chunk":
+        x_ch = [np.array(cv.mesh.meta.meta.decode_chunk_position(l)) for l in lvl2_ids]
+    elif method == "service":
+        x_ch = chunk_tools.dense_spatial_lookup(
+            lvl2_ids,
+            eg_arr_rm,
+            client,
+        )
     return eg_arr_rm, l2dict, l2dict_reversed, x_ch
+
+
+def real_space_mesh(
+    root_id,
+    client,
+    cv=None,
+    return_l2dict=False,
+    nan_rounds=10,
+):
+    if cv is None:
+        cv = client.info.segmentation_cloudvolume(progress=False)
+
+    lvl2_eg = client.chunkedgraph.level2_chunk_graph(root_id)
+    eg, l2dict_mesh, l2dict_r_mesh, x_ch = build_spatial_graph(
+        lvl2_eg, cv, client=client, method="service"
+    )
+    mesh_loc = trimesh_io.Mesh(
+        vertices=x_ch,
+        faces=[[0, 0, 0]],  # Some functions fail if no faces are set.
+        link_edges=eg,
+    )
+
+    sk_utils.fix_nan_verts_mesh(mesh_loc, nan_rounds)
+
+    if return_l2dict:
+        return mesh_loc, l2dict_mesh, l2dict_r_mesh
+    else:
+        return mesh_loc
+
+
+def real_space_skeleton(
+    root_id,
+    client,
+    datastack_name=None,
+    cv=None,
+    invalidation_d=10_000,
+    return_mesh=False,
+    return_l2dict=False,
+    return_l2dict_mesh=False,
+    root_point=None,
+    root_point_resolution=None,
+    collapse_soma=False,
+    collapse_radius=7500,
+    nan_rounds=10,
+):
+    if client is None:
+        client = CAVEclient(datastack_name)
+    if cv is None:
+        cv = client.info.segmentation_cloudvolume(progress=False)
+
+    if root_point_resolution is None:
+        root_point_resolution = cv.mip_resolution(0)
+    root_point = np.array(root_point) * root_point_resolution
+
+    mesh, l2dict_mesh, l2dict_r_mesh = real_space_mesh(
+        root_id,
+        client=client,
+        return_l2dict=True,
+        nan_rounds=nan_rounds,
+    )
+
+    metameta = {"space": "l2cache", "datastack": client.datastack_name}
+    sk = skeletonize.skeletonize_mesh(
+        mesh,
+        invalidation_d=invalidation_d,
+        soma_pt=root_point,
+        collapse_soma=collapse_soma,
+        compute_radius=collapse_radius,
+        cc_vertex_thresh=0,
+        remove_zero_length_edges=True,
+        meta={
+            "root_id": root_id,
+            "skeleton_type": skeleton_type,
+            "meta": metameta,
+        },
+    )
+
+    l2dict, l2dict_r = sk_utils.filter_l2dict(sk, l2dict_r_mesh)
+
+    out_list = [sk]
+    if return_mesh:
+        out_list.append(mesh)
+    if return_l2dict:
+        out_list.append((l2dict, l2dict_r))
+    if return_l2dict_mesh:
+        out_list.append((l2dict_mesh, l2dict_r_mesh))
+    if len(out_list) == 1:
+        return out_list[0]
+    else:
+        return tuple(out_list)
 
 
 def chunk_index_mesh(
@@ -523,6 +626,90 @@ def pcg_skeleton(
         return tuple(output)
 
 
+def real_space_meshwork(
+    root_id,
+    datastack_name=None,
+    client=None,
+    cv=None,
+    root_point=None,
+    root_point_resolution=None,
+    collapse_soma=False,
+    collapse_radius=DEFAULT_COLLAPSE_RADIUS,
+    synapses=None,
+    synapse_table=None,
+    remove_self_synapse=True,
+    live_query=False,
+    timestamp=None,
+    invalidation_d=DEFAULT_INVALIDATION_D,
+    volume_properties=False,
+    segment_properties=False,
+):
+    if client is None:
+        client = CAVEclient(datastack_name)
+    if cv is None:
+        cv = client.info.segmentation_cloudvolume(progress=True, parallel=1)
+    if root_point_resolution is None:
+        root_point_resolution = cv.mip_resolution(0)
+
+    sk, mesh, (l2dict_mesh, l2dict_mesh_r) = real_space_skeleton(
+        root_id,
+        client=client,
+        cv=cv,
+        root_point=root_point,
+        root_point_resolution=root_point_resolution,
+        collapse_soma=collapse_soma,
+        collapse_radius=collapse_radius,
+        invalidation_d=invalidation_d,
+        return_mesh=True,
+        return_l2dict_mesh=True,
+    )
+
+    nrn = meshwork.Meshwork(mesh, seg_id=root_id, skeleton=sk)
+
+    if synapses is not None and synapse_table is not None:
+        if synapses == "pre":
+            pre, post = True, False
+        elif synapses == "post":
+            pre, post = False, True
+        elif synapses == "all":
+            pre, post = True, True
+        else:
+            raise ValueError('Synapses must be one of "pre", "post", or "all".')
+
+        if not timestamp:
+            timestamp = client.materialize.get_timestamp()
+
+        chunk_features.add_synapses(
+            nrn,
+            synapse_table,
+            l2dict_mesh,
+            client,
+            root_id=root_id,
+            pre=pre,
+            post=post,
+            remove_self_synapse=remove_self_synapse,
+            timestamp=timestamp,
+            live_query=live_query,
+        )
+
+    chunk_features.add_lvl2_ids(nrn, l2dict_mesh)
+    if volume_properties:
+        chunk_features.add_volumetric_properties(
+            nrn,
+            client,
+        )
+    if segment_properties:
+        if not volume_properties:
+            raise Warning("Segment properties require volume properties")
+        else:
+            chunk_features.add_segment_properties(
+                nrn,
+                root_as_sphere=collapse_soma,
+            )
+
+    return nrn
+
+
 def pcg_meshwork(
     root_id,
     datastack_name=None,
@@ -646,36 +833,20 @@ def pcg_meshwork(
         if not timestamp:
             timestamp = client.materialize.get_timestamp()
 
-        pre_syn_df, post_syn_df = pcg_anno.get_level2_synapses(
-            root_id,
+        chunk_features.add_synapses(
+            nrn,
+            synapse_table,
             l2dict_mesh,
             client,
-            synapse_table,
-            remove_self=remove_self_synapse,
+            root_id=root_id,
             pre=pre,
             post=post,
-            live_query=live_query,
+            remove_self_synapse=remove_self_synapse,
             timestamp=timestamp,
+            live_query=live_query,
         )
-        if pre_syn_df is not None:
-            nrn.anno.add_annotations(
-                "pre_syn",
-                pre_syn_df,
-                index_column="pre_pt_mesh_ind",
-                point_column="ctr_pt_position",
-            )
-        if post_syn_df is not None:
-            nrn.anno.add_annotations(
-                "post_syn",
-                post_syn_df,
-                index_column="post_pt_mesh_ind",
-                point_column="ctr_pt_position",
-            )
 
-    lvl2_df = pd.DataFrame(
-        {"lvl2_id": list(l2dict_mesh.keys()), "mesh_ind": list(l2dict_mesh.values())}
-    )
-    nrn.anno.add_annotations("lvl2_ids", lvl2_df, index_column="mesh_ind")
+    chunk_features.add_lvl2_ids(nrn, l2dict_mesh)
 
     if refine != "chunk":
         _adjust_meshwork(nrn, cv)

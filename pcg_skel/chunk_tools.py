@@ -1,7 +1,7 @@
 import numpy as np
 from scipy import spatial
 import cloudvolume
-from . import utils, chunk_cache
+from . import utils, chunk_cache, skel_utils
 import multiwrapper.multiprocessing_utils as mu
 
 UnshardedMeshSource = (
@@ -12,6 +12,11 @@ ShardedMeshSource = (
 )
 
 L2_SERVICE_NAME = "service"
+
+
+def dense_spatial_lookup(l2ids, eg, client):
+    l2means, _ = chunk_cache.get_locs_remote(l2ids, client)
+    return l2means
 
 
 def refine_vertices(
