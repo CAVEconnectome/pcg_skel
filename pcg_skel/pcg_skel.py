@@ -125,7 +125,8 @@ def real_space_skeleton(
         invalidation_d=invalidation_d,
         soma_pt=root_point,
         collapse_soma=collapse_soma,
-        compute_radius=collapse_radius,
+        soma_radius=collapse_radius,
+        compute_radius=False,
         cc_vertex_thresh=0,
         remove_zero_length_edges=True,
         meta={
@@ -643,6 +644,10 @@ def real_space_meshwork(
     invalidation_d=DEFAULT_INVALIDATION_D,
     volume_properties=False,
     segment_properties=False,
+    axon_property=False,
+    axon_threshold_quality=1,
+    axon_n_times=1,
+    axon_extend_to_segment=True,
 ):
     if client is None:
         client = CAVEclient(datastack_name)
@@ -666,6 +671,7 @@ def real_space_meshwork(
 
     nrn = meshwork.Meshwork(mesh, seg_id=root_id, skeleton=sk)
 
+    pre, post = False, False
     if synapses is not None and synapse_table is not None:
         if synapses == "pre":
             pre, post = True, False
@@ -706,7 +712,18 @@ def real_space_meshwork(
                 nrn,
                 root_as_sphere=collapse_soma,
             )
-
+    if axon_property:
+        if pre and post:
+            chunk_features.add_is_axon_annotation(
+                nrn,
+                "pre_syn",
+                "post_syn",
+                threshold_quality=axon_threshold_quality,
+                extend_to_segment=axon_extend_to_segment,
+                n_times=axon_n_times,
+            )
+        else:
+            print("Both pre and postsynaptic sites required for axon property!")
     return nrn
 
 
