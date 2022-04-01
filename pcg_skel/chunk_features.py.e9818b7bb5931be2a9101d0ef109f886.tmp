@@ -126,7 +126,7 @@ def add_segment_properties(
             )
         if not strahler_by_compartment:
             so = strahler_order(nrn)
-            seg_strahler = []
+        seg_strahler = []
 
     if effective_radius:
         seg_vols = []

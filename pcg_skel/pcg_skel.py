@@ -60,7 +60,7 @@ def build_spatial_graph(lvl2_edge_graph, cv, client=None, method="chunk"):
     return eg_arr_rm, l2dict, l2dict_reversed, x_ch
 
 
-def real_space_mesh(
+def coord_space_mesh(
     root_id,
     client,
     cv=None,
@@ -88,7 +88,7 @@ def real_space_mesh(
         return mesh_loc
 
 
-def real_space_skeleton(
+def coord_space_skeleton(
     root_id,
     client,
     datastack_name=None,
@@ -112,7 +112,7 @@ def real_space_skeleton(
         root_point_resolution = cv.mip_resolution(0)
     root_point = np.array(root_point) * root_point_resolution
 
-    mesh, l2dict_mesh, l2dict_r_mesh = real_space_mesh(
+    mesh, l2dict_mesh, l2dict_r_mesh = coord_space_mesh(
         root_id,
         client=client,
         return_l2dict=True,
@@ -627,7 +627,7 @@ def pcg_skeleton(
         return tuple(output)
 
 
-def real_space_meshwork(
+def coord_space_meshwork(
     root_id,
     datastack_name=None,
     client=None,
@@ -645,7 +645,7 @@ def real_space_meshwork(
     volume_properties=False,
     segment_properties=False,
     axon_property=False,
-    axon_threshold_quality=1,
+    axon_threshold_quality=0,
     axon_n_times=1,
     axon_extend_to_segment=True,
 ):
@@ -656,7 +656,7 @@ def real_space_meshwork(
     if root_point_resolution is None:
         root_point_resolution = cv.mip_resolution(0)
 
-    sk, mesh, (l2dict_mesh, l2dict_mesh_r) = real_space_skeleton(
+    sk, mesh, (l2dict_mesh, l2dict_mesh_r) = coord_space_skeleton(
         root_id,
         client=client,
         cv=cv,
