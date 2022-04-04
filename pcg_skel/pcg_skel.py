@@ -5,7 +5,7 @@ from caveclient import CAVEclient
 
 from meshparty import skeleton, skeletonize, trimesh_io, meshwork
 
-from . import chunk_tools, chunk_features
+from . import chunk_tools, features
 from . import skel_utils as sk_utils
 from . import utils
 from . import pcg_anno
@@ -642,12 +642,6 @@ def coord_space_meshwork(
     live_query=False,
     timestamp=None,
     invalidation_d=DEFAULT_INVALIDATION_D,
-    volume_properties=False,
-    segment_properties=False,
-    axon_property=False,
-    axon_threshold_quality=0,
-    axon_n_times=1,
-    axon_extend_to_segment=True,
 ):
     if client is None:
         client = CAVEclient(datastack_name)
@@ -685,7 +679,7 @@ def coord_space_meshwork(
         if not timestamp:
             timestamp = client.materialize.get_timestamp()
 
-        chunk_features.add_synapses(
+        features.add_synapses(
             nrn,
             synapse_table,
             l2dict_mesh,
@@ -698,32 +692,7 @@ def coord_space_meshwork(
             live_query=live_query,
         )
 
-    chunk_features.add_lvl2_ids(nrn, l2dict_mesh)
-    if volume_properties:
-        chunk_features.add_volumetric_properties(
-            nrn,
-            client,
-        )
-    if segment_properties:
-        if not volume_properties:
-            raise Warning("Segment properties require volume properties")
-        else:
-            chunk_features.add_segment_properties(
-                nrn,
-                root_as_sphere=collapse_soma,
-            )
-    if axon_property:
-        if pre and post:
-            chunk_features.add_is_axon_annotation(
-                nrn,
-                "pre_syn",
-                "post_syn",
-                threshold_quality=axon_threshold_quality,
-                extend_to_segment=axon_extend_to_segment,
-                n_times=axon_n_times,
-            )
-        else:
-            print("Both pre and postsynaptic sites required for axon property!")
+    features.add_lvl2_ids(nrn, l2dict_mesh)
     return nrn
 
 
@@ -850,7 +819,7 @@ def pcg_meshwork(
         if not timestamp:
             timestamp = client.materialize.get_timestamp()
 
-        chunk_features.add_synapses(
+        features.add_synapses(
             nrn,
             synapse_table,
             l2dict_mesh,
@@ -863,7 +832,7 @@ def pcg_meshwork(
             live_query=live_query,
         )
 
-    chunk_features.add_lvl2_ids(nrn, l2dict_mesh)
+    features.add_lvl2_ids(nrn, l2dict_mesh)
 
     if refine != "chunk":
         _adjust_meshwork(nrn, cv)

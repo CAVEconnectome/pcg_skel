@@ -18,6 +18,31 @@ def add_synapses(
     timestamp=None,
     live_query=False,
 ):
+    """Add synapses based on l2ids
+
+    Parameters
+    ----------
+    nrn : _type_
+        _description_
+    synapse_table : _type_
+        _description_
+    l2dict_mesh : _type_
+        _description_
+    client : _type_
+        _description_
+    root_id : _type_, optional
+        _description_, by default None
+    pre : bool, optional
+        _description_, by default False
+    post : bool, optional
+        _description_, by default False
+    remove_self_synapse : bool, optional
+        _description_, by default True
+    timestamp : _type_, optional
+        _description_, by default None
+    live_query : bool, optional
+        _description_, by default False
+    """
     if root_id is None:
         root_id - nrn.seg_id
 
@@ -126,7 +151,7 @@ def add_segment_properties(
             )
         if not strahler_by_compartment:
             so = strahler_order(nrn)
-            seg_strahler = []
+        seg_strahler = []
 
     if effective_radius:
         seg_vols = []
@@ -209,11 +234,18 @@ def add_is_axon_annotation(
         extend_to_segment=extend_to_segment,
         n_times=n_times,
     )
-    if sq > threshold_quality:
-        nrn.anno.add_annotations(
-            annotation_name, np.zeros(len(nrn.vertices)).astype(bool), mask=True
-        )
+    if sq < threshold_quality:
+        nrn.anno.add_annotations(annotation_name, [], mask=True)
         raise Warning("Split quality below threshold, no axon mesh vertices added!")
     else:
         nrn.anno.add_annotations(annotation_name, is_axon, mask=True)
     return
+
+
+def l2dict_from_anno(
+    nrn,
+    table_name="lvl2_ids",
+    l2id_col="lvl2_id",
+    mesh_ind_col="mesh_ind",
+):
+    return nrn.anno[table_name].df.set_index(l2id_col)[mesh_ind_col].to_dict()

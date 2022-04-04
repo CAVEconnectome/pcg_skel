@@ -22,27 +22,29 @@ def propagate_l2dict(sk_ch, l2dict_mesh):
 def fix_nan_verts_mesh(mesh, num_rounds=20):
     if num_rounds is None:
         num_rounds = 0
-    graph = mesh.csgraph.todense() > 1
+    # graph = mesh.csgraph.todense() > 1
 
     nr = 0
     while nr < num_rounds:
         nanvinds = np.flatnonzero(np.isnan(mesh.vertices[:, 0]))
+        if len(nanvinds) == 0:
+            return
+
         new_verts = mesh.vertices[nanvinds]
 
         for ii, vid in enumerate(nanvinds):
-            neib_inds = np.array(graph[vid, :].todense()).squeeze() > 0
+            neib_inds = mesh.csgraph[vid, :].indices
             if len(neib_inds) == 0:
                 continue
             if np.any(neib_inds):
+                is_single = int(len(neib_inds) == 1)
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore")
-                    new_verts[ii] = np.nanmean(
-                        mesh.vertices[neib_inds], axis=0
-                    ) + np.array([0, 0, 1])
+                    new_verts[ii] = (
+                        np.nanmean(mesh.vertices[neib_inds], axis=0)
+                        + np.array([0, 0, 1]) * is_single
+                    )
         mesh.vertices[nanvinds] = new_verts
-
-        if not np.any(np.isnan(new_verts[:, 0])):
-            break
 
         nr += 1
     else:
