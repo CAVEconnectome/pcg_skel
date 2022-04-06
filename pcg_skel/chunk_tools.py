@@ -15,7 +15,9 @@ L2_SERVICE_NAME = "service"
 
 
 def dense_spatial_lookup(l2ids, eg, client):
-    l2means, _ = chunk_cache.get_locs_remote(l2ids, client)
+    l2means = np.full((len(l2ids), 3), np.nan)
+    locs, inds_found = chunk_cache.get_locs_remote(l2ids, client)
+    l2means[inds_found] = locs
     return l2means
 
 

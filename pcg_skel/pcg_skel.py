@@ -110,7 +110,8 @@ def coord_space_skeleton(
 
     if root_point_resolution is None:
         root_point_resolution = cv.mip_resolution(0)
-    root_point = np.array(root_point) * root_point_resolution
+    if root_point is not None:
+        root_point = np.array(root_point) * root_point_resolution
 
     mesh, l2dict_mesh, l2dict_r_mesh = coord_space_mesh(
         root_id,
