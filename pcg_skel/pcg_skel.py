@@ -27,7 +27,9 @@ def build_graph_topology(lvl2_edge_graph):
     return eg_arr_rm, l2dict, l2dict_reversed, lvl2_ids
 
 
-def build_spatial_graph(lvl2_edge_graph, cv, client=None, method="chunk"):
+def build_spatial_graph(
+    lvl2_edge_graph, cv, client=None, method="chunk", require_complete=False
+):
     """Extract spatial graph and level 2 id lookups from chunkedgraph "lvl2_graph" endpoint.
 
     Parameters
@@ -56,6 +58,7 @@ def build_spatial_graph(lvl2_edge_graph, cv, client=None, method="chunk"):
             lvl2_ids,
             eg_arr_rm,
             client,
+            require_complete=require_complete,
         )
     return eg_arr_rm, l2dict, l2dict_reversed, x_ch
 
@@ -66,13 +69,18 @@ def coord_space_mesh(
     cv=None,
     return_l2dict=False,
     nan_rounds=10,
+    require_complete=False,
 ):
     if cv is None:
         cv = client.info.segmentation_cloudvolume(progress=False)
 
     lvl2_eg = client.chunkedgraph.level2_chunk_graph(root_id)
     eg, l2dict_mesh, l2dict_r_mesh, x_ch = build_spatial_graph(
-        lvl2_eg, cv, client=client, method="service"
+        lvl2_eg,
+        cv,
+        client=client,
+        method="service",
+        require_complete=require_complete,
     )
     mesh_loc = trimesh_io.Mesh(
         vertices=x_ch,
@@ -102,6 +110,7 @@ def coord_space_skeleton(
     collapse_soma=False,
     collapse_radius=7500,
     nan_rounds=10,
+    require_complete=False,
 ):
     if client is None:
         client = CAVEclient(datastack_name)
@@ -118,6 +127,7 @@ def coord_space_skeleton(
         client=client,
         return_l2dict=True,
         nan_rounds=nan_rounds,
+        require_complete=require_complete,
     )
 
     metameta = {"space": "l2cache", "datastack": client.datastack_name}
@@ -643,6 +653,7 @@ def coord_space_meshwork(
     live_query=False,
     timestamp=None,
     invalidation_d=DEFAULT_INVALIDATION_D,
+    require_complete=False,
 ):
     if client is None:
         client = CAVEclient(datastack_name)
@@ -662,6 +673,7 @@ def coord_space_meshwork(
         invalidation_d=invalidation_d,
         return_mesh=True,
         return_l2dict_mesh=True,
+        require_complete=require_complete,
     )
 
     nrn = meshwork.Meshwork(mesh, seg_id=root_id, skeleton=sk)

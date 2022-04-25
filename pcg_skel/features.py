@@ -94,19 +94,11 @@ def add_volumetric_properties(
     l2id_anno_name="lvl2_ids",
     l2id_col_name="lvl2_id",
     property_name="vol_prop",
-    scale_size=True,
 ):
     l2ids = nrn.anno[l2id_anno_name].df[l2id_col_name]
     dat = client.l2cache.get_l2data(l2ids, attributes=attributes)
     dat_df = pd.DataFrame.from_dict(dat, orient="index")
     dat_df.index = [int(x) for x in dat_df.index]
-
-    # These lines are a hack due to a bug in the l2cache
-    if scale_size:
-        sv_scale = np.array(
-            client.info.segmentation_cloudvolume().mip_resolution(0)
-        ).prod()
-        dat_df["size_nm3"] = dat_df["size_nm3"] * sv_scale
 
     l2_df = nrn.anno.lvl2_ids.df
     nrn.anno.add_annotations(
