@@ -1,7 +1,7 @@
 import numpy as np
 from scipy import spatial
 import cloudvolume
-from . import utils, chunk_cache
+from . import utils, chunk_cache, skel_utils
 import multiwrapper.multiprocessing_utils as mu
 
 UnshardedMeshSource = (
@@ -12,6 +12,20 @@ ShardedMeshSource = (
 )
 
 L2_SERVICE_NAME = "service"
+
+
+class CompleteDataException(Exception):
+    pass
+
+
+def dense_spatial_lookup(l2ids, eg, client, require_complete=False):
+    l2means = np.full((len(l2ids), 3), np.nan)
+    locs, inds_found = chunk_cache.get_locs_remote(l2ids, client)
+    if require_complete:
+        if not np.all(inds_found):
+            raise CompleteDataException("Some chunk indices are not yet computed")
+    l2means[inds_found] = locs
+    return l2means
 
 
 def refine_vertices(
