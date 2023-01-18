@@ -64,6 +64,7 @@ def add_synapses(
             pre_syn_df,
             index_column="pre_pt_mesh_ind",
             point_column="ctr_pt_position",
+            voxel_resolution=pre_syn_df.attrs.get('dataframe_resolution'),
         )
     if post_syn_df is not None:
         nrn.anno.add_annotations(
@@ -71,6 +72,7 @@ def add_synapses(
             post_syn_df,
             index_column="post_pt_mesh_ind",
             point_column="ctr_pt_position",
+            voxel_resolution=post_syn_df.attrs.get('dataframe_resolution'),
         )
 
     return
