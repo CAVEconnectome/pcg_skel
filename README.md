@@ -1,10 +1,46 @@
 # pcg_skel
 
-Save time by generating robust neuronal skeletons directly from a ChunkedGraph dynamic segmentations!
+Generate robust neuronal topology directly from a ChunkedGraph dynamic segmentations.
+
+Skeletonization is an essential part of measuring neuronal anatomy, but in 3d segmented data it is not always trivial to produce a skeleton.
+Segmentations and meshes are often prohibitively large to download *en mass* and can artifacts that generate ambiguities or make attaching annotations like synapses to specific locations unclear.
+
+PCG-skel uses the same chunking that allows the [PyChunkedGraph](https://github.com/seung-lab/PyChunkedGraph) (PCG) to quickly make edits to large, complex neuronal segmentations and, combined with a dynamic caching system that updates after every edit, can generate complete representations of the topology of objects in just a few seconds and minimal data downloads.
+Becuase the data is always matched to the underlying representation of the segmentation, there are no ambiguities in what parts are connected to what other or in which vertex a synapse or other annotation is associated with.
+This light data needs and rapid skeletonization make it useful in environments where analysis is being re-run on frequently changing cells.
+
+However, there is a trade-off in terms of resolution.
+The dependency on chunk size means that vertices are roughly a chunk width apart, which in current datasets amounts to about 2 microns.
+Thus for understanding the overall structure of a cell or looking at long distance relationships between points along an arbor, these skeletons are quite good, but for detailed analysis at short length scales (0-10 microns or so) where being plus or minus a micron would hurt analysis, I recommend looking at other approaches like kimimaro, meshteasar, or CGAL skeletonization.
+
+
+## Example of usage
+
+It is highly recommended to run PCGSkel with a [CAVE client](https://caveclient.readthedocs.io/).
+
+The most basic way to get a skeleton requires only a root id and CAVEclient.
+
+```python
+from caveclient import CAVEclient
+import pcg_skel
+
+client = CAVEclient('minnie65_phase3_v1')
+root_id = 864691135867734294
+sk = pcg_skel.coord_space_skeleton(root_id, client)
+```
+
+This generates a skeleton, in this case for a pyramidal cell in the MICrONs65 volume. The skeleton is shown in black, and the mesh in red.
+
+![pyramidal cell](example_skeleton.png)
 
 ## What you need
 
-For skeletons you just need a dynamic segmentation running on a [PyChunkedGraph](https://github.com/seung-lab/PyChunkedGraph) server.
+PCG-skel requires an active [PyChunkedGraph](https://github.com/seung-lab/PyChunkedGraph) server.
+
+For best performance, your dataset should have an L2 Cache, a service that caches representive points and features for every chunk.
+Using the CAVEclient, you can test for this by running `client.l2cache.attributes`.
+If you get a list of attribute names back, you're good!
+If you don't have an L2 cache and still want to use PCG Skel, see the section below `How to use without an L2 Cache`.
 
 To also use annotations, you also need a database backend running the [MaterializationEngine](https://github.com/seung-lab/MaterializationEngine).
 
@@ -14,247 +50,105 @@ Ids in the PCG combine information about chunk level, spatial location, and uniq
 This package uses the highest-resolution chunking, level 2, to derive neuronal topology and approximate spatial extent.
 For clarity, I'll define a few terms:
 
-* *L2 object*: Collection of attributes (supervoxels, mesh, etc) associated with a level 2 id.
+* *Level 2 chunk*: A box defining a unit of data storage and representation. The entire dataset is tiled by nonoverlapping chunks. Each chunk has properties like a detailed graph of which supervoxels touch what other supervoxels, meshes associated with each segmented object inside the chunk, etc. By chunking the data and agglomerating larger objects out of these chunks, edits only have to touch those few chunks that actually change during proofreading, reducing the amount of memory and effort needed to process them.
 
-* *L2 mesh*: The fragment of mesh associated with a level 2 id.
+Chunks can exist at many scales, but "level 2" refers to the lowest level of chunking (level 1 refers to the supervoxels themselves).
 
-* *Chunk index/chunk index space*: The integer 3-d index of a chunk in the the grid that covers the volume, i.e. the chunk index space.
+* *Level 2 id (L2 id)*: A segmentation id that describes the state of the segmentation inside a given L2 chunk.
+Note that if two distinct parts of the same neuron enter the same chunk, each has its own level 2 id.
 
-* *Euclidean position/Euclidean space*: A position in nanometers / biological space.
+* *Level 2 graph*: Each level 2 id can be thought of as connected to level 2 ids in other chunks when an object's supervoxels run across chunk boundaries or where edges have introduced by merges during proofreading. The graph of which level 2 ids are connected to which others is called the "level 2 graph." Keeping track of the level 2 graph is one of the jobs of the PCG.
 
-* *Chunk position*: The center of a specific chunk index in Euclidean space
+* *Level 2 skeleton*: A reduced version of the level 2 graph that is tree-like.
 
-* *Refinement*: Mapping the position of an L2 object from its chunk position to a more representitive point on the mesh.
+* *Representitative point*: For each level 2 id, the L2 Cache determines a representative point that is guaranteed to be within the segmentation and is located at a "most central" point in the segmentation of the L2 id.
 
 ## How to use
 
-There are a few potentially useful functions with progressively more features:
+There are three main functions to generate a neuronal representation from the pychunkedgraph and L2 Cache that build on one another. One gets the L2 graph, one processes it into an L2 skeleton, and a third collects the graph and skeleton together into a "Meshwork" object that can also handle annotations.
 
-### chunk_index_skeleton
+### Skeletons
 
-This function returns a meshparty skeleton with vertices given in chunk index space.
-
-```python
-def chunk_index_skeleton(root_id,
-                         client=None,
-                         datastack_name=None,
-                         cv=None,
-                         root_point=None,
-                         invalidation_d=3,
-                         return_mesh=False,
-                         return_l2dict=False,
-                         return_mesh_l2dict=False,
-                         root_point_resolution=[4, 4, 40],
-                         root_point_search_radius=300,
-                         n_parallel=1):
-```
-
-#### Notes
-
-* A `CAVEclient` or `datastack_name` must be provided, and a cloudvolume object is suggested for performance reasons, especially if running in bulk.
-
-* If `root_point` is set, the function looks within `root_point_search_radius` for the closest point in the root_id segmentation and sets the associated level 2 ID as the root vertex. `root_point_search_radius` is in nanometers. `root_point` is in units of `root_point_resolution`, such that root_point * root_point_resolution should be correct in Euclidean space.
-
-* `return_mesh` will also return the full graph of level 2 objects as a `meshparty.Mesh` that has no faces and uses only link edges. Vertices are in chunk index space.
-
-* `return_l2dict` will also return a tuple of two dictionaries. The first, `l2dict`, is a dict mapping level 2 id to skeleton vertex index. This is one to many, since it includes passing through multiple level 2 ids that belong to the mesh and are collapsed into a common skeleton vertex. The second, `l2dict_reversed`, is a dict mapping skeleton vertex to level 2 id. This is one to one.
-
-* `return_mesh_l2dict` will return an additional tuple of two dictionaries. The first maps level 2 ids to mesh vertices, the second mesh vertex index to level 2 id.
-
-* `n_parallel` is passed directly to cloudvolume and can speed up mesh fragment downloading.
-
----
-
-### refine_chunk_index_skeleton
-
-Map a skeleton in chunk index space into Euclidean space.
+This function will return a meshparty Skeleton class. Skeleton features can be found in the [Meshparty documentation](https://meshparty.readthedocs.io/en/latest/).
 
 ```python
-def refine_chunk_index_skeleton(
-    sk_ch,
-    l2dict_reversed,
-    cv,
-    refine_inds='all',
-    scale_chunk_index=True,
-    root_location=None,
-    nan_rounds=20,
-    return_missing_ids=False,
+def coord_space_skeleton(
+    root_id,
+    client,
+    cv=None,
+    invalidation_d=10_000,
+    return_mesh=False,
+    return_l2dict=False,
+    return_l2dict_mesh=False,
+    root_point=None,
+    root_point_resolution=None,
+    collapse_soma=False,
+    collapse_radius=7500,
 ):
 ```
 
-#### Notes
+The basic use requires only a root id and a caveclient, but there are a number of important options.
 
-* `sk_ch` is assumed to have positions in chunk index space.
+* *cv*: Passing an initialized cloudvolume object (`cv=`) can save a second or two per skeleton. This isn't a big deal for a couple of skeletons, but may save some real time if you are creating a large number of skeletons.
 
-* `l2dict_reversed` is the second dict that comes back in the tuple you get by setting `return_l2dict` to `True` in `chunk_index_skeleton`.
+* *invalidation_d*: The invalidation distance for skeletonization, in nanometers. This parameter sets the distance at which vertices of the graph are collapsed into a branch. Too big and branches might be missed, but too small and false branches might be added to thick processes. This is an important parameter to customize for your data, since different morphologies will be best represented by different values. The default value works well for cortical neurons, for example, but is probably too coarse for fly neurons.
 
-* `refine_inds` can be either `"all"` or a specific array of vertex indices. This parameter sets which vertices to refine. A handful of vertices can be processed very quickly, while a more accurate skeleton is generated by refining all vertices.
+* *return_mesh*, *return_l2dict*, *return_l2dict_mesh*: These three values are all set to False by default, which is fine if you just want a skeleton. However, if you want to map vertices to level 2 ids or skeleton vertices back to the mesh graph, these options can give you the mesh and dictionaries mapping vertices to the l2 ids for the skeletons and the mesh graph.
 
-* `scale_chunk_index`, if True, will still map unrefined vertex indices from their chunk index into the chunk position in eucliden space.
+* *root_point*, *root_point_resolution*: Setting a root point defines the root of the skeleton, which establishes an orientation for the skeleton. Root point is an x,y,z position, and the resolution is the value in nm of the resolution of coordinates (also in x,y,z, resolution). If the point is from neuroglancer or an annotation table, take careful note of the resolution. 
 
-* `nan_rounds` gives how many times to try to smoothly interpolate any vertices that did not get a position due to a missing L2 mesh fragment.
+* *collapse_soma*, *collapse_radius*: These two options let you collapse vertices around a soma into the root point. Setting collapse_soma to True will collapse all vertices within the collapse radius (in nanometers) into the root point. Additionally, the root point is added as a new skeleton vertex. Again, the default value works for most cortical neurons, but cells with larger or smaller cell bodies might need different values.
 
-* `return_missing_ids` will also return a list of the ids of any missing L2 mesh fragment, for example if you want to re-run meshing on them.
 
----
+### Mesh graph
 
-### pcg_skeleton
-
-Directly build a skeleton in Euclidean space, plus optionally handle soma points.
+This function will return a meshparty Mesh object, with a vertex at the representative point for every l2 id and edges where they connect to one another.
+Such a mesh is what the skeleton returned above is generated from.
 
 ```python
-def pcg_skeleton(root_id,
-                 client=None,
-                 datastack_name=None,
-                 cv=None,
-                 refine='all',
-                 root_point=None,
-                 root_point_resolution=[4, 4, 40],
-                 root_point_search_radius=300,
-                 collapse_soma=False,
-                 collapse_radius=10_000.0,
-                 invalidation_d=3,
-                 return_mesh=False,
-                 return_l2dict=False,
-                 return_l2dict_mesh=False,
-                 return_missing_ids=False,
-                 nan_rounds=20,
-                 n_parallel=1):
+def coord_space_mesh(
+    root_id,
+    client,
+    cv=None,
+    return_l2dict=False,
+):
 ```
 
-#### Notes
+There are fewer options, since the mesh graph is a more direct representation of the data.
 
-* `refine` can take five values to determine which vertices to refine.
-    1. `"all"`: Refine all vertices
-    2. `"ep"`: Refine only end points.
-    3. `"bp"`: Refine only branch points.
-    4. `"bpep"` or `"epbp"`: Refine both branch and end points.
-    5. `None`: Don't refine any vertex, but still map chunk positions coarsely.
+### Meshwork file
 
-    Options which download few mesh fragments are much faster than `"all"`.
-
-* `collapse_soma`, if set to True, collapses all mesh vertices within `collapse_radius` into the root point.
-Note that the root point is not a new point, but rather the closest level 2 object to the root point location.
-
----
-
-### pcg_meshwork
-
-Build a meshwork file with skeleton out from the level 2 graph.
-Optionally, attach pre- and/or post-synaptic synapses.
+Meshwork files combine the mesh graph, the skeleton, and annotations linked together. They are more complex objects, but can be useful for a number of tasks and analyses.
 
 ```python
-def pcg_meshwork(root_id,
-                 datastack_name=None,
-                 client=None,
-                 cv=None,
-                 refine='all',
-                 root_point=None,
-                 root_point_resolution=[4, 4, 40],
-                 root_point_search_radius=300,
-                 collapse_soma=False,
-                 collapse_radius=DEFAULT_COLLAPSE_RADIUS,
-                 synapses=None,
-                 synapse_table=None,
-                 remove_self_synapse=True,
-                 invalidation_d=3,
-                 n_parallel=4,
-                 ):
+def coord_space_meshwork(
+    root_id,
+    datastack_name=None,
+    client=None,
+    cv=None,
+    root_point=None,
+    root_point_resolution=None,
+    collapse_soma=False,
+    collapse_radius=7500,
+    synapses=None,
+    synapse_table=None,
+    remove_self_synapse=True,
+    live_query=False,
+    timestamp=None,
+    invalidation_d=7500,
+):
 ```
 
-#### Notes
+Many of the parameters are the same as in skeletonization. In addition, there are parameters controlling the addition of synapses.
 
-* The resulting meshwork file comes back with a "mesh" made out of the level 2 graph with vertices mapped to their chunk positions, a skeleton with `refine` and `collapse_soma` options as above, and one or more annotations.
+* *synapses*, *synapse_table*: If set to `"pre"`, `"post"`, or `"both"`, the after skeletonization the system will add pre, post, or both pre and postsynaptic annotations using the specified synapse table to the meshwork under `nrn.anno.pre_syn` and `nrn.anno.post_syn` respectively. Note that by default, `remove_self_synapse` will omit all synapses whose pre and post ids are the same neuron. This is a common form of errors, particularly around the nucleus, although it can also remove biologically real autapses.
 
-* All resulting meshworks have the annotation `lvl2_ids`, which is based on a dataframe with column `lvl2_id` that has level 2 ids and `mesh_ind` that has the associated mesh index.
-One can use the MeshIndex/SkeletonIndex properties like `nrn.anno.mesh_index.to_skel_index` to see the associated skeleton indices.
+* *live_query*, *timestamp*: If live_query is True, sets the timestamp at which annotations are from. If not set, uses the most materialization defined in the caveclient.
 
-* If the `synapses` property is set to `"pre"`, `"post"`, or `"all"`, there is also an attempt to look up the root id's presynaptic synapses, postsynaptic synapses, or both (respectively).
-Presynaptic synapses are in an annotation `"pre_syn"` and postsynaptic synapses are in an annotation called `"post_syn"`.
 
-* If returning synapses, you must set the synapse table.
-By default, synapses whose pre- and post-synaptic ids are both the same root id are excluded, but this can be turned off by setting `remove_self_synapse` to `False`.
+## How to use without an L2 Cache
 
-## Example
-
-A minimal example to get the skeleton of an arbitrary neuron with root id `864691135761488438` and soma at the voxel-space location `253870, 236989, 20517` in the Minnie dataset:
-
-```python
-from caveclient import CAVEclient
-import pcg_skel
-
-client = CAVEclient('minnie65_phase3_v1')
-
-oid = 864691135761488438 # Root id
-root_point = [253870, 236989, 20517] # root point in vertex coordinates
-sk_l2 = pcg_skel.pcg_skeleton(oid,
-                              client=client,
-                              refine='all',
-                              root_point=root_point,
-                              root_point_resolution=[4,4,40],
-                              collapse_soma=True,
-                              n_parallel=8)
-```
-
-To generate a skeleton with 1310 vertices took about 80 seconds on a 2019 MacBook Pro, all refined through the mesh fragments.
-Most of the time is spent in refinement.
-If you just select the `refine="epbp"` argument, it only refines the 79 branch and end points and accordingly takes a mere 12.5 seconds.
-It is worth exploring sparse refinement options and interpolation if processing time is extremely important.
-
-## Caching
-
-A common use case is to have a set of neurons that you are analyzing while proofreading is still ongoing.
-However, because proofreading events leave most of the neuron unchanged we shouldn't need to do more than update new locations.
-Conveniently, the level 2 ids let us follow this intuition.
-While a neuron's root id changes for each proofreading event, the level 2 id only changes if an edit occurs exactly within that region.
-Therefore, once we've looked up a level 2 id once, we can cache it and save time for future iterations on the same neuron.
-
-The current implementation of caching uses [SQLiteDict](https://github.com/piskvorky/sqlitedict), a simple means of using a sqlite file as a persistent key-value store.
-The cache is used with the functions `refine_vertices`, `pcg_skeleton`, and `pcg_meshwork` if you specify the filename of the sqlite database.
-For example,
-
-```python
-sk_l2 = pcg_skel.pcg_skeleton(oid,
-                              ...,
-                              cache='l2_cache.sqlite',
-                              save_to_cache=False,
-                              )
-```
-
-Note that if the database is not yet present, it will be created automatically.
-
-In order to avoid unintentional changes, new locations are not saved to the database by default.
-If you want to save new ids to the database as you are skeletonizing files, set the additional parameter `save_to_cache=True`.
-For adding data to the database post-hoc, please use the function `chunk_cache.save_ids_to_cache()`.
-
-## Segmentation-based localization
-
-Localizing level 2 ids with mesh fragments is much faster than downloading the segmentation for a whole chunk just to get a few supervoxels, but sometimes mesh fragments don't exist.
-This can occur for both good reasons (the L2 object is too small to get a mesh) and due to bugs in the meshing backend.
-However, if you really want to get such locations correct, falling back to the segmentation is available.
-
-You can use this by setting the `segmentation_fallback` option on any of the functions that localize vertices.
-For example,
-
-```python
-sk_l2 = pcg_skel.pcg_skeleton(oid,
-                              ...,
-                              segmentation_fallback=True,
-                              fallback_mip=2,
-                              )
-```
-
-Setting `segmentation_fallback=True` activates the capability, and setting `fallback_mip` will choose the MIP-level to use (2 by default).
-If the chosen MIP does not have voxels for the L2 id in it, it will try 0 next.
-Segmentation-based points will be cached if both features are used.
-
-Note that this approach is much slower and more memory intensive than using the mesh fragments.
-I have found it to take 4-8 seconds per vertex with the current implementation, although parallelation helps.
-
-## To-dos
-
-* Improve/document/test tooling for additional annotations.
-* Alternative key-value stores for caching
+See the `nocache.md` file for instructions on how to use without a L2 cache for the chunkedgraph.
 
 ## Credit
 

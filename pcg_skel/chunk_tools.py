@@ -3,6 +3,7 @@ from scipy import spatial
 import cloudvolume
 from . import utils, chunk_cache, skel_utils
 import multiwrapper.multiprocessing_utils as mu
+import fastremap
 
 UnshardedMeshSource = (
     cloudvolume.datasource.graphene.mesh.unsharded.GrapheneUnshardedMeshSource
@@ -16,6 +17,55 @@ L2_SERVICE_NAME = "service"
 
 class CompleteDataException(Exception):
     pass
+
+def build_graph_topology(lvl2_edge_graph):
+    """Extract the graph from the result of the lvl2_graph endpoint"""
+    lvl2_edge_graph = np.unique(np.sort(lvl2_edge_graph, axis=1), axis=0)
+    lvl2_ids = np.unique(lvl2_edge_graph)
+    l2dict = {l2id: ii for ii, l2id in enumerate(lvl2_ids)}
+    eg_arr_rm = fastremap.remap(lvl2_edge_graph, l2dict)
+    l2dict_reversed = {ii: l2id for l2id, ii in l2dict.items()}
+    return eg_arr_rm, l2dict, l2dict_reversed, lvl2_ids
+
+
+def build_spatial_graph(
+    lvl2_edge_graph, cv, client=None, method="chunk", require_complete=False
+):
+    """Extract spatial graph and level 2 id lookups from chunkedgraph "lvl2_graph" endpoint.
+
+    Parameters
+    ----------
+    lvl2_edge_graph : array
+        Nx2 edge list of level 2 ids
+    cv : cloudvolume.CloudVolume
+        Associated cloudvolume object
+
+    Returns
+    -------
+    eg_arr_rm : np.array
+        Nx2 edge list of indices remapped to integers starting at 0 through M, the number of unique level 2 ids.
+    l2dict : dict
+        Dict with level 2 ids as keys and vertex index as values
+    l2dict_reversed : dict
+        Dict with vertex index as keys and level 2 id as values
+    x_ch : np.array
+        Mx3 array of vertex locations in chunk index space.
+    """
+    eg_arr_rm, l2dict, l2dict_reversed, lvl2_ids = build_graph_topology(lvl2_edge_graph)
+    if method == "chunk":
+        x_ch = [np.array(cv.mesh.meta.meta.decode_chunk_position(l)) for l in lvl2_ids]
+    elif method == "service":
+        x_ch = dense_spatial_lookup(
+            lvl2_ids,
+            eg_arr_rm,
+            client,
+            require_complete=require_complete,
+        )
+    return eg_arr_rm, l2dict, l2dict_reversed, x_ch
+
+def adjust_meshwork(nrn, cv):
+    """Transform vertices in chunk index space to euclidean"""
+    nrn._mesh.vertices = utils.chunk_to_nm(nrn._mesh.vertices, cv)
 
 
 def dense_spatial_lookup(l2ids, eg, client, require_complete=False):
