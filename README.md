@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7703278.svg)](https://doi.org/10.5281/zenodo.7703278)
+
 # pcg_skel
 
 Generate robust neuronal topology directly from a ChunkedGraph dynamic segmentations.
