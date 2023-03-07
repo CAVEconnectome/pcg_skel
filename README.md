@@ -31,7 +31,7 @@ root_id = 864691135867734294
 sk = pcg_skel.coord_space_skeleton(root_id, client)
 ```
 
-This generates a skeleton, in this case for a pyramidal cell in the MICrONs65 volume. The skeleton is shown in black, and the mesh in red.
+This generates a skeleton, in this case for a pyramidal cell in the MICrONs65 volume, in just a few seconds — less time than is needed to download the mesh itself. The skeleton is shown in black, and the mesh in red.
 
 ![pyramidal cell](example_skeleton.png)
 
