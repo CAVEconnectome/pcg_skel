@@ -2,7 +2,7 @@
 
 # pcg_skel
 
-Generate robust neuronal topology directly from a ChunkedGraph dynamic segmentations.
+Generate robust neuronal topology directly from PyChunkedGraph dynamic segmentations.
 
 Skeletonization is an essential part of measuring neuronal anatomy, but in 3d segmented data it is not always trivial to produce a skeleton.
 Segmentations and meshes are often prohibitively large to download *en mass* and can artifacts that generate ambiguities or make attaching annotations like synapses to specific locations unclear.
