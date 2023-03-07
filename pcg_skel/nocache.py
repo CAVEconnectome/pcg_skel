@@ -50,7 +50,7 @@ def chunk_index_mesh(
         cv = client.info.segmentation_cloudvolume(progress=False)
 
     lvl2_eg = client.chunkedgraph.level2_chunk_graph(root_id)
-    eg, l2dict_mesh, l2dict_r_mesh, x_ch = sk_utils.build_spatial_graph(lvl2_eg, cv)
+    eg, l2dict_mesh, l2dict_r_mesh, x_ch = chunk_tools.build_spatial_graph(lvl2_eg, cv)
     mesh_chunk = trimesh_io.Mesh(
         vertices=x_ch,
         faces=[[0, 0, 0]],  # Some functions fail if no faces are set.
