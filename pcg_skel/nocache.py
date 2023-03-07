@@ -2,9 +2,9 @@ import numpy as np
 from caveclient import CAVEclient
 from meshparty import skeleton, skeletonize, trimesh_io, meshwork
 
-from .. import chunk_tools, features
-from .. import skel_utils as sk_utils
-from .. import utils
+from . import chunk_tools, features
+from . import skel_utils as sk_utils
+from . import utils
 
 DEFAULT_VOXEL_RESOLUTION = [4, 4, 40]
 DEFAULT_COLLAPSE_RADIUS = 7500.0
