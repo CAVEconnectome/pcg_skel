@@ -17,6 +17,7 @@ def add_synapses(
     remove_self_synapse=True,
     timestamp=None,
     live_query=False,
+    metadata=False,
 ):
     """Add synapses based on l2ids
 
@@ -56,6 +57,7 @@ def add_synapses(
         post=post,
         live_query=live_query,
         timestamp=timestamp,
+        metadata=metadata,
     )
 
     if pre_syn_df is not None:

@@ -134,18 +134,24 @@ def _mapped_synapses(
     remove_self,
     live_query,
     timestamp,
+    metadata,
+    remove_crud=True,
 ):
     if live_query:
         syn_df = client.materialize.live_query(
             synapse_table,
             filter_equal_dict={f"{side}_pt_root_id": root_id},
             timestamp=timestamp,
+            metadata=metadata
         )
     else:
         syn_df = client.materialize.query_table(
             synapse_table,
             filter_equal_dict={f"{side}_pt_root_id": root_id},
+            metadata=metadata,
         )
+    if remove_crud:
+        syn_df.drop(columns=['created', 'superceded_id', 'valid'], inplace=True)
 
     if remove_self:
         syn_df = syn_df.query("pre_pt_root_id != post_pt_root_id").reset_index(
@@ -178,6 +184,7 @@ def get_level2_synapses(
     post=True,
     live_query=False,
     timestamp=None,
+    metadata=False,
 ):
     live_query = timestamp is not None
 
@@ -193,6 +200,7 @@ def get_level2_synapses(
             remove_self=remove_self,
             live_query=live_query,
             timestamp=timestamp,
+            metadata=metadata,
         )
     else:
         pre_syn_df = None
@@ -207,6 +215,7 @@ def get_level2_synapses(
             remove_self=remove_self,
             live_query=live_query,
             timestamp=timestamp,
+            metadata=metadata,
         )
     else:
         post_syn_df = None

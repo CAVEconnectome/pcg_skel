@@ -199,6 +199,7 @@ def coord_space_meshwork(
     timestamp=None,
     invalidation_d=DEFAULT_INVALIDATION_D,
     require_complete=False,
+    metadata=False,
 ):
     """Generate a meshwork file based on the level 2 graph.
 
@@ -290,6 +291,7 @@ def coord_space_meshwork(
             remove_self_synapse=remove_self_synapse,
             timestamp=timestamp,
             live_query=live_query,
+            metadata=metadata,
         )
 
     features.add_lvl2_ids(nrn, l2dict_mesh)
