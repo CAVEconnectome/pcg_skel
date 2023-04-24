@@ -151,7 +151,7 @@ def _mapped_synapses(
             metadata=metadata,
         )
     if remove_crud:
-        syn_df.drop(columns=['created', 'superceded_id', 'valid'], inplace=True)
+        syn_df.drop(columns=['created', 'superceded_id', 'valid'], inplace=True, errors='ignore')
 
     if remove_self:
         syn_df = syn_df.query("pre_pt_root_id != post_pt_root_id").reset_index(
