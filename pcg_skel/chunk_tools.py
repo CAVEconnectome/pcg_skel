@@ -305,7 +305,7 @@ def lvl2_fragment_locs(
     """
 
     l2_ids = np.array(l2_ids)
-    l2means = np.full((len(l2_ids), 3), np.nan, dtype=np.float)
+    l2means = np.full((len(l2_ids), 3), np.nan, dtype=float)
     if cache is not None:
         if cache == L2_SERVICE_NAME:
             l2means_cached, is_cached = chunk_cache.lookup_cached_ids(
@@ -316,7 +316,7 @@ def lvl2_fragment_locs(
                 l2_ids, remote_cache=False, cache_file=cache
             )
     else:
-        l2means_cached = np.zeros((0, 3), dtype=np.float)
+        l2means_cached = np.zeros((0, 3), dtype=float)
         is_cached = np.full(len(l2_ids), False, dtype=np.bool)
 
     l2means[is_cached] = l2means_cached
