@@ -143,7 +143,7 @@ def coord_space_meshwork(
 
 Many of the parameters are the same as in skeletonization. In addition, there are parameters controlling the addition of synapses.
 
-* *synapses*, *synapse_table*: If set to `"pre"`, `"post"`, or `"both"`, the after skeletonization the system will add pre, post, or both pre and postsynaptic annotations using the specified synapse table to the meshwork under `nrn.anno.pre_syn` and `nrn.anno.post_syn` respectively. Note that by default, `remove_self_synapse` will omit all synapses whose pre and post ids are the same neuron. This is a common form of errors, particularly around the nucleus, although it can also remove biologically real autapses.
+* *synapses*: If set to `"pre"`, `"post"`, or `"all"`, the after skeletonization the system will add pre, post, or both pre and postsynaptic annotations using the specified synapse table to the meshwork under `nrn.anno.pre_syn` and `nrn.anno.post_syn` respectively. Note that by default, `remove_self_synapse` will omit all synapses whose pre and post ids are the same neuron. This is a common form of errors, particularly around the nucleus, although it can also remove biologically real autapses. `synapse_table` denotes the name of the table to search for these tables, for instance, you might use `client.materialize.synapse_table`.
 
 * *live_query*, *timestamp*: If live_query is True, sets the timestamp at which annotations are from. If not set, uses the materialization defined in the caveclient.
 
