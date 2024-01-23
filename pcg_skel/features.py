@@ -18,6 +18,7 @@ def add_synapses(
     timestamp=None,
     live_query=False,
     metadata=False,
+    overwrite=False,
 ):
     """Add synapses based on l2ids
 
@@ -43,6 +44,11 @@ def add_synapses(
         Datetime to use for root id lookups if not using a materialized version, by default None
     live_query : bool, optional
         If True, use a timestamp to look up root ids, by default False
+    metadata : bool, optional
+        If True, add metadata about the table and query to the synapse annotation table,
+        by default False.
+    overwrite : bool, optional
+        If True, overwrite the existing property table, by default False.
     """
     if root_id is None:
         root_id - nrn.seg_id
@@ -66,7 +72,8 @@ def add_synapses(
             pre_syn_df,
             index_column="pre_pt_mesh_ind",
             point_column="ctr_pt_position",
-            voxel_resolution=pre_syn_df.attrs.get('dataframe_resolution'),
+            voxel_resolution=pre_syn_df.attrs.get("dataframe_resolution"),
+            overwrite=overwrite,
         )
     if post_syn_df is not None:
         nrn.anno.add_annotations(
@@ -74,7 +81,8 @@ def add_synapses(
             post_syn_df,
             index_column="post_pt_mesh_ind",
             point_column="ctr_pt_position",
-            voxel_resolution=post_syn_df.attrs.get('dataframe_resolution'),
+            voxel_resolution=post_syn_df.attrs.get("dataframe_resolution"),
+            overwrite=overwrite,
         )
 
     return
@@ -84,6 +92,7 @@ def add_lvl2_ids(
     nrn,
     l2dict_mesh,
     property_name="lvl2_ids",
+    overwrite=False,
 ):
     """Add meshwork annotation table associating level 2 ids with vertex ids.
 
@@ -95,6 +104,8 @@ def add_lvl2_ids(
         Dictionary mapping L2 ids to mesh graph indices.
     property_name : str, optional
         Name of the annotation table, by default "lvl2_ids"
+    overwrite : bool, optional
+        If True, overwrite the existing property table, by default False.
     """
     lvl2_df = pd.DataFrame(
         {"lvl2_id": list(l2dict_mesh.keys()), "mesh_ind": list(l2dict_mesh.values())}
@@ -110,6 +121,7 @@ def add_volumetric_properties(
     l2id_anno_name="lvl2_ids",
     l2id_col_name="lvl2_id",
     property_name="vol_prop",
+    overwrite=False,
 ):
     """Add L2 Cache properties as an annotation property table.
 
@@ -127,6 +139,8 @@ def add_volumetric_properties(
         Name of the column in the property table holding L2 ids, by default "lvl2_id"
     property_name : str, optional
         Name of the new volume property table, by default "vol_prop"
+    overwrite : bool, optional
+        If True, overwrite the existing property table, by default False
     """
     l2ids = nrn.anno[l2id_anno_name].df[l2id_col_name]
     dat = client.l2cache.get_l2data(l2ids, attributes=attributes)
@@ -140,6 +154,7 @@ def add_volumetric_properties(
             columns=[l2id_col_name]
         ),
         index_column="mesh_ind",
+        overwrite=overwrite,
     )
 
     return
@@ -157,6 +172,7 @@ def add_segment_properties(
     area_col_name="area_nm2",
     root_as_sphere=True,
     comp_mask="is_axon",
+    overwrite=False,
 ):
     """Use volumetric and topological properties to add descriptive properties for each skeleton vertex.
     Note that properties are estimated per segment, the unbranched region between branch points and/or endpoints.
@@ -185,6 +201,8 @@ def add_segment_properties(
         Treats the root location as a sphere for setting the effective radius, by default True
     comp_mask : str, optional
         Sets the annotation table to mask off for strahler number computation, by default "is_axon".
+    overwrite : bool, optional
+        If True, overwrite the existing property table, by default False.
     """
     seg_num = []
     is_root = []
@@ -266,6 +284,7 @@ def add_segment_properties(
         segment_property_name,
         data=base_df,
         index_column="mesh_ind",
+        overwrite=overwrite,
     )
     return
 
@@ -278,6 +297,7 @@ def add_is_axon_annotation(
     threshold_quality=0.5,
     extend_to_segment=True,
     n_times=1,
+    overwrite=False,
 ):
     """Add an annotation property table specifying which vertices belong to the axon, based on synaptic input and output locations
     (see synapse flow centrality in "Quantitative neuroanatomy for connectomics in Drosophila", Schneider-Mizell et al. 2016)
@@ -287,7 +307,7 @@ def add_is_axon_annotation(
     nrn : meshparty.meshwork.Meshwork
         Meshwork object
     pre_anno : str
-        Annotation property table name for presynaptic sites (outputs).  
+        Annotation property table name for presynaptic sites (outputs).
     post_anno : str
         Annotation property table name for postsyanptic sites (inputs).
     annotation_name : str, optional
@@ -300,6 +320,8 @@ def add_is_axon_annotation(
     n_times : int, optional
         The number of times to run axon/dendrite detection in a row, by default 1.
         This should be set to the number of distinct axon branches on a cell, which surprisingly can be more than one even for mouse neurons.
+    overwrite : bool, optional
+        If True, overwrite the existing property table, by default False.
     """
     is_axon, sq = split_axon_by_annotation(
         nrn,
@@ -310,10 +332,12 @@ def add_is_axon_annotation(
         n_times=n_times,
     )
     if sq < threshold_quality:
-        nrn.anno.add_annotations(annotation_name, [], mask=True)
+        nrn.anno.add_annotations(annotation_name, [], mask=True, overwrite=overwrite)
         raise Warning("Split quality below threshold, no axon mesh vertices added!")
     else:
-        nrn.anno.add_annotations(annotation_name, is_axon, mask=True)
+        nrn.anno.add_annotations(
+            annotation_name, is_axon, mask=True, overwrite=overwrite
+        )
     return
 
 
