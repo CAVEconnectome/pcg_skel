@@ -1,10 +1,10 @@
 import numpy as np
 from caveclient import CAVEclient
-from meshparty import skeleton, skeletonize, trimesh_io, meshwork
+from meshparty import skeletonize, trimesh_io, meshwork
 
 from . import chunk_tools, features
 from . import skel_utils as sk_utils
-from . import utils
+import warnings
 
 DEFAULT_VOXEL_RESOLUTION = [4, 4, 40]
 DEFAULT_COLLAPSE_RADIUS = 7500.0
@@ -12,7 +12,8 @@ DEFAULT_INVALIDATION_D = 7500
 
 skeleton_type = "pcg_skel"
 
-def coord_space_mesh(
+
+def pcg_graph(
     root_id,
     client,
     cv=None,
@@ -30,7 +31,7 @@ def coord_space_mesh(
         Initialized CAVEclient for the dataset.
     cv : cloudvolume.CloudVolume, optional
         Initialized CloudVolume object for the dataset. This does not replace the caveclient, but
-        a pre-initizialized cloudvolume can save some time during batch processing. By default None. 
+        a pre-initizialized cloudvolume can save some time during batch processing. By default None.
     return_l2dict : bool, optional
         If True, returns the mappings between l2 ids and vertices, by default False
     nan_rounds : int, optional
@@ -72,7 +73,7 @@ def coord_space_mesh(
         return mesh_loc
 
 
-def coord_space_skeleton(
+def pcg_skeleton(
     root_id,
     client,
     datastack_name=None,
@@ -99,7 +100,7 @@ def coord_space_skeleton(
         If client is None, initializes a CAVEclient at this datastack, by default None.
     cv : cloudvolume.CloudVolume, optional
         Initialized CloudVolume object for the dataset. This does not replace the caveclient, but
-        a pre-initizialized cloudvolume can save some time during batch processing. By default None. 
+        a pre-initizialized cloudvolume can save some time during batch processing. By default None.
     invalidation_d : int, optional
         Distance (in nanometers) for TEASAR skeleton invalidation, by default 10_000.
     return_mesh : bool, optional
@@ -183,7 +184,7 @@ def coord_space_skeleton(
         return tuple(out_list)
 
 
-def coord_space_meshwork(
+def pcg_meshwork(
     root_id,
     datastack_name=None,
     client=None,
@@ -232,7 +233,7 @@ def coord_space_meshwork(
     live_query : bool, optional
         If True, expect a timestamp for querying at a give point in time. Otherwise, use the materializatio set by the client. Optional, by default False.
     timestamp = datetime.datetime, optional
-        If set, acts as the time at which all root ids and annotations are found at. 
+        If set, acts as the time at which all root ids and annotations are found at.
     invalidation_d : int, optional
         Invalidation radius in hops for the mesh skeletonization along the chunk adjacency graph, by default 3
     require_complete : bool, optional
@@ -298,501 +299,145 @@ def coord_space_meshwork(
     return nrn
 
 
-
-def chunk_index_mesh(
+def coord_space_skeleton(
     root_id,
-    client=None,
+    client,
     datastack_name=None,
     cv=None,
+    invalidation_d=10_000,
+    return_mesh=False,
     return_l2dict=False,
+    return_l2dict_mesh=False,
+    root_point=None,
+    root_point_resolution=None,
+    collapse_soma=False,
+    collapse_radius=7500,
+    nan_rounds=10,
+    require_complete=False,
 ):
-    """Download a mesh with chunk index vertices
-
+    """Produce a skeleton from the level 2 graph.
     Parameters
     ----------
     root_id : int
-        Root id to download.
-    client : CAVEclient, optional
-        Preset CAVEclient, by default None.
-    datastack_name : str or None, optional
-        Datastack to use to initialize a CAVEclient, by default None.
-    cv : cloudvolume.CloudVolume or None, optional
-        Cloudvolume instance, by default None.
-    return_l2dict : bool, optional
-        If True, returns both a l2id to vertex dict and the reverse, by default False.
-
-    Returns
-    -------
-    mesh : trimesh_io.Mesh
-        Chunk graph represented as a mesh, with vertices at chunk index locations and edges in the link_edges attribute.
-    l2dict_mesh : dict
-        l2 id to mesh vertex index dictionary. Only returned if return_l2dict is True.
-    l2dict_r_mesh : dict
-        Mesh vertex index to l2 id dictionary. Only returned if return_l2dict is True.
-    """
-    DeprecationWarning('This function does not use the L2cache natively and will be moved to pcg_skel.nocache in a future version.')
-
-    if client is None:
-        client = CAVEclient(datastack_name)
-    if cv is None:
-        cv = client.info.segmentation_cloudvolume(progress=False)
-
-    lvl2_eg = client.chunkedgraph.level2_chunk_graph(root_id)
-    eg, l2dict_mesh, l2dict_r_mesh, x_ch = chunk_tools.build_spatial_graph(lvl2_eg, cv)
-    mesh_chunk = trimesh_io.Mesh(
-        vertices=x_ch,
-        faces=[[0, 0, 0]],  # Some functions fail if no faces are set.
-        link_edges=eg,
-    )
-    if return_l2dict:
-        return mesh_chunk, l2dict_mesh, l2dict_r_mesh
-    else:
-        return mesh_chunk
-
-
-def chunk_index_skeleton(
-    root_id,
-    client=None,
-    datastack_name=None,
-    cv=None,
-    root_point=None,
-    invalidation_d=3,
-    return_mesh=False,
-    return_l2dict=False,
-    return_mesh_l2dict=False,
-    root_point_resolution=None,
-    root_point_search_radius=300,
-    n_parallel=1,
-):
-    """Generate a basic skeleton with chunked-graph index vertices.
-
-    Parameters
-    ----------
-    root_id : np.uint64
-        Neuron root id
-    client : caveclient.CAVEclient, optional
-        CAVEclient for a datastack, by default None. If None, you must specify a datastack name.
-    datastack_name : str, optional
-        Datastack name to create a CAVEclient, by default None. Only used if client is None.
+        Root id of a segment
+    client : CAVEclient.caveclient
+        Initialized CAVEclient for the dataset.
+    datastack_name : string, optional
+        If client is None, initializes a CAVEclient at this datastack, by default None.
     cv : cloudvolume.CloudVolume, optional
-        CloudVolume associated with the object, by default None. If None, one is created based on the client info.
-    root_point : array, optional
-        Point in voxel space to set the root vertex. By default None, which makes a random tip root.
+        Initialized CloudVolume object for the dataset. This does not replace the caveclient, but
+        a pre-initizialized cloudvolume can save some time during batch processing. By default None.
     invalidation_d : int, optional
-        TEASAR invalidation radius in chunk space, by default 3
+        Distance (in nanometers) for TEASAR skeleton invalidation, by default 10_000.
     return_mesh : bool, optional
-        If True, returns the pre-skeletonization mesh with vertices in chunk index space, by default False
+        If True, returns the mesh graph as well as the skeleton, by default False
     return_l2dict : bool, optional
-        If True, returns the level 2 id to vertex index dict. By default True
-    n_parallel : int, optional
-        Sets number of parallel threads for cloudvolume, by default 1
+        If True, returns the mappings between l2 ids and skeleton vertices, by default False
+    return_l2dict_mesh : bool, optional
+        If True, returns mappings between l2 ids and mesh graph vertices, by default False
+    root_point : list-like, optional
+        3-element list or array with the x,y,z location of the root point. Optional, by default None.
+        If None, the most distant tip is set to root.
+    root_point_resolution : list-like, optional
+        3-element list or array with the x,y,z resolution of the root point, in nanometers per voxel dimension, by default None.
+    collapse_soma : bool, optional
+        If True, collapse nearby vertices into the root point, by default False.
+    collapse_radius : int, optional
+        Distance (in nanometers) for soma collapse, by default 7500.
+    nan_rounds : int, optional
+        If vertices are missing (or not computed), this sets the number of iterations for smoothing over them. By default 10
+    require_complete : bool, optional
+        If True, raise an Exception if any vertices are missing from the cache, by default False
 
     Returns
     -------
     sk : meshparty.skeleton.Skeleton
-        Skeleton object
-    mesh : meshparty.trimesh_io.Mesh
-        Mesh object, only if return_mesh is True
-    level2_dict : dict
-        Level 2 id to vertex map, only if return_l2dict is True.
+        Skeleton for the root id
+    mesh : meshparty.trimesh_io.Mesh (optional)
+        Mesh graph that the skeleton is based on, only returned if return_mesh is True.
+    (l2dict_skel, l2dict_reverse): tuple of dicts (optional)
+        Dictionaries mapping l2 ids to skeleton vertices and skeleton vertices to l2 ids, respectively. Only returned if return_l2dict is True.
+    (l2dict_mesh, l2dict_mesh): tuple of dicts (optional)
+        Dictionaries mapping l2 ids to mesh graph vertices and mesh_graph vertices to l2 ids, respectively. Only returned if return_l2dict is True.
     """
-    DeprecationWarning('This function does not use the L2cache natively and will be moved to pcg_skel.nocache in a future version.')
-
-    if client is None:
-        client = CAVEclient(datastack_name)
-    if n_parallel is None:
-        n_parallel = 1
-    if cv is None:
-        cv = client.info.segmentation_cloudvolume(progress=True, parallel=1)
-
-    if root_point_resolution is None:
-        root_point_resolution = cv.mip_resolution(0)
-
-    mesh_chunk, l2dict_mesh, l2dict_r_mesh = chunk_index_mesh(
-        root_id, client=client, cv=cv, return_l2dict=True
+    warnings.warn(
+        "The function `coord_space_skeleton` is deprecated and has been replaced with 'pcg_skeleton'",
+        DeprecationWarning,
     )
-
-    if root_point is not None:
-        lvl2_root_chid, lvl2_root_loc = chunk_tools.get_closest_lvl2_chunk(
-            root_point,
-            root_id,
-            client=client,
-            cv=None,
-            radius=root_point_search_radius,
-            voxel_resolution=root_point_resolution,
-            return_point=True,
-        )  # Need to have cv=None because of a cloudvolume inconsistency
-        root_mesh_index = l2dict_mesh[lvl2_root_chid]
-    else:
-        root_mesh_index = None
-
-    metameta = {"space": "chunk", "datastack": client.datastack_name}
-    sk_ch = skeletonize.skeletonize_mesh(
-        mesh_chunk,
-        invalidation_d=invalidation_d,
-        collapse_soma=False,
-        compute_radius=False,
-        cc_vertex_thresh=0,
-        root_index=root_mesh_index,
-        remove_zero_length_edges=False,
-        meta={
-            "root_id": root_id,
-            "skeleton_type": skeleton_type,
-            "meta": metameta,
-        },
-    )
-
-    l2dict, l2dict_r = sk_utils.filter_l2dict(sk_ch, l2dict_r_mesh)
-
-    out_list = [sk_ch]
-    if return_mesh:
-        out_list.append(mesh_chunk)
-    if return_l2dict:
-        out_list.append((l2dict, l2dict_r))
-    if return_mesh_l2dict:
-        out_list.append((l2dict_mesh, l2dict_r_mesh))
-    if len(out_list) == 1:
-        return out_list[0]
-    else:
-        return tuple(out_list)
-
-
-def refine_chunk_index_skeleton(
-    sk_ch,
-    l2dict_reversed,
-    cv,
-    refine_inds="all",
-    scale_chunk_index=True,
-    root_location=None,
-    nan_rounds=20,
-    return_missing_ids=False,
-    segmentation_fallback=False,
-    fallback_mip=2,
-    cache=None,
-    save_to_cache=False,
-    client=None,
-    l2cache=False,
-):
-    """Refine skeletons in chunk index space to Euclidean space.
-
-    Parameters
-    ----------
-    sk_ch : meshparty.skeleton.Skeleton
-        Skeleton in chunk index space
-    l2dict_reversed : dict
-        Mapping between skeleton vertex index and level 2 id.
-    cv : cloudvolume.CloudVolume
-        Associated cloudvolume
-    refine_inds : str, None or list-like, optional
-        Skeleton indices to refine, 'all', or None. If 'all', does all skeleton indices.
-        If None, downloads no index but can use other options.
-        By default 'all'.
-    scale_chunk_index : bool, optional
-        If True, maps unrefined chunk index locations to the center of the chunk in
-        Euclidean space, by default True
-    root_location : list-like, optional
-        3-element euclidean space location to which to map the root vertex location, by default None
-    nan_rounds : int, optional
-        Number of passes to smooth over any missing values by averaging proximate vertex locations.
-        Only used if refine_inds is 'all'. Default is 20.
-    return_missing_ids : bool, optional
-        If True, returns ids of any missing level 2 meshes. Default is False
-    segmentation_fallback : bool, optional
-        If True, downloads the segmentation at mip level in fallback_mip to get a location. Very slow. Default is False.
-    fallback_mip : int, optional
-        The mip level used in segmentation fallback. Default is 2.
-    cache : str, optional
-        If set to 'service', uses the l2cache service if available available. Otherwise, a filename for a sqlite database storing locations associated with level 2 ids. Default is None.
-    save_to_cache : bool, optional
-        If using a sqlite database, setting this to True will add values to the cache as downloads occur.
-    client : CAVEclient, optional
-        If using the l2cache service, provides a client that can access it.
-    l2cache : bool, optional,
-        Set to True if using a l2cache to localize vertices. Same as setting cache to 'service'. Default is False.
-
-    Returns
-    -------
-    meshparty.skeleton.Skeleton
-        Skeleton with remapped vertex locations
-    """
-    if nan_rounds is None:
-        convert_missing = True
-    else:
-        convert_missing = False
-
-    if l2cache:
-        cache = "service"
-
-    refine_out = chunk_tools.refine_vertices(
-        sk_ch.vertices,
-        l2dict_reversed=l2dict_reversed,
-        cv=cv,
-        refine_inds=refine_inds,
-        scale_chunk_index=scale_chunk_index,
-        convert_missing=convert_missing,
-        return_missing_ids=return_missing_ids,
-        segmentation_fallback=segmentation_fallback,
-        fallback_mip=fallback_mip,
-        cache=cache,
-        save_to_cache=save_to_cache,
-        client=client,
-    )
-    if return_missing_ids:
-        new_verts, missing_ids = refine_out
-    else:
-        new_verts = refine_out
-
-    if root_location is not None:
-        new_verts[sk_ch.root] = root_location
-
-    l2_sk = skeleton.Skeleton(
-        vertices=new_verts,
-        edges=sk_ch.edges,
-        root=sk_ch.root,
-        remove_zero_length_edges=False,
-        mesh_index=sk_ch.mesh_index,
-        mesh_to_skel_map=sk_ch.mesh_to_skel_map,
-        meta=sk_ch.meta,
-    )
-    metameta = {
-        "space": "euclidean",
-    }
-    try:
-        l2_sk.meta.update_metameta(metameta)
-    except:
-        pass
-
-    if isinstance(refine_inds, str) and refine_inds == "all":
-        sk_utils.fix_nan_verts(l2_sk, num_rounds=nan_rounds)
-
-    if return_missing_ids:
-        return l2_sk, missing_ids
-    else:
-        return l2_sk
-
-
-def pcg_skeleton(
-    root_id,
-    client=None,
-    datastack_name=None,
-    cv=None,
-    refine="all",
-    root_point=None,
-    root_point_resolution=None,
-    root_point_search_radius=300,
-    collapse_soma=False,
-    collapse_radius=10_000.0,
-    invalidation_d=3,
-    return_mesh=False,
-    return_l2dict=False,
-    return_l2dict_mesh=False,
-    return_missing_ids=False,
-    nan_rounds=20,
-    segmentation_fallback=False,
-    fallback_mip=2,
-    cache=None,
-    save_to_cache=False,
-    n_parallel=1,
-    l2cache=False,
-):
-    """Create a euclidean-space skeleton from the pychunkedgraph
-
-    Parameters
-    ----------
-    root_id : uint64
-        Root id of the neuron to skeletonize
-    client : caveclient.CAVEclientFull or None, optional
-        Pre-specified cave client for the pcg. If this is not set, datastack_name must be provided. By default None
-    datastack_name : str or None, optional
-        If no client is specified, a CAVEclient is created with this datastack name, by default None
-    cv : cloudvolume.CloudVolume or None, optional
-        Prespecified cloudvolume instance. If None, uses the client info to make one, by default None
-    refine : 'all', 'ep', 'bp', 'epbp', 'bpep', or None, optional
-        Selects how to refine vertex locations by downloading mesh chunks. Unrefined vertices are placed in the
-        center of their chunk in euclidean space.
-        * 'all' refines all vertex locations. (Default)
-        * 'ep' refines end points only
-        * 'bp' refines branch points only
-        * 'bpep' or 'epbp' refines both branch and end points.
-        * None refines no points.
-        * 'chunk' Keeps things in chunk index space.
-    root_point : array-like or None, optional
-        3 element xyz location for the location to set the root in units set by root_point_resolution,
-        by default None. If None, a distal tip is selected.
-    root_point_resolution : array-like, optional
-        Resolution in euclidean space of the root_point, by default [4, 4, 40]
-    root_point_search_radius : int, optional
-        Distance in euclidean space to look for segmentation when finding the root vertex, by default 300
-    collapse_soma : bool, optional,
-        If True, collapses vertices within a given radius of the root point into the root vertex, typically to better
-        represent primary neurite branches. Requires a specified root_point. Default if False.
-    collapse_radius : float, optional
-        Max distance in euclidean space for soma collapse. Default is 10,000 nm (10 microns).
-    invalidation_d : int, optional
-        Invalidation radius in hops for the mesh skeletonization along the chunk adjacency graph, by default 3
-    return_mesh : bool, optional
-        If True, returns the mesh in chunk index space, by default False
-    return_l2dict : bool, optional
-        If True, returns the tuple (l2dict, l2dict_r), by default False.
-        l2dict maps all neuron level2 ids to skeleton vertices. l2dict_r maps skeleton indices to their direct level 2 id.
-    return_l2dict_mesh : bool, optional
-        If True, returns the tuple (l2dict_mesh, l2dict_mesh_r), by default False.
-        l2dict_mesh maps neuron level 2 ids to mesh vertices, l2dict_r maps mesh indices to level 2 ids.
-    return_missing_ids : bool, optional
-        If True, returns level 2 ids that were missing in the chunkedgraph, by default False. This can be useful
-        for submitting remesh requests in case of errors.
-    nan_rounds : int, optional
-        Maximum number of rounds of smoothing to eliminate missing vertex locations in the event of a
-        missing level 2 mesh, by default 20. This is only used when refine=='all'.
-    segmentation_fallback : bool, optional
-        If True, uses the segmentation in cases of missing level 2 meshes. This is slower but more robust.
-        Default is True.
-    cache : str or None, optional
-        If set to 'service', uses the online l2cache service (if available). Otherwise, this is the filename of a sqlite database with cached lookups for l2 ids. Optional, default is None.
-    n_parallel : int, optional
-        Number of parallel downloads passed to cloudvolume, by default 1
-    l2cache : bool, optional
-        Set to True if using the l2cache. Equivalent to cache='service'. Default is False.
-
-    Returns
-    -------
-    sk_l2 : meshparty.skeleton.Skeleton
-        Skeleton with vertices in euclidean space
-    mesh_l2 : meshparty.mesh.Mesh, optional
-        Mesh with vertices in chunk index space. Only if return_mesh is True.
-    (l2dict, l2dict_r) : (dict, dict), optional
-        Mappings between level 2 ids and skeleton indices. Only if return_l2dict is True.
-    (l2dict_mesh, l2dict_mesh_r) : (dict, dict), optional
-        Mappings between level 2 ids and mesh indices. Only if return_l2dict_mesh is True.
-    missing_ids : np.array, optional
-        List of level 2 ids with missing mesh fragments. Only if return_missing_ids is True.
-    """
-    DeprecationWarning('This function does not use the L2cache natively and will be moved to pcg_skel.nocache in a future version.')
-
-    if client is None:
-        client = CAVEclient(datastack_name)
-    if n_parallel is None:
-        n_parallel = 1
-    if cv is None:
-        cv = client.info.segmentation_cloudvolume(progress=True, parallel=1)
-
-    if root_point_resolution is None:
-        root_point_resolution = cv.mip_resolution(0)
-
-    (
-        sk_ch,
-        mesh_ch,
-        (l2dict, l2dict_r),
-        (l2dict_mesh, l2dict_mesh_r),
-    ) = chunk_index_skeleton(
-        root_id,
-        client=client,
+    return pcg_skeleton(
         datastack_name=datastack_name,
         cv=cv,
+        invalidation_d=invalidation_d,
+        return_mesh=return_mesh,
+        return_l2dict=return_l2dict,
+        return_l2dict_mesh=return_l2dict_mesh,
         root_point=root_point,
         root_point_resolution=root_point_resolution,
-        root_point_search_radius=root_point_search_radius,
-        invalidation_d=invalidation_d,
-        return_mesh=True,
-        return_mesh_l2dict=True,
-        return_l2dict=True,
-        n_parallel=n_parallel,
-    )
-    if refine == "all":
-        refine_inds = "all"
-    elif refine == "bp":
-        refine_inds = sk_ch.branch_points_undirected
-    elif refine == "ep":
-        refine_inds = sk_ch.end_points_undirected
-    elif refine == "epbp" or refine == "bpep":
-        refine_inds = np.concatenate(
-            (sk_ch.end_points_undirected, sk_ch.branch_points_undirected)
-        )
-    elif refine == "chunk":
-        refine_inds = None
-    elif refine is None:
-        refine_inds = None
-    else:
-        raise ValueError(
-            '"refine" must be one of "all", "bp", "ep", "epbp"/"bpep", "chunk", or None'
-        )
-
-    if root_point is not None:
-        root_point_euc = root_point * np.array([root_point_resolution])
-    else:
-        root_point_euc = None
-
-    sk_l2, missing_ids = refine_chunk_index_skeleton(
-        sk_ch,
-        l2dict_r,
-        cv=cv,
-        refine_inds=refine_inds,
-        scale_chunk_index=True,
-        root_location=root_point_euc,
+        collapse_soma=collapse_soma,
+        collapse_radius=collapse_radius,
         nan_rounds=nan_rounds,
-        return_missing_ids=True,
-        segmentation_fallback=segmentation_fallback,
-        fallback_mip=fallback_mip,
-        cache=cache,
-        save_to_cache=save_to_cache,
-        client=client,
-        l2cache=l2cache,
+        require_complete=require_complete,
     )
 
-    if refine == "chunk" or refine is None:
-        refinement_method = None
-    elif segmentation_fallback:
-        refinement_method = "mesh_average_with_seg_fallback"
-    else:
-        refinement_method = "mesh_average"
-    metameta = {
-        "refinement": refine,
-        "refinement_method": refinement_method,
-        "nan_rounds": nan_rounds,
-    }
-    try:
-        sk_l2.meta.update_metameta(metameta)
-    except:
-        pass
 
-    if collapse_soma and root_point is not None:
-        sk_l2 = collapse_pcg_skeleton(
-            sk_l2.vertices[sk_l2.root], sk_l2, collapse_radius
-        )
+def coord_space_mesh(
+    root_id,
+    client,
+    cv=None,
+    return_l2dict=False,
+    nan_rounds=10,
+    require_complete=False,
+):
+    """Compute the level 2 spatial graph (or mesh) of a given root id using the l2cache.
+    Deprecated: Use pcg_graph instead.
 
-    if refine == "chunk":
-        sk_l2._rooted._vertices = utils.nm_to_chunk(sk_l2.vertices, cv)
-        try:
-            sk_l2.meta.update_metameta({"space": "chunk"})
-        except:
-            pass
+    Parameters
+    ----------
+    root_id : int
+        Root id of a segment
+    client : CAVEclient.caveclient
+        Initialized CAVEclient for the dataset.
+    cv : cloudvolume.CloudVolume, optional
+        Initialized CloudVolume object for the dataset. This does not replace the caveclient, but
+        a pre-initizialized cloudvolume can save some time during batch processing. By default None.
+    return_l2dict : bool, optional
+        If True, returns the mappings between l2 ids and vertices, by default False
+    nan_rounds : int, optional
+        If vertices are missing (or not computed), this sets the number of iterations for smoothing over them. By default 10
+    require_complete : bool, optional
+        If True, raise an Exception if any vertices are missing from the cache, by default False
 
-    output = [sk_l2]
-    if return_mesh:
-        output.append(mesh_ch)
-    if return_l2dict:
-        output.append((sk_utils.propagate_l2dict(sk_l2, l2dict_mesh), l2dict_r))
-    if return_l2dict_mesh:
-        output.append((l2dict_mesh, l2dict_mesh_r))
-    if return_missing_ids:
-        output.append(missing_ids)
-    if len(output) == 1:
-        return output[0]
-    else:
-        return tuple(output)
+    Returns
+    -------
+    mesh : meshparty.trimesh_io.Mesh
+        Object with a vertex for every level 2 id and edges between all connected level 2 chunks.
+    l2dict : dict (optional)
+        Dictionary with keys as level 2 ids and values as mesh vertex index. Optional, only returned if `return_l2dict` is True.
+    l2dict_reverse : dict (optional)
+        Dictionary with keys as mesh vertex indices and values as level 2 id. Optional, only returned if `return_l2dict` is True.
+    """
+
+    warnings.warn(
+        "The function `coord_space_mesh` is deprecated and has been replaced with 'pcg_graph'",
+        DeprecationWarning,
+    )
+    return pcg_graph(
+        root_id,
+        client,
+        cv=cv,
+        return_l2dict=return_l2dict,
+        nan_rounds=nan_rounds,
+        require_complete=require_complete,
+    )
 
 
-
-
-def pcg_meshwork(
+def coord_space_meshwork(
     root_id,
     datastack_name=None,
     client=None,
     cv=None,
-    refine="all",
     root_point=None,
     root_point_resolution=None,
-    root_point_search_radius=300,
     collapse_soma=False,
     collapse_radius=DEFAULT_COLLAPSE_RADIUS,
     synapses=None,
@@ -800,13 +445,9 @@ def pcg_meshwork(
     remove_self_synapse=True,
     live_query=False,
     timestamp=None,
-    invalidation_d=3,
-    segmentation_fallback=False,
-    fallback_mip=2,
-    cache=None,
-    save_to_cache=False,
-    n_parallel=None,
-    l2cache=False,
+    invalidation_d=DEFAULT_INVALIDATION_D,
+    require_complete=False,
+    metadata=False,
 ):
     """Generate a meshwork file based on the level 2 graph.
 
@@ -820,22 +461,11 @@ def pcg_meshwork(
         Initialized CAVE client. If None is given, will use the datastack_name to create one. By default None
     cv : cloudvolume.CloudVolume or None, optional
         Initialized cloudvolume. If none is given, the client info will be used to create one. By default None
-    refine : 'all', 'ep', 'bp', 'epbp'/'bpep', or None, optional
-        Selects how to refine vertex locations by downloading mesh chunks.
-        Unrefined vertices are placed in the center of their chunk in euclidean space.
-        * 'all' refines all vertex locations. (Default)
-        * 'ep' refines end points only
-        * 'bp' refines branch points only
-        * 'bpep' or 'epbp' refines both branch and end points.
-        * 'chunk' keeps vertices in chunk index space.
-        * None refines no points but maps them to the center of the chunk in euclidean space.
     root_point : array-like or None, optional
         3 element xyz location for the location to set the root in units set by root_point_resolution,
         by default None. If None, a distal tip is selected.
     root_point_resolution : array-like, optional
         Resolution in euclidean space of the root_point, by default [4, 4, 40]
-    root_point_search_radius : int, optional
-        Distance in euclidean space to look for segmentation when finding the root vertex, by default 300
     collapse_soma : bool, optional,
         If True, collapses vertices within a given radius of the root point into the root vertex, typically to better
         represent primary neurite branches. Requires a specified root_point. Default if False.
@@ -847,142 +477,40 @@ def pcg_meshwork(
         Name of the synapse table to query if synapses are requested, by default None
     remove_self_synapse : bool, optional
         If True, filters out synapses whose pre- and postsynaptic root ids are the same neuron, by default True
+    live_query : bool, optional
+        If True, expect a timestamp for querying at a give point in time. Otherwise, use the materializatio set by the client. Optional, by default False.
+    timestamp = datetime.datetime, optional
+        If set, acts as the time at which all root ids and annotations are found at.
     invalidation_d : int, optional
         Invalidation radius in hops for the mesh skeletonization along the chunk adjacency graph, by default 3
-    cache : str or None, optional
-        If set to 'service', uses the online l2cache service (if available). Otherwise, this is the filename of a sqlite database with cached lookups for l2 ids. Optional, default is None.
-    n_parallel : int, optional
-        Number of parallel downloads passed to cloudvolume, by default 1
-    l2cache : bool, optional
-        Set to True to use the l2cache. Equivalent to cache='service'.
+    require_complete : bool, optional
+        If True, raise an Exception if any vertices are missing from the cache, by default False
 
     Returns
     -------
     meshparty.meshwork.Meshwork
         Meshwork object with skeleton based on the level 2 graph. See documentation for details.
     """
-    DeprecationWarning('This function does not use the L2cache natively and will be moved to pcg_skel.nocache in a future version.')
+    warnings.warn(
+        "The function `coord_space_meshwork` is deprecated and has been replaced with 'pcg_meshwork'",
+        DeprecationWarning,
+    )
 
-    if client is None:
-        client = CAVEclient(datastack_name)
-    if n_parallel is None:
-        n_parallel = 1
-    if cv is None:
-        cv = client.info.segmentation_cloudvolume(progress=True, parallel=1)
-    if root_point_resolution is None:
-        root_point_resolution = cv.mip_resolution(0)
-
-    sk_l2, mesh_chunk, (l2dict_mesh, l2dict_mesh_r) = pcg_skeleton(
+    return pcg_meshwork(
         root_id,
+        datastack_name=datastack_name,
         client=client,
         cv=cv,
         root_point=root_point,
         root_point_resolution=root_point_resolution,
-        root_point_search_radius=root_point_search_radius,
         collapse_soma=collapse_soma,
         collapse_radius=collapse_radius,
-        refine=refine,
+        synapses=synapses,
+        synapse_table=synapse_table,
+        remove_self_synapse=remove_self_synapse,
+        live_query=live_query,
+        timestamp=timestamp,
         invalidation_d=invalidation_d,
-        n_parallel=n_parallel,
-        return_mesh=True,
-        return_l2dict_mesh=True,
-        segmentation_fallback=segmentation_fallback,
-        fallback_mip=fallback_mip,
-        cache=cache,
-        save_to_cache=save_to_cache,
-        l2cache=l2cache,
+        require_complete=require_complete,
+        metadata=metadata,
     )
-
-    nrn = meshwork.Meshwork(mesh_chunk, seg_id=root_id, skeleton=sk_l2)
-
-    if synapses is not None and synapse_table is not None:
-        if synapses == "pre":
-            pre, post = True, False
-        elif synapses == "post":
-            pre, post = False, True
-        elif synapses == "all":
-            pre, post = True, True
-        else:
-            raise ValueError('Synapses must be one of "pre", "post", or "all".')
-
-        if not timestamp:
-            timestamp = client.materialize.get_timestamp()
-
-        features.add_synapses(
-            nrn,
-            synapse_table,
-            l2dict_mesh,
-            client,
-            root_id=root_id,
-            pre=pre,
-            post=post,
-            remove_self_synapse=remove_self_synapse,
-            timestamp=timestamp,
-            live_query=live_query,
-        )
-
-    features.add_lvl2_ids(nrn, l2dict_mesh)
-
-    if refine != "chunk":
-        chunk_tools.adjust_meshwork(nrn, cv)
-
-    return nrn
-
-
-
-
-def collapse_pcg_skeleton(soma_pt, sk, soma_r):
-    """Use soma point vertex and collapse soma as sphere
-    Parameters
-    ----------
-    soma_pt : array
-        3-element location of soma center (in nm)
-    sk: skeleton.Skeleton
-        Coarse skeleton
-    soma_r : float
-        Soma collapse radius (in nm)
-    Returns
-    -------
-    skeleton
-        New skeleton with updated properties
-    """
-    soma_verts, _ = skeletonize.soma_via_sphere(soma_pt, sk.vertices, sk.edges, soma_r)
-    min_soma_vert = np.argmin(np.linalg.norm(sk.vertices[soma_verts] - soma_pt, axis=1))
-    root_vert = soma_verts[min_soma_vert]
-
-    (
-        new_v,
-        new_e,
-        new_skel_map,
-        vert_filter,
-        root_ind,
-    ) = skeletonize.collapse_soma_skeleton(
-        soma_verts[soma_verts != root_vert],
-        soma_pt,
-        sk.vertices,
-        sk.edges,
-        sk.mesh_to_skel_map,
-        collapse_index=root_vert,
-        return_soma_ind=True,
-        return_filter=True,
-    )
-
-    new_mesh_index = sk.mesh_index[vert_filter]
-    new_skeleton = skeleton.Skeleton(
-        new_v,
-        new_e,
-        root=root_ind,
-        mesh_to_skel_map=new_skel_map,
-        mesh_index=new_mesh_index,
-        remove_zero_length_edges=False,
-        meta=sk.meta,
-    )
-
-    new_skeleton.meta.soma_pt_x = soma_pt[0]
-    new_skeleton.meta.soma_pt_y = soma_pt[1]
-    new_skeleton.meta.soma_pt_z = soma_pt[2]
-    new_skeleton.meta.soma_radius = soma_r
-    new_skeleton.meta.collapse_soma = True
-    new_skeleton.meta.collapse_function = "sphere"
-
-    return new_skeleton

@@ -1,7 +1,6 @@
 import numpy as np
 import warnings
 
-
 def filter_l2dict(sk_ch, l2dict_mesh_r):
     """Converts a reverse level 2 dict for a mesh into one for a skeleton"""
     l2dict_sk_r = {
