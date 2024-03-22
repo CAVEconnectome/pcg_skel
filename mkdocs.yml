@@ -1,0 +1,36 @@
+site_name: pcg_skel Documentation
+site_url: https://caveconnectome.github.io/pcg_skel/
+repo_url: https://github.com/CAVEconnectome/pcg_skel/
+repo_name: CAVEconnectome/pcg_skel
+
+theme:
+  name: material
+  language: en
+  logo: images/logo-cleanest.png
+  favicon: images/logo-cleanest.png
+
+  palette:
+    primary: "deep orange"
+    accent: indigo
+  font:
+    text: "Fauna One"
+    code: Inconsolata
+  icon:
+    repo: fontawesome/brands/github
+  features:
+    - navigation.indexes
+    - navigation.instant
+    - navigation.footer
+    # - navigation.path
+    - navigation.prune
+    # - navigation.sections # toggle to have sections in side nav
+    - navigation.tabs # toggle to mainly use top nav
+    - navigation.tabs.sticky
+    - content.action.edit
+    - content.action.view
+    - toc.follow
+    - toc.integrate # whether to include the toc in the main nav bar to the left
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - search.share
