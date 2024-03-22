@@ -1,7 +1,6 @@
 import numpy as np
-from caveclient import CAVEclient
 from meshparty import skeletonize, trimesh_io, meshwork
-
+from caveclient import CAVEclient
 from . import chunk_tools, features
 from . import skel_utils as sk_utils
 import warnings
@@ -144,7 +143,7 @@ def pcg_skeleton(
     if root_point is not None:
         root_point = np.array(root_point) * root_point_resolution
 
-    mesh, l2dict_mesh, l2dict_r_mesh = coord_space_mesh(
+    mesh, l2dict_mesh, l2dict_r_mesh = pcg_graph(
         root_id,
         client=client,
         return_l2dict=True,
@@ -250,8 +249,10 @@ def pcg_meshwork(
         cv = client.info.segmentation_cloudvolume(progress=True, parallel=1)
     if root_point_resolution is None:
         root_point_resolution = cv.mip_resolution(0)
+    if synapse_table is None:
+        synapse_table = client.materialize.synapse_table
 
-    sk, mesh, (l2dict_mesh, l2dict_mesh_r) = coord_space_skeleton(
+    sk, mesh, (l2dict_mesh, l2dict_mesh_r) = pcg_skeleton(
         root_id,
         client=client,
         cv=cv,
@@ -273,10 +274,10 @@ def pcg_meshwork(
             pre, post = True, False
         elif synapses == "post":
             pre, post = False, True
-        elif synapses == "all":
+        elif synapses == "all" or synapses is True:
             pre, post = True, True
         else:
-            raise ValueError('Synapses must be one of "pre", "post", or "all".')
+            raise ValueError('Synapses must be one of "pre", "post", or "all" or True.')
 
         if not timestamp:
             timestamp = client.materialize.get_timestamp()
@@ -365,6 +366,8 @@ def coord_space_skeleton(
         DeprecationWarning,
     )
     return pcg_skeleton(
+        root_id,
+        client,
         datastack_name=datastack_name,
         cv=cv,
         invalidation_d=invalidation_d,

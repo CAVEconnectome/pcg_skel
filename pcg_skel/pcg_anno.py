@@ -2,14 +2,6 @@ import datetime
 from caveclient.frameworkclient import CAVEclientFull
 import warnings
 
-try:
-    from annotationframeworkclient.frameworkclient import FrameworkClientFull
-
-    check_afc = True
-except:
-    FrameworkClientFull = type(None)
-    check_afc = False
-
 
 def annotation_to_level2_id(
     df,
@@ -46,8 +38,8 @@ def annotation_to_level2_id(
 
     Returns
     -------
-    [type]
-        [description]
+    pd.DataFrame
+        DataFrame with level 2 id columns added
     """
     if isinstance(bound_pt_columns, str):
         bound_pt_columns = [bound_pt_columns]
@@ -62,13 +54,6 @@ def annotation_to_level2_id(
         timestamp = client.materialize.get_timestamp()
 
     if isinstance(client, CAVEclientFull):
-        pcg_client = client.chunkedgraph
-    elif check_afc and isinstance(client, FrameworkClientFull):
-        warnings.warn(
-            DeprecationWarning(
-                "annotationframeworkclient is depricated. Please switch to using caveclient."
-            )
-        )
         pcg_client = client.chunkedgraph
     else:
         pcg_client = client
@@ -142,7 +127,7 @@ def _mapped_synapses(
             synapse_table,
             filter_equal_dict={f"{side}_pt_root_id": root_id},
             timestamp=timestamp,
-            metadata=metadata
+            metadata=metadata,
         )
     else:
         syn_df = client.materialize.query_table(
@@ -151,7 +136,9 @@ def _mapped_synapses(
             metadata=metadata,
         )
     if remove_crud:
-        syn_df.drop(columns=['created', 'superceded_id', 'valid'], inplace=True, errors='ignore')
+        syn_df.drop(
+            columns=["created", "superceded_id", "valid"], inplace=True, errors="ignore"
+        )
 
     if remove_self:
         syn_df = syn_df.query("pre_pt_root_id != post_pt_root_id").reset_index(
