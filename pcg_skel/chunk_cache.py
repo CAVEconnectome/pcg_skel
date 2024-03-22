@@ -1,6 +1,6 @@
-from sqlitedict import SqliteDict
-import orjson
 import numpy as np
+import orjson
+from sqlitedict import SqliteDict
 
 POSITION_ATTRIBUTE = "rep_coord_nm"
 
@@ -65,4 +65,3 @@ def save_ids_to_cache(l2_ids, l2_locs, cache_file):
             if not np.any(np.isnan(v)):
                 cache_dict[str(k)] = v.tolist()
         cache_dict.commit()
-    pass

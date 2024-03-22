@@ -1,7 +1,8 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
+from meshparty.meshwork.algorithms import split_axon_by_annotation, strahler_order
+
 from . import pcg_anno
-from meshparty.meshwork.algorithms import strahler_order, split_axon_by_annotation
 
 VOL_PROPERTIES = ["area_nm2", "size_nm3", "mean_dt_nm", "max_dt_nm"]
 
@@ -77,7 +78,6 @@ def add_synapses(
             voxel_resolution=post_syn_df.attrs.get('dataframe_resolution'),
         )
 
-    return
 
 
 def add_lvl2_ids(
@@ -100,7 +100,6 @@ def add_lvl2_ids(
         {"lvl2_id": list(l2dict_mesh.keys()), "mesh_ind": list(l2dict_mesh.values())}
     )
     nrn.anno.add_annotations(property_name, lvl2_df, index_column="mesh_ind")
-    return
 
 
 def add_volumetric_properties(
@@ -142,7 +141,6 @@ def add_volumetric_properties(
         index_column="mesh_ind",
     )
 
-    return
 
 
 def add_segment_properties(
@@ -267,7 +265,6 @@ def add_segment_properties(
         data=base_df,
         index_column="mesh_ind",
     )
-    return
 
 
 def add_is_axon_annotation(
@@ -287,7 +284,7 @@ def add_is_axon_annotation(
     nrn : meshparty.meshwork.Meshwork
         Meshwork object
     pre_anno : str
-        Annotation property table name for presynaptic sites (outputs).  
+        Annotation property table name for presynaptic sites (outputs).
     post_anno : str
         Annotation property table name for postsyanptic sites (inputs).
     annotation_name : str, optional
@@ -314,7 +311,6 @@ def add_is_axon_annotation(
         raise Warning("Split quality below threshold, no axon mesh vertices added!")
     else:
         nrn.anno.add_annotations(annotation_name, is_axon, mask=True)
-    return
 
 
 def l2dict_from_anno(

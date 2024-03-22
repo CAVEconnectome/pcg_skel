@@ -1,5 +1,7 @@
-import numpy as np
 import warnings
+
+import numpy as np
+
 
 def filter_l2dict(sk_ch, l2dict_mesh_r):
     """Converts a reverse level 2 dict for a mesh into one for a skeleton"""
@@ -49,7 +51,6 @@ def fix_nan_verts_mesh(mesh, num_rounds=20):
     else:
         if np.any(np.isnan(mesh.vertices)):
             print(f"Could not fix all nans after {num_rounds} rounds")
-    pass
 
 
 def fix_nan_verts(sk, num_rounds=20):
@@ -84,7 +85,6 @@ def fix_nan_verts(sk, num_rounds=20):
     else:
         if np.any(np.isnan(sk.vertices)):
             print(f"Could not fix all nans after {num_rounds} rounds")
-    pass
 
 
 def get_centered_mesh(mesh):
@@ -98,4 +98,3 @@ def get_centered_mesh(mesh):
 def attach_new_skeleton(nrn, new_skeleton):
     nrn._skeleton = new_skeleton
     nrn._recompute_indices()
-    pass

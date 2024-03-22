@@ -1,6 +1,6 @@
 import datetime
+
 from caveclient.frameworkclient import CAVEclientFull
-import warnings
 
 
 def annotation_to_level2_id(

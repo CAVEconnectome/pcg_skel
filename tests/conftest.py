@@ -1,11 +1,11 @@
-import pytest
-from pytest_mock import mocker
+import pathlib
+import pickle
+
 import numpy as np
 import pandas as pd
-import pickle
-import os
+import pytest
+from pytest_mock import mocker
 from caveclient import CAVEclient
-import pathlib
 
 base_path = pathlib.Path(__file__).parent.resolve()
 
@@ -38,12 +38,12 @@ INFO_CACHE = {
 }
 
 
-@pytest.fixture()
+@pytest.fixture
 def root_id():
     return 864691136040432126
 
 
-@pytest.fixture()
+@pytest.fixture
 def center_pt():
     return (177408, 157968, 21002)
 
@@ -65,7 +65,7 @@ test_pre_synapses = pd.read_feather(base_path / "data/pre_syn.feather")
 test_post_synapses = pd.read_feather(base_path / "data/post_syn.feather")
 
 
-@pytest.fixture()
+@pytest.fixture
 def test_client(mocker):
     client = CAVEclient(TEST_DATASTACK, info_cache=INFO_CACHE)
     mocker.patch.object(client.info, "segmentation_cloudvolume", return_value=test_cv)
