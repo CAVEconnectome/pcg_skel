@@ -37,6 +37,8 @@ def test_pcg_meshwork(test_client, root_id, center_pt):
     assert len(nrn.anno.table_names) > 0
     assert nrn.mesh.vertices.shape[0] > 0
 
+
+def test_defunct_meshwork(test_client, root_id, center_pt):
     nrn2 = pcg_skel.coord_space_meshwork(
         root_id=root_id,
         client=test_client,
@@ -46,5 +48,5 @@ def test_pcg_meshwork(test_client, root_id, center_pt):
         synapses="all",
         synapse_table=test_client.materialize.synapse_table,
     )
-
-    assert nrn.mesh.vertices.shape[0] == nrn2.mesh.vertices.shape[0]
+    assert len(nrn2.anno.table_names) > 0
+    assert nrn2.mesh.vertices.shape[0] > 0

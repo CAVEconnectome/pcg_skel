@@ -46,14 +46,20 @@ dependencies = [
     "pytest-cov",
 ]
 
-[tool.hatch.envs.docs]
-python = "3.11"
-dependencies = [
-    "mkdocs-material",
-]
-
 [[tool.hatch.envs.test.matrix]]
 python = ["3.9", "3.10", "3.11"]
 
 [tool.hatch.envs.test.scripts]
-test = "python -m pytest tests"
+run_tests = "python -m pytest -v tests"
+
+
+[tool.hatch.envs.docs]
+python = "3.11"
+dependencies = [
+    "mkdocs-material",
+    "mkdocstrings[python]",
+]
+
+[tool.hatch.envs.docs.scripts]
+docs_test = "mkdocs serve -v"
+build = "mkdocs build"

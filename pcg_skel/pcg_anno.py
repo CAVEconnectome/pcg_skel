@@ -1,18 +1,21 @@
+from __future__ import annotations
 import datetime
-
 from caveclient.frameworkclient import CAVEclientFull
+from typing import Union, Optional
+import pandas as pd
+from typing import Optional, Dict, Any, Tuple, Union, List
 
 
 def annotation_to_level2_id(
-    df,
-    client,
-    bound_pt_columns="pt",
-    l2_suffix="_level2_id",
-    sv_columns=None,
-    l2_columns=None,
-    inplace=False,
-    timestamp=None,
-):
+    df: pd.DataFrame,
+    client: CAVEclientFull,
+    bound_pt_columns: str = "pt",
+    l2_suffix: str = "_level2_id",
+    sv_columns: Optional[Union[str, list[str]]] = None,
+    l2_columns: Optional[Union[str, list[str]]] = None,
+    inplace: bool = False,
+    timestamp: Optional[datetime.datetime] = None,
+) -> pd.DataFrame:
     """Add or more level2_id columns to a dataframe based on supervoxel columns
 
     Parameters
@@ -72,12 +75,12 @@ def annotation_to_level2_id(
 
 
 def annotation_to_mesh_index(
-    df,
-    l2dict,
-    level2_id_col="pt_level2_id",
-    mesh_index_col="pt_mesh_ind",
-    inplace=False,
-):
+    df: pd.DataFrame,
+    l2dict: dict,
+    level2_id_col: Union[str, list[str]] = "pt_level2_id",
+    mesh_index_col: str = "pt_mesh_ind",
+    inplace: bool = False,
+) -> pd.DataFrame:
     """Map level2 ids to mesh indices.
 
     Parameters
@@ -110,6 +113,92 @@ def annotation_to_mesh_index(
     return df
 
 
+def get_level2_synapses(
+    root_id: int,
+    l2dict: Dict[Any, Any],
+    client: CAVEclientFull,
+    synapse_table: str,
+    remove_self: bool = True,
+    pre: bool = True,
+    post: bool = True,
+    live_query: bool = False,
+    timestamp: Optional[datetime.datetime] = None,
+    metadata: bool = False,
+    synapse_point_resolution: Optional[List[float]] = None,
+) -> Tuple[Optional[pd.DataFrame], Optional[pd.DataFrame]]:
+    """Retrieve level 2 synapses for a given root ID.
+
+    Parameters
+    ----------
+    root_id : int
+        The root ID for which to retrieve synapses.
+    l2dict : dict
+        Dict of level2 id to mesh index mappings
+    client : object
+        The client object used for querying the synapse data.
+    synapse_table : str
+        The name of the synapse table to query.
+    remove_self : bool, optional
+        Whether to remove self-synapses. Defaults to True.
+    pre : bool, optional
+        Whether to retrieve pre-synapses. Defaults to True.
+    post : bool, optional
+        Whether to retrieve post-synapses. Defaults to True.
+    live_query : bool, optional
+        Whether to perform a live query. Defaults to False.
+    timestamp : datetime, optional
+        The timestamp for the live query. Defaults to None.
+    metadata : bool, optional
+        Whether to include metadata in the query results. Defaults to False.
+    synapse_point_resolution : list, optional
+        The resolution of the synapse points. Defaults to None.
+
+    Returns
+    -------
+    pre_syn_df : DataFrame or None
+        The DataFrame containing pre-synapse data, or None if pre is False.
+    post_syn_df : DataFrame or None
+        The DataFrame containing post-synapse data, or None if post is False.
+    """
+    live_query = timestamp is not None
+
+    if timestamp is None:
+        timestamp = datetime.datetime.utcnow()
+    if pre is True:
+        pre_syn_df = _mapped_synapses(
+            root_id,
+            client,
+            l2dict,
+            "pre",
+            synapse_table,
+            remove_self=remove_self,
+            live_query=live_query,
+            timestamp=timestamp,
+            metadata=metadata,
+            synapse_point_resolution=synapse_point_resolution,
+        )
+    else:
+        pre_syn_df = None
+
+    if post is True:
+        post_syn_df = _mapped_synapses(
+            root_id,
+            client,
+            l2dict,
+            "post",
+            synapse_table,
+            remove_self=remove_self,
+            live_query=live_query,
+            timestamp=timestamp,
+            metadata=metadata,
+            synapse_point_resolution=synapse_point_resolution,
+        )
+    else:
+        post_syn_df = None
+
+    return pre_syn_df, post_syn_df
+
+
 def _mapped_synapses(
     root_id,
     client,
@@ -121,6 +210,7 @@ def _mapped_synapses(
     timestamp,
     metadata,
     remove_crud=True,
+    synapse_point_resolution=None,
 ):
     if live_query:
         syn_df = client.materialize.live_query(
@@ -128,12 +218,14 @@ def _mapped_synapses(
             filter_equal_dict={f"{side}_pt_root_id": root_id},
             timestamp=timestamp,
             metadata=metadata,
+            desired_resolution=synapse_point_resolution,
         )
     else:
         syn_df = client.materialize.query_table(
             synapse_table,
             filter_equal_dict={f"{side}_pt_root_id": root_id},
             metadata=metadata,
+            desired_resolution=synapse_point_resolution,
         )
     if remove_crud:
         syn_df.drop(
@@ -159,52 +251,3 @@ def _mapped_synapses(
         inplace=True,
     )
     return syn_df
-
-
-def get_level2_synapses(
-    root_id,
-    l2dict,
-    client,
-    synapse_table,
-    remove_self=True,
-    pre=True,
-    post=True,
-    live_query=False,
-    timestamp=None,
-    metadata=False,
-):
-    live_query = timestamp is not None
-
-    if timestamp is None:
-        timestamp = datetime.datetime.utcnow()
-    if pre is True:
-        pre_syn_df = _mapped_synapses(
-            root_id,
-            client,
-            l2dict,
-            "pre",
-            synapse_table,
-            remove_self=remove_self,
-            live_query=live_query,
-            timestamp=timestamp,
-            metadata=metadata,
-        )
-    else:
-        pre_syn_df = None
-
-    if post is True:
-        post_syn_df = _mapped_synapses(
-            root_id,
-            client,
-            l2dict,
-            "post",
-            synapse_table,
-            remove_self=remove_self,
-            live_query=live_query,
-            timestamp=timestamp,
-            metadata=metadata,
-        )
-    else:
-        post_syn_df = None
-
-    return pre_syn_df, post_syn_df

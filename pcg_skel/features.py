@@ -1,5 +1,8 @@
 import numpy as np
 import pandas as pd
+import caveclient
+import datetime
+from meshparty import meshwork
 from meshparty.meshwork.algorithms import split_axon_by_annotation, strahler_order
 
 from . import pcg_anno
@@ -8,19 +11,21 @@ VOL_PROPERTIES = ["area_nm2", "size_nm3", "mean_dt_nm", "max_dt_nm"]
 
 
 def add_synapses(
-    nrn,
-    synapse_table,
-    l2dict_mesh,
-    client,
-    root_id=None,
-    pre=False,
-    post=False,
-    remove_self_synapse=True,
-    timestamp=None,
-    live_query=False,
-    metadata=False,
-):
-    """Add synapses based on l2ids
+    nrn: meshwork.Meshwork,
+    synapse_table: str,
+    l2dict_mesh: dict,
+    client: caveclient.CAVEclient,
+    root_id: int = None,
+    pre: bool = False,
+    post: bool = False,
+    remove_self_synapse: bool = True,
+    timestamp: datetime.datetime = None,
+    live_query: bool = False,
+    metadata: bool = False,
+    synapse_partners: bool = False,
+    synapse_point_resolution: list[float] = None,
+) -> None:
+    """Add synapses to a meshwork object based on l2ids
 
     Parameters
     ----------
@@ -44,6 +49,9 @@ def add_synapses(
         Datetime to use for root id lookups if not using a materialized version, by default None
     live_query : bool, optional
         If True, use a timestamp to look up root ids, by default False
+    synapse_partners : bool, optional
+        If True, returns the root id of synapses partners in the dataframe.
+        By default, this is False because partner root ids change with editing and are not specified by this cell's data alone.
     """
     if root_id is None:
         root_id - nrn.seg_id
@@ -59,32 +67,36 @@ def add_synapses(
         live_query=live_query,
         timestamp=timestamp,
         metadata=metadata,
+        synapse_point_resolution=synapse_point_resolution,
     )
 
     if pre_syn_df is not None:
+        if not synapse_partners:
+            pre_syn_df = pre_syn_df.drop(columns=["post_pt_root_id"])
         nrn.anno.add_annotations(
             "pre_syn",
             pre_syn_df,
             index_column="pre_pt_mesh_ind",
             point_column="ctr_pt_position",
-            voxel_resolution=pre_syn_df.attrs.get('dataframe_resolution'),
+            voxel_resolution=pre_syn_df.attrs.get("dataframe_resolution"),
         )
     if post_syn_df is not None:
+        if not synapse_partners:
+            post_syn_df = post_syn_df.drop(columns=["pre_pt_root_id"])
         nrn.anno.add_annotations(
             "post_syn",
             post_syn_df,
             index_column="post_pt_mesh_ind",
             point_column="ctr_pt_position",
-            voxel_resolution=post_syn_df.attrs.get('dataframe_resolution'),
+            voxel_resolution=post_syn_df.attrs.get("dataframe_resolution"),
         )
 
 
-
 def add_lvl2_ids(
-    nrn,
-    l2dict_mesh,
-    property_name="lvl2_ids",
-):
+    nrn: meshwork.Meshwork,
+    l2dict_mesh: dict,
+    property_name: str = "lvl2_ids",
+) -> None:
     """Add meshwork annotation table associating level 2 ids with vertex ids.
 
     Parameters
@@ -103,13 +115,13 @@ def add_lvl2_ids(
 
 
 def add_volumetric_properties(
-    nrn,
-    client,
-    attributes=VOL_PROPERTIES,
-    l2id_anno_name="lvl2_ids",
-    l2id_col_name="lvl2_id",
-    property_name="vol_prop",
-):
+    nrn: meshwork.Meshwork,
+    client: caveclient.CAVEclient,
+    attributes: list[str] = VOL_PROPERTIES,
+    l2id_anno_name: str = "lvl2_ids",
+    l2id_col_name: str = "lvl2_id",
+    property_name: str = "vol_prop",
+) -> None:
     """Add L2 Cache properties as an annotation property table.
 
     Parameters
@@ -142,20 +154,19 @@ def add_volumetric_properties(
     )
 
 
-
 def add_segment_properties(
-    nrn,
-    segment_property_name="segment_properties",
-    effective_radius=True,
-    area_factor=True,
-    strahler=True,
-    strahler_by_compartment=False,
-    volume_property_name="vol_prop",
-    volume_col_name="size_nm3",
-    area_col_name="area_nm2",
-    root_as_sphere=True,
-    comp_mask="is_axon",
-):
+    nrn: meshwork.Meshwork,
+    segment_property_name: str = "segment_properties",
+    effective_radius: bool = True,
+    area_factor: bool = True,
+    strahler: bool = True,
+    strahler_by_compartment: bool = False,
+    volume_property_name: str = "vol_prop",
+    volume_col_name: str = "size_nm3",
+    area_col_name: str = "area_nm2",
+    root_as_sphere: bool = True,
+    comp_mask: str = "is_axon",
+) -> None:
     """Use volumetric and topological properties to add descriptive properties for each skeleton vertex.
     Note that properties are estimated per segment, the unbranched region between branch points and/or endpoints.
 
@@ -268,16 +279,16 @@ def add_segment_properties(
 
 
 def add_is_axon_annotation(
-    nrn,
-    pre_anno,
-    post_anno,
-    annotation_name="is_axon",
-    threshold_quality=0.5,
-    extend_to_segment=True,
-    n_times=1,
-):
+    nrn: meshwork.Meshwork,
+    pre_anno: str,
+    post_anno: str,
+    annotation_name: str = "is_axon",
+    threshold_quality: float = 0.5,
+    extend_to_segment: bool = True,
+    n_times: int = 1,
+) -> None:
     """Add an annotation property table specifying which vertices belong to the axon, based on synaptic input and output locations
-    (see synapse flow centrality in "Quantitative neuroanatomy for connectomics in Drosophila", Schneider-Mizell et al. 2016)
+    For the synapse flow centrality algorithm, see "Quantitative neuroanatomy for connectomics in Drosophila", Schneider-Mizell et al. eLife 2016.
 
     Parameters
     ----------
@@ -314,9 +325,9 @@ def add_is_axon_annotation(
 
 
 def l2dict_from_anno(
-    nrn,
-    table_name="lvl2_ids",
-    l2id_col="lvl2_id",
-    mesh_ind_col="mesh_ind",
-):
+    nrn: meshwork.Meshwork,
+    table_name: str = "lvl2_ids",
+    l2id_col: str = "lvl2_id",
+    mesh_ind_col: str = "mesh_ind",
+) -> dict:
     return nrn.anno[table_name].df.set_index(l2id_col)[mesh_ind_col].to_dict()

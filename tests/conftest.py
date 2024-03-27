@@ -65,7 +65,7 @@ test_pre_synapses = pd.read_feather(base_path / "data/pre_syn.feather")
 test_post_synapses = pd.read_feather(base_path / "data/post_syn.feather")
 
 
-@pytest.fixture
+@pytest.fixture()
 def test_client(mocker):
     client = CAVEclient(TEST_DATASTACK, info_cache=INFO_CACHE)
     mocker.patch.object(client.info, "segmentation_cloudvolume", return_value=test_cv)

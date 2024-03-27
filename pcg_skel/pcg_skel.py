@@ -1,8 +1,13 @@
+from __future__ import annotations
 import warnings
-
 import numpy as np
 from caveclient import CAVEclient
 from meshparty import meshwork, skeletonize, trimesh_io
+from typing import Union
+
+Numeric = Union[int, float, np.number]
+
+import cloudvolume
 
 from . import chunk_tools, features
 from . import skel_utils as sk_utils
@@ -15,14 +20,16 @@ skeleton_type = "pcg_skel"
 
 
 def pcg_graph(
-    root_id,
-    client,
-    cv=None,
-    return_l2dict=False,
-    nan_rounds=10,
-    require_complete=False,
+    root_id: int,
+    client: CAVEclient.frameworkclient.CAVEclientFull,
+    cv: cloudvolume.CloudVolume = None,
+    return_l2dict: bool = False,
+    nan_rounds: int = 10,
+    require_complete: bool = False,
 ):
     """Compute the level 2 spatial graph (or mesh) of a given root id using the l2cache.
+
+    Some text for you and me.
 
     Parameters
     ----------
@@ -30,23 +37,24 @@ def pcg_graph(
         Root id of a segment
     client : CAVEclient.caveclient
         Initialized CAVEclient for the dataset.
-    cv : cloudvolume.CloudVolume, optional
+    cv : cloudvolume.CloudVolume
         Initialized CloudVolume object for the dataset. This does not replace the caveclient, but
-        a pre-initizialized cloudvolume can save some time during batch processing. By default None.
-    return_l2dict : bool, optional
-        If True, returns the mappings between l2 ids and vertices, by default False
-    nan_rounds : int, optional
-        If vertices are missing (or not computed), this sets the number of iterations for smoothing over them. By default 10
-    require_complete : bool, optional
-        If True, raise an Exception if any vertices are missing from the cache, by default False
+        a pre-initizialized cloudvolume can save some time during batch processing.
+    return_l2dict : bool
+        If True, returns the mappings between l2 ids and vertices.
+    nan_rounds : int
+        If vertices are missing (or not computed), this sets the number of iterations for smoothing over them.
+    require_complete : bool
+        If True, raise an Exception if any vertices are missing from the cache.
+
 
     Returns
     -------
     mesh : meshparty.trimesh_io.Mesh
         Object with a vertex for every level 2 id and edges between all connected level 2 chunks.
-    l2dict : dict (optional)
+    l2dict : dict, optional
         Dictionary with keys as level 2 ids and values as mesh vertex index. Optional, only returned if `return_l2dict` is True.
-    l2dict_reverse : dict (optional)
+    l2dict_reverse : dict, optional
         Dictionary with keys as mesh vertex indices and values as level 2 id. Optional, only returned if `return_l2dict` is True.
     """
     if cv is None:
@@ -75,64 +83,64 @@ def pcg_graph(
 
 
 def pcg_skeleton(
-    root_id,
-    client,
-    datastack_name=None,
-    cv=None,
-    invalidation_d=10_000,
-    return_mesh=False,
-    return_l2dict=False,
-    return_l2dict_mesh=False,
-    root_point=None,
-    root_point_resolution=None,
-    collapse_soma=False,
-    collapse_radius=7500,
-    nan_rounds=10,
-    require_complete=False,
+    root_id: int,
+    client: CAVEclient.frameworkclient.CAVEclientFull,
+    datastack_name: str = None,
+    cv: cloudvolume.CloudVolume = None,
+    invalidation_d: Numeric = 7500,
+    return_mesh: bool = False,
+    return_l2dict: bool = False,
+    return_l2dict_mesh: bool = False,
+    root_point: list = None,
+    root_point_resolution: list = None,
+    collapse_soma: bool = False,
+    collapse_radius: Numeric = 7500,
+    nan_rounds: int = 10,
+    require_complete: bool = False,
 ):
     """Produce a skeleton from the level 2 graph.
     Parameters
     ----------
     root_id : int
         Root id of a segment
-    client : CAVEclient.caveclient
+    client : CAVEclient.caveclient.CAVEclientFull
         Initialized CAVEclient for the dataset.
     datastack_name : string, optional
-        If client is None, initializes a CAVEclient at this datastack, by default None.
+        If client is None, initializes a CAVEclient at this datastack.
     cv : cloudvolume.CloudVolume, optional
         Initialized CloudVolume object for the dataset. This does not replace the caveclient, but
-        a pre-initizialized cloudvolume can save some time during batch processing. By default None.
+        a pre-initizialized cloudvolume can save some time during batch processing.
     invalidation_d : int, optional
-        Distance (in nanometers) for TEASAR skeleton invalidation, by default 10_000.
+        Distance (in nanometers) for TEASAR skeleton invalidation.
     return_mesh : bool, optional
-        If True, returns the mesh graph as well as the skeleton, by default False
+        If True, returns the mesh graph as well as the skeleton.
     return_l2dict : bool, optional
-        If True, returns the mappings between l2 ids and skeleton vertices, by default False
+        If True, returns the mappings between l2 ids and skeleton vertices.
     return_l2dict_mesh : bool, optional
-        If True, returns mappings between l2 ids and mesh graph vertices, by default False
-    root_point : list-like, optional
-        3-element list or array with the x,y,z location of the root point. Optional, by default None.
+        If True, returns mappings between l2 ids and mesh graph vertices.
+    root_point : npt.ArrayLike, optional
+        3-element list or array with the x,y,z location of the root point.
         If None, the most distant tip is set to root.
-    root_point_resolution : list-like, optional
-        3-element list or array with the x,y,z resolution of the root point, in nanometers per voxel dimension, by default None.
+    root_point_resolution : npt.ArrayLike, optional
+        3-element list or array with the x,y,z resolution of the root point, in nanometers per voxel dimension.
     collapse_soma : bool, optional
-        If True, collapse nearby vertices into the root point, by default False.
+        If True, collapse nearby vertices into the root point.
     collapse_radius : int, optional
-        Distance (in nanometers) for soma collapse, by default 7500.
+        Distance (in nanometers) for soma collapse.
     nan_rounds : int, optional
-        If vertices are missing (or not computed), this sets the number of iterations for smoothing over them. By default 10
+        If vertices are missing (or not computed), this sets the number of iterations for smoothing over them.
     require_complete : bool, optional
-        If True, raise an Exception if any vertices are missing from the cache, by default False
+        If True, raise an Exception if any vertices are missing from the cache.
 
     Returns
     -------
     sk : meshparty.skeleton.Skeleton
         Skeleton for the root id
-    mesh : meshparty.trimesh_io.Mesh (optional)
+    mesh : meshparty.trimesh_io.Mesh, optional
         Mesh graph that the skeleton is based on, only returned if return_mesh is True.
-    (l2dict_skel, l2dict_reverse): tuple of dicts (optional)
+    (l2dict_skel, l2dict_reverse): (dict, dict), optional
         Dictionaries mapping l2 ids to skeleton vertices and skeleton vertices to l2 ids, respectively. Only returned if return_l2dict is True.
-    (l2dict_mesh, l2dict_mesh): tuple of dicts (optional)
+    (l2dict_mesh, l2dict_mesh): (dict, dict), optional
         Dictionaries mapping l2 ids to mesh graph vertices and mesh_graph vertices to l2 ids, respectively. Only returned if return_l2dict is True.
     """
     if client is None:
@@ -154,6 +162,7 @@ def pcg_skeleton(
     )
 
     metameta = {"space": "l2cache", "datastack": client.datastack_name}
+
     sk = skeletonize.skeletonize_mesh(
         mesh,
         invalidation_d=invalidation_d,
@@ -202,7 +211,9 @@ def pcg_meshwork(
     invalidation_d=DEFAULT_INVALIDATION_D,
     require_complete=False,
     metadata=False,
-):
+    synapse_partners=False,
+    synapse_point_resolution=[1, 1, 1],
+) -> meshwork.Meshwork:
     """Generate a meshwork file based on the level 2 graph.
 
     Parameters
@@ -225,8 +236,8 @@ def pcg_meshwork(
         represent primary neurite branches. Requires a specified root_point. Default if False.
     collapse_radius : float, optional
         Max distance in euclidean space for soma collapse. Default is 10,000 nm (10 microns).
-    synapses : 'pre', 'post', 'all', or None, optional
-        If not None, queries the synapse_table for presynaptic synapses (if 'pre'),  postsynaptic sites (if 'post'), or both (if 'all'). By default None
+    synapses : 'pre', 'post', 'all', True, or None, optional
+        If not None, queries the synapse_table for presynaptic synapses (if 'pre'),  postsynaptic sites (if 'post'), or both (if 'all' or True). By default None
     synapse_table : str, optional
         Name of the synapse table to query if synapses are requested, by default None
     remove_self_synapse : bool, optional
@@ -239,6 +250,12 @@ def pcg_meshwork(
         Invalidation radius in hops for the mesh skeletonization along the chunk adjacency graph, by default 3
     require_complete : bool, optional
         If True, raise an Exception if any vertices are missing from the cache, by default False
+    metadata : bool, optional
+        If True, adds metadata to the meshwork annotations. By default False.
+    synapse_partners : bool, optional
+        If True, includes the partner root id to the synapse annotation. By default False, because partner roots can change across time.
+    synapse_point_resolution : array-like, optional
+        Resolution in euclidean space of the synapse points, by default None. If None, the resolution will be the default of the synapse table.
 
     Returns
     -------
@@ -296,6 +313,8 @@ def pcg_meshwork(
             timestamp=timestamp,
             live_query=live_query,
             metadata=metadata,
+            synapse_partners=synapse_partners,
+            synapse_point_resolution=synapse_point_resolution,
         )
 
     features.add_lvl2_ids(nrn, l2dict_mesh)
@@ -319,6 +338,9 @@ def coord_space_skeleton(
     require_complete=False,
 ):
     """Produce a skeleton from the level 2 graph.
+
+    **Deprecated: Please use pcg_skeleton instead.**
+
     Parameters
     ----------
     root_id : int
