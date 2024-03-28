@@ -11,16 +11,17 @@ title: Changelog
 * The principle functions (`pcg_skeleton`, `pcg_meshwork`, and `pcg_graph`) all now use the chunkwise cache on the PCG, rather than an older approach that had to involve mesh data.
 The old function names (`coord_space_*`) are now deprecated, but will work until the next major version. 
 The previous functions are now available in the `pcg_skel.nocache` module.
-* In `pcg_meshwork`, if synapses are requested and no synapse table is specified, the function will use the default synapse table.
+* In `pcg_meshwork`, if synapses are requested and no synapse table is specified, the default synapse table will be used.
 * In `pcg_meshwork`, `synapses=True` will now return both pre and postsynaptic annotations.
 * In `pcg_meshwork`, there is now a `synapse_point_resolution` argument that determines the resolution of the synapse points returned.
 By default, this value will be `[1,1,1]` (x,y,z resolution), indicating that points should be in nanometers, the same units as the vertices.
 
 ### Changes
 
-* In `pcg_meshwork`, when requesting synapses the partner root ids are not returned by default. `nrn.anno.pre_syn.df` will not have a `post_pt_root_id` field, and `nrn.anno.post_syn.df` will not have a `pre_pt_root_id` field.
+* In `pcg_meshwork`, when requesting synapses the partner root ids are not returned by default. Accordingly, `nrn.anno.pre_syn.df` will not have a `post_pt_root_id` field, and `nrn.anno.post_syn.df` will not have a `pre_pt_root_id` field.
 This is to avoid confusion, because these fields can quickly become stale.
 If you need them, you can still get them by using the `synapse_partners=True` argument.
+However, the supervoxel ids are returned, which both do not change and also let you look up root ids when needed.
 Otherwise, you can use 
 
     ```python
@@ -31,3 +32,10 @@ Otherwise, you can use
 
 * In `pcg_meshwork`, the resolution of the synapse points has changed. It will now be in *nanometers*, not voxel dimensions that could change with different datasets. This means that the locations in the `nrn.anno.pre_syn.df` and `nrn.anno.post_syn.df` dataframes will already be in the same coordinates as vertices without an additional conversion step.
 
+### Notes for upgrading.
+
+1) If you are using the `pcg_skel.coord_space_*` functions, you should switch to the `pcg_*` function names.
+
+2) If you are using synaptic partners from meshwork objects directly, you need to set the `synapse_partners=True` argument.
+
+3) If you are using synapse points, the default resolution has changed to nanometers. If you hard-coded the old resolution, you should update your code to reflect this change. This will not affect distances measured along the arbor of the neuron that use the graph topology, only spatial properties like `ctr_pt_position`.
