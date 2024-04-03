@@ -24,6 +24,8 @@ def add_synapses(
     metadata: bool = False,
     synapse_partners: bool = False,
     synapse_point_resolution: list[float] = None,
+    synapse_representative_point_pre: str = "ctr_pt_position",
+    synapse_representative_point_post: str = "ctr_pt_position",
 ) -> None:
     """Add synapses to a meshwork object based on l2ids
 
@@ -77,7 +79,7 @@ def add_synapses(
             "pre_syn",
             pre_syn_df,
             index_column="pre_pt_mesh_ind",
-            point_column="ctr_pt_position",
+            point_column=synapse_representative_point_pre,
             voxel_resolution=pre_syn_df.attrs.get("dataframe_resolution"),
         )
     if post_syn_df is not None:
@@ -87,7 +89,7 @@ def add_synapses(
             "post_syn",
             post_syn_df,
             index_column="post_pt_mesh_ind",
-            point_column="ctr_pt_position",
+            point_column=synapse_representative_point_post,
             voxel_resolution=post_syn_df.attrs.get("dataframe_resolution"),
         )
 

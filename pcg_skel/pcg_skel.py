@@ -213,6 +213,8 @@ def pcg_meshwork(
     metadata=False,
     synapse_partners=False,
     synapse_point_resolution=[1, 1, 1],
+    synapse_representative_point_pre="ctr_pt_position",
+    synapse_representative_point_post="ctr_pt_position",
 ) -> meshwork.Meshwork:
     """Generate a meshwork file based on the level 2 graph.
 
@@ -256,6 +258,10 @@ def pcg_meshwork(
         If True, includes the partner root id to the synapse annotation. By default False, because partner roots can change across time.
     synapse_point_resolution : array-like, optional
         Resolution in euclidean space of the synapse points, by default None. If None, the resolution will be the default of the synapse table.
+    synapse_representative_point_pre : str, optional
+        If set, uses the specified column in the synapse table for the pre-synaptic points. By default 'ctr_pt_position'.
+    synapse_representative_point_post : str, optional
+        If set, uses the specified column in the synapse table for the post-synaptic points. By default 'ctr_pt_position'.
 
     Returns
     -------
@@ -315,6 +321,8 @@ def pcg_meshwork(
             metadata=metadata,
             synapse_partners=synapse_partners,
             synapse_point_resolution=synapse_point_resolution,
+            synapse_representative_point_pre=synapse_representative_point_pre,
+            synapse_representative_point_post=synapse_representative_point_post,
         )
 
     features.add_lvl2_ids(nrn, l2dict_mesh)
