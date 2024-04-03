@@ -35,9 +35,8 @@ theme:
     - content.code.copy
 nav:
   - About: index.md
-  - How to Use:
-      - Background: background.md
-      - Tutorial: tutorial.md
+  - Background: background.md
+  - Tutorial: tutorial.md
   - Changelog: changelog.md
   - Function Reference:
     - reference/pcg_skel.md
@@ -64,6 +63,7 @@ markdown_extensions:
   - meta
   - tables
 plugins:
+  - glightbox:
   - search:
       lang: en
   - mkdocstrings:

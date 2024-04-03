@@ -58,6 +58,7 @@ python = "3.11"
 dependencies = [
     "mkdocs-material",
     "mkdocstrings[python]",
+    "mkdocs-glightbox"
 ]
 
 [tool.hatch.envs.docs.scripts]

@@ -1,11 +1,12 @@
 ---
 title: About
 ---
+![Pyramidal Cell](images/example_skeleton_small.png){ align=right }
 
 `pcg_skel` is a package used to rapidly build neuronal skeletons from electron microscopy data in the [CAVE ecosystem](https://github.com/CAVEconnectome).
 It integrates structural data, connectivity data, and local features stored across many aspects of a CAVE system, and creates objects as [MeshParty](https://meshparty.readthedocs.io/en/latest/) meshes, skeletons, and MeshWork files for subsequent analysis.
 By harnessing the way the structural data is stored, you can build skeletons for even very large neurons quickly and with little memory use.
-Actual skeletonization is done with functionality within MeshParty, while `pcg_skel` focuses on data retrieval and integration across many CAVE services.
+
 
 ## Installation
 
