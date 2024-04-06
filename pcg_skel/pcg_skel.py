@@ -1,16 +1,16 @@
 from __future__ import annotations
-import warnings
-import numpy as np
-from caveclient import CAVEclient
-from meshparty import meshwork, skeletonize, trimesh_io
-from typing import Union
-
-Numeric = Union[int, float, np.number]
-
-import cloudvolume
-
 from . import chunk_tools, features
 from . import skel_utils as sk_utils
+
+import cloudvolume
+import warnings
+import numpy as np
+
+from caveclient import CAVEclient
+from meshparty import meshwork, skeletonize, trimesh_io
+from typing import Union, Optional
+
+Numeric = Union[int, float, np.number]
 
 DEFAULT_VOXEL_RESOLUTION = [4, 4, 40]
 DEFAULT_COLLAPSE_RADIUS = 7500.0
@@ -80,6 +80,67 @@ def pcg_graph(
         return mesh_loc, l2dict_mesh, l2dict_r_mesh
     else:
         return mesh_loc
+
+
+def pcg_skeleton_direct(
+    vertices,
+    edges,
+    invalidation_d: Numeric = DEFAULT_INVALIDATION_D,
+    root_point: list = None,
+    collapse_soma: bool = False,
+    collapse_radius: Numeric = DEFAULT_COLLAPSE_RADIUS,
+    root_id: Optional[int] = None,
+):
+    """
+    Produce a skeleton from an already-computed l2graph.
+    This is effectively a wrapper for meshparty skeletonize with a consistent set of parameters and format.
+
+    Parameters
+    ----------
+    vertices : np.array
+        Array of vertices for the mesh graph.
+    edges : np.array
+        Array of edges for the mesh graph.
+    invalidation_d : int, optional
+        Distance (in nanometers) for TEASAR skeleton invalidation.
+    root_point : np.array, optional
+        3-element list or array with the x,y,z location of the root point in same units as vertices.
+        If None, the most distant tip is set to root.
+    collapse_soma : bool, optional
+        If True, collapse nearby vertices into the root point.
+    collapse_radius : int, optional
+        Distance (in nanometers) for soma collapse.
+    root_id : int, optional
+        Root id of the segment, used in metadata. Optional, by default None.
+
+    Returns
+    -------
+    sk : meshparty.skeleton.Skeleton
+        Skeleton for the l2graph.
+    """
+
+    l2graph = trimesh_io.Mesh(
+        vertices=vertices,
+        faces=[[0, 0, 0]],  # Some functions fail if no faces are set.
+        link_edges=edges,
+    )
+
+    sk = skeletonize.skeletonize_mesh(
+        l2graph,
+        invalidation_d=invalidation_d,
+        soma_pt=root_point,
+        collapse_soma=collapse_soma,
+        soma_radius=collapse_radius,
+        compute_radius=False,
+        cc_vertex_thresh=0,
+        remove_zero_length_edges=True,
+        meta={
+            "root_id": root_id,
+            "skeleton_type": skeleton_type,
+            "meta": {"space": "l2cache", "datastack": None},
+        },
+    )
+    return sk
 
 
 def pcg_skeleton(

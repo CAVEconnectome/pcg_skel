@@ -1,5 +1,6 @@
 import pytest
 import pcg_skel
+import numpy as np
 
 from conftest import test_client
 from conftest import root_id, center_pt
@@ -22,6 +23,15 @@ def test_pcg_skeleton(test_client, root_id, center_pt):
     assert graph_sk.vertices is not None
     assert graph_sk.edges is not None
     assert graph_sk.path_length() > 0
+
+
+def test_pcg_skeleton_direct(test_client, root_id, center_pt):
+    graph_m = pcg_skel.pcg_graph(root_id, test_client)
+    sk = pcg_skel.pcg_skeleton_direct(
+        vertices=graph_m.vertices,
+        edges=graph_m.graph_edges,
+    )
+    assert len(sk.vertices) == 2567
 
 
 def test_pcg_meshwork(test_client, root_id, center_pt):

@@ -8,4 +8,4 @@ Basic functions for generating chunk-resolution skeletons from a pychunkedgraph.
     options:
         show_source: false
         heading_level: 2
-        members: ['pcg_graph', 'pcg_skeleton', 'pcg_meshwork']
+        members: ['pcg_graph', 'pcg_skeleton', 'pcg_skeleton_direct', 'pcg_meshwork']

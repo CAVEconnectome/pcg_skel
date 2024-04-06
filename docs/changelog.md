@@ -16,6 +16,7 @@ The previous functions are now available in the `pcg_skel.nocache` module.
 * In `pcg_meshwork`, there is now a `synapse_point_resolution` argument that determines the resolution of the synapse points returned.
 By default, this value will be `[1,1,1]` (x,y,z resolution), indicating that points should be in nanometers, the same units as the vertices.
 * In `pcg_meshwork`, there is now the option to specify the name of the pre and post synapse columns to use as representitiative points in a synapse table.
+* Added `pcg_skeleton_direct` function that expects vertices and edges from an already computed L2 graph.
 
 ### Changes
 
