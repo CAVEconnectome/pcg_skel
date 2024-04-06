@@ -1,7 +1,8 @@
-import setuptools
-import re
-import os
 import codecs
+import os
+import re
+
+import setuptools
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -22,7 +23,7 @@ def find_version(*file_paths):
     raise RuntimeError("Unable to find version string.")
 
 
-with open("requirements.txt", "r") as f:
+with open("requirements.txt") as f:
     required = f.read().splitlines()
 dependency_links = []
 del_ls = []

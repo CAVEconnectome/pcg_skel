@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+
 # C extensions
 *.so
 .DS_Store
@@ -51,6 +52,11 @@ coverage.xml
 # Translations
 *.mo
 *.pot
+
+# Specific tool stuff:
+.hatch/
+.ruff_cache/
+.vscode/
 
 # Django stuff:
 *.log

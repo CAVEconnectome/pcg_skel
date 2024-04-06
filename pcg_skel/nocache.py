@@ -12,6 +12,7 @@ DEFAULT_INVALIDATION_D = 7500
 
 skeleton_type = "pcg_skel"
 
+
 def chunk_index_mesh(
     root_id,
     client=None,
@@ -492,8 +493,6 @@ def pcg_skeleton(
         return tuple(output)
 
 
-
-
 def pcg_meshwork(
     root_id,
     datastack_name=None,
@@ -636,62 +635,3 @@ def pcg_meshwork(
         chunk_tools.adjust_meshwork(nrn, cv)
 
     return nrn
-
-
-
-
-def collapse_pcg_skeleton(soma_pt, sk, soma_r):
-    """Use soma point vertex and collapse soma as sphere
-    Parameters
-    ----------
-    soma_pt : array
-        3-element location of soma center (in nm)
-    sk: skeleton.Skeleton
-        Coarse skeleton
-    soma_r : float
-        Soma collapse radius (in nm)
-    Returns
-    -------
-    skeleton
-        New skeleton with updated properties
-    """
-    soma_verts, _ = skeletonize.soma_via_sphere(soma_pt, sk.vertices, sk.edges, soma_r)
-    min_soma_vert = np.argmin(np.linalg.norm(sk.vertices[soma_verts] - soma_pt, axis=1))
-    root_vert = soma_verts[min_soma_vert]
-
-    (
-        new_v,
-        new_e,
-        new_skel_map,
-        vert_filter,
-        root_ind,
-    ) = skeletonize.collapse_soma_skeleton(
-        soma_verts[soma_verts != root_vert],
-        soma_pt,
-        sk.vertices,
-        sk.edges,
-        sk.mesh_to_skel_map,
-        collapse_index=root_vert,
-        return_soma_ind=True,
-        return_filter=True,
-    )
-
-    new_mesh_index = sk.mesh_index[vert_filter]
-    new_skeleton = skeleton.Skeleton(
-        new_v,
-        new_e,
-        root=root_ind,
-        mesh_to_skel_map=new_skel_map,
-        mesh_index=new_mesh_index,
-        remove_zero_length_edges=False,
-        meta=sk.meta,
-    )
-
-    new_skeleton.meta.soma_pt_x = soma_pt[0]
-    new_skeleton.meta.soma_pt_y = soma_pt[1]
-    new_skeleton.meta.soma_pt_z = soma_pt[2]
-    new_skeleton.meta.soma_radius = soma_r
-    new_skeleton.meta.collapse_soma = True
-    new_skeleton.meta.collapse_function = "sphere"
-
-    return new_skeleton

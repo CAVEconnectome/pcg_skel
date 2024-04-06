@@ -1,6 +1,8 @@
+from functools import reduce
+
 import numpy as np
 from trimesh import creation
-from functools import reduce
+
 
 def chunk_dims(cv):
     """Gets the size of a chunk in euclidean space
