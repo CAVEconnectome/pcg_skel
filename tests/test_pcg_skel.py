@@ -25,6 +25,20 @@ def test_pcg_skeleton(test_client, root_id, center_pt):
     assert graph_sk.path_length() > 0
 
 
+def test_pcg_skeleton_prebaked(test_client, root_id, center_pt, test_l2eg):
+    graph_sk = pcg_skel.pcg_skeleton(
+        root_id,
+        test_client,
+        collapse_radius=True,
+        root_point=center_pt,
+        root_point_resolution=[4, 4, 40],
+        level2_graph=test_l2eg,
+    )
+    assert graph_sk.vertices is not None
+    assert graph_sk.edges is not None
+    assert graph_sk.path_length() > 0
+
+
 def test_pcg_skeleton_direct(test_client, root_id, center_pt):
     graph_m = pcg_skel.pcg_graph(root_id, test_client)
     sk = pcg_skel.pcg_skeleton_direct(

@@ -5,6 +5,7 @@ from . import skel_utils as sk_utils
 import cloudvolume
 import warnings
 import numpy as np
+import datetime
 
 from caveclient import CAVEclient
 from meshparty import meshwork, skeletonize, trimesh_io
@@ -26,6 +27,7 @@ def pcg_graph(
     return_l2dict: bool = False,
     nan_rounds: int = 10,
     require_complete: bool = False,
+    level2_graph: Optional[np.ndarray] = None,
 ):
     """Compute the level 2 spatial graph (or mesh) of a given root id using the l2cache.
 
@@ -46,6 +48,10 @@ def pcg_graph(
         If vertices are missing (or not computed), this sets the number of iterations for smoothing over them.
     require_complete : bool
         If True, raise an Exception if any vertices are missing from the cache.
+    level2_graph : np.ndarray, optional
+        Level 2 graph for the root id as returned by client.chunkedgraph.level2_chunk_graph.
+        A list of lists of edges between level 2 chunks, as defined by their chunk ids.
+        If None, will query the chunkedgraph for the level 2 graph. Optional, by default None.
 
 
     Returns
@@ -60,7 +66,11 @@ def pcg_graph(
     if cv is None:
         cv = client.info.segmentation_cloudvolume(progress=False)
 
-    lvl2_eg = client.chunkedgraph.level2_chunk_graph(root_id)
+    if level2_graph is None:
+        lvl2_eg = client.chunkedgraph.level2_chunk_graph(root_id)
+    else:
+        lvl2_eg = level2_graph
+
     eg, l2dict_mesh, l2dict_r_mesh, x_ch = chunk_tools.build_spatial_graph(
         lvl2_eg,
         cv,
@@ -112,6 +122,11 @@ def pcg_skeleton_direct(
         Distance (in nanometers) for soma collapse.
     root_id : int, optional
         Root id of the segment, used in metadata. Optional, by default None.
+    level2_graph : np.ndarray, optional
+        Level 2 graph for the root id as returned by client.chunkedgraph.level2_chunk_graph.
+        A list of lists of edges between level 2 chunks, as defined by their chunk ids.
+        If None, will query the chunkedgraph for the level 2 graph. Optional, by default None.
+
 
     Returns
     -------
@@ -158,6 +173,7 @@ def pcg_skeleton(
     collapse_radius: Numeric = 7500,
     nan_rounds: int = 10,
     require_complete: bool = False,
+    level2_graph: Optional[np.ndarray] = None,
 ):
     """Produce a skeleton from the level 2 graph.
     Parameters
@@ -192,6 +208,10 @@ def pcg_skeleton(
         If vertices are missing (or not computed), this sets the number of iterations for smoothing over them.
     require_complete : bool, optional
         If True, raise an Exception if any vertices are missing from the cache.
+    level2_graph : np.ndarray, optional
+        Level 2 graph for the root id as returned by client.chunkedgraph.level2_chunk_graph.
+        A list of lists of edges between level 2 chunks, as defined by their chunk ids.
+        If None, will query the chunkedgraph for the level 2 graph. Optional, by default None.
 
     Returns
     -------
@@ -220,6 +240,7 @@ def pcg_skeleton(
         return_l2dict=True,
         nan_rounds=nan_rounds,
         require_complete=require_complete,
+        level2_graph=level2_graph,
     )
 
     metameta = {"space": "l2cache", "datastack": client.datastack_name}
@@ -256,26 +277,27 @@ def pcg_skeleton(
 
 
 def pcg_meshwork(
-    root_id,
-    datastack_name=None,
-    client=None,
-    cv=None,
-    root_point=None,
-    root_point_resolution=None,
-    collapse_soma=False,
-    collapse_radius=DEFAULT_COLLAPSE_RADIUS,
-    synapses=None,
-    synapse_table=None,
-    remove_self_synapse=True,
-    live_query=False,
-    timestamp=None,
-    invalidation_d=DEFAULT_INVALIDATION_D,
-    require_complete=False,
-    metadata=False,
-    synapse_partners=False,
-    synapse_point_resolution=[1, 1, 1],
-    synapse_representative_point_pre="ctr_pt_position",
-    synapse_representative_point_post="ctr_pt_position",
+    root_id: int,
+    datastack_name: Optional[str] = None,
+    client: Optional[CAVEclient] = None,
+    cv: Optional[cloudvolume.CloudVolume] = None,
+    root_point: Optional[list] = None,
+    root_point_resolution: Optional[list] = None,
+    collapse_soma: bool = False,
+    collapse_radius: Numeric = DEFAULT_COLLAPSE_RADIUS,
+    synapses: Optional[Union[bool, str]] = None,
+    synapse_table: Optional[str] = None,
+    remove_self_synapse: bool = True,
+    live_query: bool = False,
+    timestamp: Optional[datetime.datetime] = None,
+    invalidation_d: Numeric = DEFAULT_INVALIDATION_D,
+    require_complete: bool = False,
+    metadata: bool = False,
+    synapse_partners: bool = False,
+    synapse_point_resolution: list = [1, 1, 1],
+    synapse_representative_point_pre: str = "ctr_pt_position",
+    synapse_representative_point_post: str = "ctr_pt_position",
+    level2_graph: Optional[np.ndarray] = None,
 ) -> meshwork.Meshwork:
     """Generate a meshwork file based on the level 2 graph.
 
@@ -350,6 +372,7 @@ def pcg_meshwork(
         return_mesh=True,
         return_l2dict_mesh=True,
         require_complete=require_complete,
+        level2_graph=level2_graph,
     )
 
     nrn = meshwork.Meshwork(mesh, seg_id=root_id, skeleton=sk)
@@ -581,6 +604,11 @@ def coord_space_meshwork(
         Invalidation radius in hops for the mesh skeletonization along the chunk adjacency graph, by default 3
     require_complete : bool, optional
         If True, raise an Exception if any vertices are missing from the cache, by default False
+    level2_graph : np.ndarray, optional
+        Level 2 graph for the root id as returned by client.chunkedgraph.level2_chunk_graph.
+        A list of lists of edges between level 2 chunks, as defined by their chunk ids.
+        If None, will query the chunkedgraph for the level 2 graph. Optional, by default None.
+
 
     Returns
     -------
