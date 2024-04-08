@@ -16,7 +16,7 @@ At its most basic, we are going to get a skeleton for a single neuron in the `mi
 
 ```python
 import caveclient
-import pcg_skel
+from pcg_skel import pcg_skel
 
 datastack = 'minnie65_public'
 client = caveclient.CAVEclient(datastack)
