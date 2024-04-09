@@ -4,6 +4,18 @@ title: Changelog
 
 `pcg_skel` aims to follow semantic versioning, such that major versions are potentially backward-incompatible, minor versions add new features, and patch versions are bug fixes. This changelog is a summary of the changes in each version.
 
+## [1.0.2]
+
+### Fixes
+
+* Fixed the dictionaries returned with `pcg_skeleton`, such that one maps skeleton vertices to l2 ids and the other maps l2 ids to skeleton vertices. Previously, the first dictionary was repeated twice.
+
+## [1.0.1]
+
+### Changes
+
+* In pcg_graph, pcg_skeleton and pcg_meshwork, you can now pass the result of `client.chunkedgraph.level2_chunk_graph` directly as an argument (`level2_graph`) to avoid recomputing the graph and level2 features if you already have it around. The format is a list of pairs of level 2 ids.
+
 ## 1.0.0 
 
 ### Features

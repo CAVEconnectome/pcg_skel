@@ -8,7 +8,7 @@ def filter_l2dict(sk_ch, l2dict_mesh_r):
     l2dict_sk_r = {
         ii: l2dict_mesh_r.get(mind, -1) for ii, mind in enumerate(sk_ch.mesh_index)
     }
-    l2dict_sk = {v: k for v, k in l2dict_sk_r.items()}
+    l2dict_sk = {k: v for v, k in l2dict_sk_r.items()}
     return l2dict_sk, l2dict_sk_r
 
 
