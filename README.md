@@ -1,4 +1,4 @@
-![PyPI - Version](https://img.shields.io/pypi/v/pcg_skel)
+[![PyPI - Version](https://img.shields.io/pypi/v/pcg_skel)](https://pypi.org/project/pcg-skel/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7703278.svg)](https://doi.org/10.5281/zenodo.7703278)
 
 # pcg_skel
