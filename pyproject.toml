@@ -1,0 +1,66 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pcg-skel"
+dynamic = ["version"]
+description = "Skeletonization using the pychunkedgraph"
+readme = "README.md"
+license = {file = "LICENSE.txt"}
+authors = [
+    { name = "Casey Schneider-mizell", email = "caseys@alleninstitute.org" },
+]
+maintainers = [
+    { name = "Casey Schneider-mizell", email = "caseys@alleninstitute.org" },
+]
+requires-python = ">=3.9"
+dependencies = [
+    "caveclient>=4.12.4",
+    "cloud-volume>=3.6.0",
+    "fastremap",
+    "meshparty>=1.12.0",
+    "numpy",
+    "orjson",
+    "pandas",
+    "scipy",
+    "sqlitedict",
+    "trimesh",
+]
+
+[project.urls]
+Repository = "https://github.com/AllenInstitute/pcg_skel"
+
+[tool.hatch.version]
+path = "pcg_skel/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/pcg_skel",
+]
+
+[tool.hatch.envs.test]
+dependencies = [
+    "pytest",
+    "pytest-mock",
+    "pytest-cov",
+]
+
+[[tool.hatch.envs.test.matrix]]
+python = ["3.9", "3.10", "3.11"]
+
+[tool.hatch.envs.test.scripts]
+run_tests = "python -m pytest -v tests"
+
+
+[tool.hatch.envs.docs]
+python = "3.11"
+dependencies = [
+    "mkdocs-material",
+    "mkdocstrings[python]",
+    "mkdocs-glightbox"
+]
+
+[tool.hatch.envs.docs.scripts]
+docs_test = "mkdocs serve -v"
+build = "mkdocs build"

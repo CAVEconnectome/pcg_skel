@@ -1,9 +1,10 @@
+import cloudvolume
+import fastremap
+import multiwrapper.multiprocessing_utils as mu
 import numpy as np
 from scipy import spatial
-import cloudvolume
-from . import utils, chunk_cache, skel_utils
-import multiwrapper.multiprocessing_utils as mu
-import fastremap
+
+from . import chunk_cache, utils
 
 UnshardedMeshSource = (
     cloudvolume.datasource.graphene.mesh.unsharded.GrapheneUnshardedMeshSource

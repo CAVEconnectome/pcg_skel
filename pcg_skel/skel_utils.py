@@ -1,5 +1,6 @@
-import numpy as np
 import warnings
+
+import numpy as np
 
 
 def filter_l2dict(sk_ch, l2dict_mesh_r):
@@ -7,7 +8,7 @@ def filter_l2dict(sk_ch, l2dict_mesh_r):
     l2dict_sk_r = {
         ii: l2dict_mesh_r.get(mind, -1) for ii, mind in enumerate(sk_ch.mesh_index)
     }
-    l2dict_sk = {v: k for v, k in l2dict_sk_r.items()}
+    l2dict_sk = {k: v for v, k in l2dict_sk_r.items()}
     return l2dict_sk, l2dict_sk_r
 
 
@@ -50,7 +51,6 @@ def fix_nan_verts_mesh(mesh, num_rounds=20):
     else:
         if np.any(np.isnan(mesh.vertices)):
             print(f"Could not fix all nans after {num_rounds} rounds")
-    pass
 
 
 def fix_nan_verts(sk, num_rounds=20):
@@ -85,7 +85,6 @@ def fix_nan_verts(sk, num_rounds=20):
     else:
         if np.any(np.isnan(sk.vertices)):
             print(f"Could not fix all nans after {num_rounds} rounds")
-    pass
 
 
 def get_centered_mesh(mesh):
@@ -99,4 +98,3 @@ def get_centered_mesh(mesh):
 def attach_new_skeleton(nrn, new_skeleton):
     nrn._skeleton = new_skeleton
     nrn._recompute_indices()
-    pass
