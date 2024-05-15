@@ -71,7 +71,7 @@ soma_location = soma_df['pt_position'].values[0]
 
 # Use the above parameters in the skeletonization:
 
-skel = pcg_skel.coord_space_skeleton(
+skel = pcg_skel.pcg_skeleton(
     root_id,
     client,
     root_point=soma_location,
