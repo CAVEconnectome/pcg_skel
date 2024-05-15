@@ -2,6 +2,7 @@ site_name: pcg_skel
 site_url: https://caveconnectome.github.io/pcg_skel/
 repo_url: https://github.com/CAVEconnectome/pcg_skel/
 repo_name: CAVEconnectome/pcg_skel
+edit_uri: edit/master/docs/
 
 theme:
   name: material
@@ -33,6 +34,8 @@ theme:
     - search.highlight
     - search.share
     - content.code.copy
+    - content.action.edit
+    - content.action.view
 nav:
   - About: index.md
   - Background: background.md
