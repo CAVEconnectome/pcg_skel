@@ -1,7 +1,9 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
+
+from meshparty.meshwork.algorithms import split_axon_by_annotation, strahler_order
+
 from . import pcg_anno
-from meshparty.meshwork.algorithms import strahler_order, split_axon_by_annotation
 
 VOL_PROPERTIES = ["area_nm2", "size_nm3", "mean_dt_nm", "max_dt_nm"]
 
@@ -66,7 +68,7 @@ def add_synapses(
             pre_syn_df,
             index_column="pre_pt_mesh_ind",
             point_column="ctr_pt_position",
-            voxel_resolution=pre_syn_df.attrs.get('dataframe_resolution'),
+            voxel_resolution=pre_syn_df.attrs.get("dataframe_resolution"),
         )
     if post_syn_df is not None:
         nrn.anno.add_annotations(
@@ -74,7 +76,7 @@ def add_synapses(
             post_syn_df,
             index_column="post_pt_mesh_ind",
             point_column="ctr_pt_position",
-            voxel_resolution=post_syn_df.attrs.get('dataframe_resolution'),
+            voxel_resolution=post_syn_df.attrs.get("dataframe_resolution"),
         )
 
     return
@@ -161,6 +163,9 @@ def add_segment_properties(
     """Use volumetric and topological properties to add descriptive properties for each skeleton vertex.
     Note that properties are estimated per segment, the unbranched region between branch points and/or endpoints.
 
+    This function assumes that the volume properties have already been added to the 
+    meshwork, which can be done using `add_volumetric_properties`.
+
     Parameters
     ----------
     nrn : meshparty.meshwork.Meshwork
@@ -186,6 +191,12 @@ def add_segment_properties(
     comp_mask : str, optional
         Sets the annotation table to mask off for strahler number computation, by default "is_axon".
     """
+    if volume_property_name not in nrn.anno.table_names:
+        msg = f"Volume property table {volume_property_name} not found in `nrn.anno`. "
+        msg += "You may want to run `add_volumetric_properties` on this neuron first "
+        msg += "before calling this function."
+        raise ValueError(msg)
+
     seg_num = []
     is_root = []
     segment_index = np.zeros(len(nrn.vertices), dtype=int)
@@ -287,7 +298,7 @@ def add_is_axon_annotation(
     nrn : meshparty.meshwork.Meshwork
         Meshwork object
     pre_anno : str
-        Annotation property table name for presynaptic sites (outputs).  
+        Annotation property table name for presynaptic sites (outputs).
     post_anno : str
         Annotation property table name for postsyanptic sites (inputs).
     annotation_name : str, optional
