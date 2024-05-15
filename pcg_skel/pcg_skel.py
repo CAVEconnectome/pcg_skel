@@ -31,8 +31,6 @@ def pcg_graph(
 ):
     """Compute the level 2 spatial graph (or mesh) of a given root id using the l2cache.
 
-    Some text for you and me.
-
     Parameters
     ----------
     root_id : int
