@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+
 import caveclient
 import datetime
 from meshparty import meshwork
@@ -172,6 +173,9 @@ def add_segment_properties(
     """Use volumetric and topological properties to add descriptive properties for each skeleton vertex.
     Note that properties are estimated per segment, the unbranched region between branch points and/or endpoints.
 
+    This function assumes that the volume properties have already been added to the 
+    meshwork, which can be done using `add_volumetric_properties`.
+
     Parameters
     ----------
     nrn : meshparty.meshwork.Meshwork
@@ -197,6 +201,12 @@ def add_segment_properties(
     comp_mask : str, optional
         Sets the annotation table to mask off for strahler number computation, by default "is_axon".
     """
+    if volume_property_name not in nrn.anno.table_names:
+        msg = f"Volume property table {volume_property_name} not found in `nrn.anno`. "
+        msg += "You may want to run `add_volumetric_properties` on this neuron first "
+        msg += "before calling this function."
+        raise ValueError(msg)
+
     seg_num = []
     is_root = []
     segment_index = np.zeros(len(nrn.vertices), dtype=int)
