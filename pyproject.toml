@@ -7,7 +7,7 @@ name = "pcg-skel"
 dynamic = ["version"]
 description = "Skeletonization using the pychunkedgraph"
 readme = "README.md"
-license = {file = "LICENSE.txt"}
+license = {file = "LICENSE"}
 authors = [
     { name = "Casey Schneider-mizell", email = "caseys@alleninstitute.org" },
 ]
@@ -38,6 +38,9 @@ path = "pcg_skel/__init__.py"
 include = [
     "/pcg_skel",
 ]
+
+[tool.hatch.envs.default]
+installer = "uv"
 
 [tool.hatch.envs.test]
 dependencies = [

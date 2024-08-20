@@ -5,6 +5,7 @@ import caveclient
 import datetime
 from meshparty import meshwork
 from meshparty.meshwork.algorithms import split_axon_by_annotation, strahler_order
+from warnings import warn
 
 from . import pcg_anno
 
@@ -57,7 +58,7 @@ def add_synapses(
         By default, this is False because partner root ids change with editing and are not specified by this cell's data alone.
     """
     if root_id is None:
-        root_id - nrn.seg_id
+        root_id = nrn.seg_id
 
     pre_syn_df, post_syn_df = pcg_anno.get_level2_synapses(
         root_id,
@@ -173,7 +174,7 @@ def add_segment_properties(
     """Use volumetric and topological properties to add descriptive properties for each skeleton vertex.
     Note that properties are estimated per segment, the unbranched region between branch points and/or endpoints.
 
-    This function assumes that the volume properties have already been added to the 
+    This function assumes that the volume properties have already been added to the
     meshwork, which can be done using `add_volumetric_properties`.
 
     Parameters
@@ -331,7 +332,7 @@ def add_is_axon_annotation(
     )
     if sq < threshold_quality:
         nrn.anno.add_annotations(annotation_name, [], mask=True)
-        raise Warning("Split quality below threshold, no axon mesh vertices added!")
+        warn("Split quality below threshold, no axon mesh vertices added!")
     else:
         nrn.anno.add_annotations(annotation_name, is_axon, mask=True)
 

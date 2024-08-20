@@ -163,7 +163,7 @@ def get_level2_synapses(
     live_query = timestamp is not None
 
     if timestamp is None:
-        timestamp = datetime.datetime.utcnow()
+        timestamp = datetime.datetime.now(datetime.timezone.utc)
     if pre is True:
         pre_syn_df = _mapped_synapses(
             root_id,
@@ -212,7 +212,7 @@ def _mapped_synapses(
     remove_crud=True,
     synapse_point_resolution=None,
 ):
-    if live_query:
+    if timestamp:
         syn_df = client.materialize.live_query(
             synapse_table,
             filter_equal_dict={f"{side}_pt_root_id": root_id},
