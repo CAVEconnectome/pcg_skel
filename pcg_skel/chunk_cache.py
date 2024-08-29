@@ -1,12 +1,31 @@
 import numpy as np
 import orjson
 from sqlitedict import SqliteDict
+from cachetools import LRUCache, cached
+from cachetools.keys import hashkey
 
 POSITION_ATTRIBUTE = "rep_coord_nm"
 
 
+class NoL2CacheException(Exception):
+    pass
+
+
+def cachekey(client):
+    return hashkey(client.datastack_name)
+
+
+@cached(LRUCache(16), key=cachekey)
+def check_l2cache(client):
+    return client.l2cache.has_cache()
+
+
 def get_locs_remote(l2_ids, client):
     """Retrieve ids from the l2 cache service"""
+    if check_l2cache(client) is False:
+        raise NoL2CacheException(
+            f"No L2 Cache service is running for datastack {client.datastack_name} and you cannot use PCGSkel without an L2 Cache. Contact your admin for more information."
+        )
     l2_info = client.l2cache.get_l2data(list(l2_ids), attributes=[POSITION_ATTRIBUTE])
     l2loc = [l2_info[str(l2id)].get(POSITION_ATTRIBUTE, None) for l2id in l2_ids]
 
@@ -59,7 +78,6 @@ def save_ids_to_cache(l2_ids, l2_locs, cache_file):
     cache_file : str
 
     """
-    ii = 0
     with SqliteDict(cache_file, encode=orjson.dumps, flag="c") as cache_dict:
         for k, v in zip(l2_ids, l2_locs):
             if not np.any(np.isnan(v)):

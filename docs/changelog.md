@@ -4,6 +4,12 @@ title: Changelog
 
 `pcg_skel` aims to follow semantic versioning, such that major versions are potentially backward-incompatible, minor versions add new features, and patch versions are bug fixes. This changelog is a summary of the changes in each version.
 
+## [1.0.4]
+
+### Fixes
+
+* Raise a clear error when a level 2 cache service, which is needed, is not available.
+
 ## [1.0.3]
 
 ### Fixes

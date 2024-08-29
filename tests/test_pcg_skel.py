@@ -1,8 +1,9 @@
 import pytest
 import pcg_skel
+from pcg_skel.chunk_cache import NoL2CacheException
 import numpy as np
 
-from conftest import test_client
+from conftest import test_client, test_client_nol2cache
 from conftest import root_id, center_pt
 
 
@@ -74,3 +75,14 @@ def test_defunct_meshwork(test_client, root_id, center_pt):
     )
     assert len(nrn2.anno.table_names) > 0
     assert nrn2.mesh.vertices.shape[0] > 0
+
+
+def test_pcg_meshwork_noclient(test_client_nol2cache, root_id, center_pt):
+    with pytest.raises(NoL2CacheException):
+        pcg_skel.pcg_skeleton(
+            root_id,
+            test_client_nol2cache,
+            collapse_radius=True,
+            root_point=center_pt,
+            root_point_resolution=[4, 4, 40],
+        )
