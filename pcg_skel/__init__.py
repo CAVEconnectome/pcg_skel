@@ -4,4 +4,4 @@ from .features import *
 from . import utils
 from . import chunk_tools
 
-__version__ = "1.0.3"
+__version__ = "1.0.4"
