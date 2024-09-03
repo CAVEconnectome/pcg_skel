@@ -299,7 +299,8 @@ def add_is_axon_annotation(
     threshold_quality: float = 0.5,
     extend_to_segment: bool = True,
     n_times: int = 1,
-) -> None:
+    return_quality: bool = False,
+):
     """Add an annotation property table specifying which vertices belong to the axon, based on synaptic input and output locations
     For the synapse flow centrality algorithm, see "Quantitative neuroanatomy for connectomics in Drosophila", Schneider-Mizell et al. eLife 2016.
 
@@ -321,6 +322,13 @@ def add_is_axon_annotation(
     n_times : int, optional
         The number of times to run axon/dendrite detection in a row, by default 1.
         This should be set to the number of distinct axon branches on a cell, which surprisingly can be more than one even for mouse neurons.
+    return_quality : bool, optional
+        If True, returns the split quality score (a float between 0-1). Default is False.
+
+    Returns
+    -------
+    split_quality
+        Float between 0-1, with higher numbers indicating a better axon/dendrite segregation.
     """
     is_axon, sq = split_axon_by_annotation(
         nrn,
@@ -335,6 +343,10 @@ def add_is_axon_annotation(
         warn("Split quality below threshold, no axon mesh vertices added!")
     else:
         nrn.anno.add_annotations(annotation_name, is_axon, mask=True)
+    if return_quality:
+        return sq
+    else:
+        pass
 
 
 def l2dict_from_anno(
