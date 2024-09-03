@@ -4,6 +4,12 @@ title: Changelog
 
 `pcg_skel` aims to follow semantic versioning, such that major versions are potentially backward-incompatible, minor versions add new features, and patch versions are bug fixes. This changelog is a summary of the changes in each version.
 
+## [1.0.5]
+
+### Features
+
+* Adds an optional `return_quality` argument to `features.add_is_axon_annotation` to optionally return the split quality value.
+
 ## [1.0.4]
 
 ### Fixes
