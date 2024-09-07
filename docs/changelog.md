@@ -4,6 +4,12 @@ title: Changelog
 
 `pcg_skel` aims to follow semantic versioning, such that major versions are potentially backward-incompatible, minor versions add new features, and patch versions are bug fixes. This changelog is a summary of the changes in each version.
 
+## [1.0.6]
+
+### Fixes
+
+* Fixed errors arising from running pcg_graph, pcg_skeleton, or pcg_meshwork on a root id with only a single vertex.
+
 ## [1.0.5]
 
 ### Features
