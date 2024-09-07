@@ -68,6 +68,12 @@ def pcg_graph(
         lvl2_eg = client.chunkedgraph.level2_chunk_graph(root_id)
     else:
         lvl2_eg = level2_graph
+    if len(lvl2_eg) == 0:
+        l2id = client.chunkedgraph.get_leaves(root_id, stop_layer=2)
+        lvl2_eg = np.array([l2id, l2id]).reshape((1, 2))
+        is_singlet = True
+    else:
+        is_singlet = False
 
     eg, l2dict_mesh, l2dict_r_mesh, x_ch = chunk_tools.build_spatial_graph(
         lvl2_eg,
@@ -76,6 +82,8 @@ def pcg_graph(
         method="service",
         require_complete=require_complete,
     )
+    if is_singlet:
+        eg = None
     mesh_loc = trimesh_io.Mesh(
         vertices=x_ch,
         faces=[[0, 0, 0]],  # Some functions fail if no faces are set.
@@ -242,24 +250,38 @@ def pcg_skeleton(
     )
 
     metameta = {"space": "l2cache", "datastack": client.datastack_name}
+    if len(mesh.vertices) == 1:
+        vertices = np.array([mesh.vertices[0], mesh.vertices[0]])
+        sk = skeletonize.Skeleton(
+            vertices=vertices,
+            edges=np.array([0, 1]).reshape((1, 2)),
+            root=0,
+            mesh_to_skel_map=np.array([0, 1]),
+            mesh_index=np.array([0, 0]),
+            remove_zero_length_edges=False,
+        )
+        l2dict, l2dict_r = l2dict_mesh.copy(), l2dict_r_mesh.copy()
+        # Assign a fake l2id of zero to the duplicate vertex
+        l2dict_r[1] = 0
+        l2dict[0] = 1
 
-    sk = skeletonize.skeletonize_mesh(
-        mesh,
-        invalidation_d=invalidation_d,
-        soma_pt=root_point,
-        collapse_soma=collapse_soma,
-        soma_radius=collapse_radius,
-        compute_radius=False,
-        cc_vertex_thresh=0,
-        remove_zero_length_edges=True,
-        meta={
-            "root_id": root_id,
-            "skeleton_type": skeleton_type,
-            "meta": metameta,
-        },
-    )
-
-    l2dict, l2dict_r = sk_utils.filter_l2dict(sk, l2dict_r_mesh)
+    else:
+        sk = skeletonize.skeletonize_mesh(
+            mesh,
+            invalidation_d=invalidation_d,
+            soma_pt=root_point,
+            collapse_soma=collapse_soma,
+            soma_radius=collapse_radius,
+            compute_radius=False,
+            cc_vertex_thresh=0,
+            remove_zero_length_edges=True,
+            meta={
+                "root_id": root_id,
+                "skeleton_type": skeleton_type,
+                "meta": metameta,
+            },
+        )
+        l2dict, l2dict_r = sk_utils.filter_l2dict(sk, l2dict_r_mesh)
 
     out_list = [sk]
     if return_mesh:
