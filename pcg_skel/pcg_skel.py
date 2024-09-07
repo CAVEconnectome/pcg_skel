@@ -256,7 +256,7 @@ def pcg_skeleton(
             vertices=vertices,
             edges=np.array([0, 1]).reshape((1, 2)),
             root=0,
-            mesh_to_skel_map=np.array([0, 1]),
+            mesh_to_skel_map=np.array([0]),
             mesh_index=np.array([0, 0]),
             remove_zero_length_edges=False,
         )
