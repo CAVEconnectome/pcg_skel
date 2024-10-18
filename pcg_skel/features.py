@@ -12,6 +12,104 @@ from . import pcg_anno
 VOL_PROPERTIES = ["area_nm2", "size_nm3", "mean_dt_nm", "max_dt_nm"]
 
 
+def add_synapse_count(
+    nrn: meshwork.Meshwork,
+    anno_name: str = "synapse_count",
+    pre_syn: str = "pre_syn",
+    post_syn: str = "post_syn",
+    pre_syn_index: str = "pre_pt_mesh_ind",
+    post_syn_index: str = "post_pt_mesh_ind",
+    aggregate_size: bool = True,
+):
+    """
+    Create a synapse count label across mesh vertices from existing synapse annotation.
+
+    This function adds a synapse count annotation to the mesh vertices of a neuron. It aggregates
+    synapse data from pre-synaptic and post-synaptic annotations and optionally calculates the mean
+    size of the synapses.
+
+    Parameters
+    ----------
+    nrn : meshwork.Meshwork
+        The neuron meshwork object containing the mesh and annotations.
+    anno_name : str, optional
+        The name of the annotation table to be created, by default "synapse_count".
+    pre_syn : str, optional
+        The name of the pre-synaptic annotation table, by default "pre_syn".
+        If set to None, presynaptic points will be skipped.
+    post_syn : str, optional
+        The name of the post-synaptic annotation table, by default "post_syn".
+        If set to None, postsynaptic points will be skipped
+    pre_syn_index : str, optional
+        The mesh index column for pre-synaptic annotation, by default "pre_pt_mesh_ind".
+    post_syn_index : str, optional
+        The mesh index column for post-synaptic annotation, by default "post_pt_mesh_ind".
+    aggregate_size : bool, optional
+        Whether to aggregate the size of synapses, by default True.
+
+    Returns
+    -------
+    None
+        The function modifies the neuron meshwork object in place by adding the synapse count annotation.
+    """
+
+    with nrn.mask_context(np.ones(nrn.mesh.unmasked_size).astype(bool)):
+        syn_count_df = pd.DataFrame(index=nrn.mesh_indices)
+
+        if pre_syn:
+            syn_out_agg_kwargs = {
+                "num_syn_out": pd.NamedAgg("id", "count"),
+            }
+            if aggregate_size:
+                syn_out_agg_kwargs["mean_size_out"] = pd.NamedAgg("size", "mean")
+
+            syn_out_df = (
+                nrn.anno[pre_syn].df.groupby(pre_syn_index).agg(**syn_out_agg_kwargs)
+            )
+
+        if post_syn:
+            syn_in_agg_kwargs = {
+                "num_syn_in": pd.NamedAgg("id", "count"),
+            }
+            if aggregate_size:
+                syn_in_agg_kwargs["mean_size_in"] = pd.NamedAgg("size", "mean")
+
+            syn_in_df = (
+                nrn.anno[post_syn].df.groupby(post_syn_index).agg(**syn_in_agg_kwargs)
+            )
+
+        syn_count_df = (
+            syn_count_df.merge(
+                syn_out_df,
+                left_index=True,
+                right_index=True,
+                how="left",
+            )
+            .merge(
+                syn_in_df,
+                left_index=True,
+                right_index=True,
+                how="left",
+            )
+            .fillna(0)
+        )
+
+        if pre_syn:
+            syn_count_df["num_syn_out"] = syn_count_df["num_syn_out"].astype(int)
+        if post_syn:
+            syn_count_df["num_syn_in"] = syn_count_df["num_syn_in"].astype(int)
+        syn_count_df = syn_count_df.reset_index().rename(
+            columns={"index": "mesh_index"}
+        )
+
+        nrn.anno.add_annotations(
+            anno_name,
+            syn_count_df,
+            index_column="mesh_index",
+        )
+    pass
+
+
 def add_synapses(
     nrn: meshwork.Meshwork,
     synapse_table: str,
