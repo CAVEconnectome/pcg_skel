@@ -61,7 +61,7 @@ def add_synapse_count(
                 "num_syn_out": pd.NamedAgg("id", "count"),
             }
             if aggregate_size:
-                syn_out_agg_kwargs["mean_size_out"] = pd.NamedAgg("size", "mean")
+                syn_out_agg_kwargs["net_size_out"] = pd.NamedAgg("size", "sum")
 
             syn_out_df = (
                 nrn.anno[pre_syn].df.groupby(pre_syn_index).agg(**syn_out_agg_kwargs)
@@ -72,7 +72,7 @@ def add_synapse_count(
                 "num_syn_in": pd.NamedAgg("id", "count"),
             }
             if aggregate_size:
-                syn_in_agg_kwargs["mean_size_in"] = pd.NamedAgg("size", "mean")
+                syn_in_agg_kwargs["net_size_in"] = pd.NamedAgg("size", "sum")
 
             syn_in_df = (
                 nrn.anno[post_syn].df.groupby(post_syn_index).agg(**syn_in_agg_kwargs)
