@@ -460,7 +460,7 @@ def l2dict_from_anno(
 def aggregate_property_to_skeleton(
     nrn: meshwork.Meshwork,
     anno_table: str,
-    aggregation_dict: Optional[dict] = None,
+    agg_dict: Optional[dict] = None,
     fill_value: float = 0,
 ) -> pd.DataFrame:
     """Aggregate a meshwork annotation table to skeletons
@@ -471,22 +471,25 @@ def aggregate_property_to_skeleton(
         Meshwork object with mesh,skeleton, and annotations
     anno_table : str
         Name of the annotation table
-    aggregation_dict : dict
-        _description_
+    agg_dict : dict
+        Dictionary of column names and aggregation functions that can be used by pandas pd.NamedAgg.
     fill_value : float, optional
-        _description_, by default 0
+        Value to use to fill missing or NaN values, by default 0
 
     Returns
     -------
     pd.DataFrame
-        _description_
+        Dataframe with one row per skeleton index and columns aggregating mesh annotation values
+        using the aggregation function specified in the aggregation_dict.
     """
-    with nrn.mask_context(np.ones(nrn.mesh.unmasked_size).astype(bool)):
-        df = nrn.anno[anno_table].df
-    SKEL_INDEX_COL = "skel_index"
-    df[SKEL_INDEX_COL] = nrn.anno[anno_table].mesh_index.to_skel_index_padded
+    df = nrn.anno[anno_table].df
 
-    aggs = {k: pd.NamedAgg(k, v) for k, v in aggregation_dict.items()}
-    skel_df = df.groupby(SKEL_INDEX_COL).agg(**aggs)
+    skel_index_column = "skel_index"
+    while skel_index_column in df.columns:
+        skel_index_column = f"{skel_index_column}_temp"
+    df[skel_index_column] = nrn.anno[anno_table].mesh_index.to_skel_index_padded
+
+    aggs = {k: pd.NamedAgg(k, v) for k, v in agg_dict.items()}
+    skel_df = df.groupby(skel_index_column).agg(**aggs)
     skel_df = skel_df.reindex(np.arange(0, nrn.skeleton.n_vertices)).fillna(fill_value)
     return skel_df

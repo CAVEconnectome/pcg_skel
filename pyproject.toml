@@ -16,7 +16,7 @@ maintainers = [
 ]
 requires-python = ">=3.9"
 dependencies = [
-    "caveclient>=4.12.4",
+    "caveclient>=6.4.1",
     "cloud-volume>=3.6.0",
     "fastremap",
     "meshparty>=1.12.0",
@@ -48,6 +48,7 @@ dependencies = [
     "pytest",
     "pytest-mock",
     "pytest-cov",
+    "responses",
 ]
 
 [[tool.hatch.envs.test.matrix]]
