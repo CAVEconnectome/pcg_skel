@@ -86,3 +86,19 @@ def test_pcg_meshwork_noclient(test_client_nol2cache, root_id, center_pt):
             root_point=center_pt,
             root_point_resolution=[4, 4, 40],
         )
+
+
+def test_feature_aggregation(test_neuron):
+    orig_df = test_neuron.anno["synapse_count"].df
+    skel_df = pcg_skel.features.aggregate_property_to_skeleton(
+        test_neuron,
+        "synapse_count",
+        agg_dict={
+            "num_syn_out": "sum",
+            "num_syn_in": "sum",
+            "net_size_out": "sum",
+            "net_size_in": "sum",
+        },
+    )
+    for col in ["num_syn_in", "num_syn_out", "net_size_in", "net_size_out"]:
+        assert skel_df.sum()[col] == orig_df.sum()[col]
