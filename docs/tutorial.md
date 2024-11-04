@@ -124,4 +124,50 @@ Note the `mesh_ind` column, which aligns with the mesh indices in the `nrn.mesh`
 
 ## Using Features
 
-WIP
+Skeletions are only so useful on their own, one also wants to attach properties like dendritic compartments to them for analysis.
+There are a few convenience functions in `pcg_skel.features` that can be used to add features to a skeleton.
+All of these functions start use the level 2 chunks and collect a variety of features either from the l2cache or CAVE database.
+
+### Synapses
+
+The best way to get synapses is by default through the `pcg_meshwork` function, which handles the complexity of synapse queries and attachment.
+Once created, these synapses can be used to generate two different mappings of the neuron.
+The first creates a count of the number of synapses per skeleton vertex while dropping connectivity information, and the second uses synapses to predict which parts of the skeleton are dendritic and which are axonal.
+
+To get the synapse count map, use the `features.add_synapse_count` function.
+For example, assuming you have a pcg meshwork object `nrn` with synapses attached in the default way, we can add synapse counts to the skeleton with:
+
+```python
+pcg_skel.features.add_synapse_count(
+    nrn,
+)
+
+syn_count_df = nrn.anno.synapse_count.df
+```
+
+The resulting dataframe by default will create a dataframe with one row per graph vertex (not skeleton vertex!) and columns:
+
+* `num_syn_in`: The number of input synapse at the vertex
+* `num_syn_out`: The number of output synapse at the vertex
+* `net_size_in`: The summed size of the input synapses at the vertex.
+* `net_size_out`: The summed size of the output synapses at the vertex.
+
+The last two columns enable one to compute averages of synapse size, although not percentiles.
+
+If you want to map these values to skeleton nodes, there is also a function to handle this aggregation.
+
+```python
+
+skel_df = pcg_skel.features.aggregate_property_to_skeleton(
+    nrn,
+    'synapse_count',
+    agg_dict={'num_syn_in': 'sum', 'num_syn_out': 'sum', 'net_size_in': 'sum', 'net_size_out': 'sum'},
+)
+```
+
+This will generate a dataframe with one row per skeleton vertex and the columns will aggregate the synapse count properties to the skeleton.
+The `agg_dict` property lets you specify exactly which columns to aggregate by across associated graph vertices and how to aggregate them.
+Anything that works in a pandas groupby operation will work here.
+Note that if you don't specify a column in the `agg_dict`, nothing will happen to it.
+
+
