@@ -4,6 +4,11 @@ title: Changelog
 
 `pcg_skel` aims to follow semantic versioning, such that major versions are potentially backward-incompatible, minor versions add new features, and patch versions are bug fixes. This changelog is a summary of the changes in each version.
 
+## [1.1.0]
+
+* Added `add_synapse_count` and `aggregate_property_to_skeleton` functions to `features` module.
+* Updated tests to use the `CAVEclientMock` feature introduced in CAVEclient 6.4.0.
+
 ## [1.0.7]
 
 ### Fixes
