@@ -225,9 +225,9 @@ def pcg_skeleton(
         Skeleton for the root id
     mesh : meshparty.trimesh_io.Mesh, optional
         Mesh graph that the skeleton is based on, only returned if return_mesh is True.
-    (l2dict_skel, l2dict_reverse): (dict, dict), optional
+    (l2dict_skel, l2dict_skel_reverse): (dict, dict), optional
         Dictionaries mapping l2 ids to skeleton vertices and skeleton vertices to l2 ids, respectively. Only returned if return_l2dict is True.
-    (l2dict_mesh, l2dict_mesh): (dict, dict), optional
+    (l2dict_mesh, l2dict_mesh_reverse): (dict, dict), optional
         Dictionaries mapping l2 ids to mesh graph vertices and mesh_graph vertices to l2 ids, respectively. Only returned if return_l2dict is True.
     """
     if client is None:
