@@ -24,6 +24,7 @@ dependencies = [
     "orjson",
     "pandas",
     "scipy",
+    "sqlitedict",
     "trimesh",
 ]
 
@@ -37,6 +38,7 @@ dev = [
     "pytest-mock",
     "ipykernel",
     "bump-my-version",
+    "responses",
 ]
 docs = [
     "mkdocs",
