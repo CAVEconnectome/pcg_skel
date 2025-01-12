@@ -54,7 +54,6 @@ coverage.xml
 *.pot
 
 # Specific tool stuff:
-.hatch/
 .ruff_cache/
 .vscode/
 
