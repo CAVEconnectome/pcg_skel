@@ -62,7 +62,7 @@ def rebuild_meshwork(
     lvl2_df = pd.DataFrame({"lvl2_id": lvl2_ids, "mesh_ind": np.arange(len(lvl2_ids))})
     nrn.anno.add_annotations("lvl2_ids", lvl2_df, index_column="mesh_ind")
 
-    if compartments:
+    if compartments is not None:
         compartment_df = pd.DataFrame(
             {"compartment": compartments, "mesh_ind": np.arange(len(compartments))}
         )
@@ -104,6 +104,7 @@ def get_meshwork_from_client(
     sk = client.skeleton.get_skeleton(
         root_id, skeleton_version=skeleton_version, output_format="dict"
     )
+    ts = client.chunkedgraph.get_root_timestamps(root_id, latest=True)[0]
     return rebuild_meshwork(
         root_id=root_id,
         sk_verts=np.array(sk["vertices"]),
@@ -113,10 +114,10 @@ def get_meshwork_from_client(
         lvl2_ids=np.array(sk["lvl2_ids"]),
         metadata=sk["meta"],
         radius=np.array(sk["radius"]),
-        compartments=np.array(sk["compartments"]),
+        compartments=np.array(sk["compartment"]),
         client=client,
         synapses=synapses,
-        timestamp=datetime.datetime.fromtimestamp(sk["meta"]["timestamp"]),
+        timestamp=ts,
         restore_graph=restore_graph,
         restore_properties=restore_properties,
     )
