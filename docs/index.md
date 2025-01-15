@@ -24,11 +24,13 @@ To install `pcg_skel` from source, you can clone the repository and install it u
 pip install -e .
 ```
 
-`pcg_skel` uses [Hatch](https://hatch.pypa.io/latest/) for packaging, and there are tests that can be run within the environment using:
+`pcg_skel` uses [uv](https://docs.astral.sh/uv/) for packaging, and there are tests that can be run within the environment using [poe](https://poethepoet.natn.io)
 
 ```bash
-hatch run test:run_tests
+poe test
 ```
+
+which aliases `uv run pytest --cov=pcg_skel tests`.
 
 ## Related Packages
 

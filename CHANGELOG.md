@@ -2,6 +2,12 @@
 
 This project attempts to use semantic versioning whereever possible.
 
+## [1.2.1] - 2024-01-15
+
+### Added
+
+* `pcg_skel.services.get_meshwork_from_client` can generate a meshwork from the information in the skeleton service.
+
 ## [1.0.0] - 2021-07-02
 
 ### Added

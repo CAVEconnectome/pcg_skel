@@ -8,16 +8,22 @@ from meshparty import meshwork, skeleton, trimesh_io
 
 from . import features
 
+compartment_map = {
+    "soma": 1,
+    "axon": 2,
+    "dendrite": 3,
+}
 
 def rebuild_meshwork(
     root_id: int,
-    sk_verts: list,
-    sk_edges: list,
+    sk_verts: np.ndarray,
+    sk_edges: np.ndarray,
     root: int,
-    mesh_to_skel_map: list,
-    lvl2_ids: list,
+    mesh_to_skel_map: np.ndarray,
+    lvl2_ids: np.ndarray,
     radius: Optional[list] = None,
     compartments: Optional[list] = None,
+    is_axon: bool = True,
     metadata: Optional[dict] = None,
     client: Optional[CAVEclient] = None,
     synapses: bool = False,
@@ -64,9 +70,18 @@ def rebuild_meshwork(
 
     if compartments is not None:
         compartment_df = pd.DataFrame(
-            {"compartment": compartments, "mesh_ind": np.arange(len(compartments))}
+            {"compartment": compartments[mesh_to_skel_map], "mesh_ind": np.arange(len(mesh_to_skel_map))}
         )
         nrn.anno.add_annotations("compartment", compartment_df, index_column="mesh_ind")
+        if is_axon:
+            if compartment_map['axon'] in compartments:
+                is_axon = compartment_df.query(f'compartment == {compartment_map["axon"]}')['mesh_ind'].values
+                nrn.anno.add_annotations("is_axon", is_axon, mask=True)
+            else:
+                nrn.anno.add_annotations("is_axon", [], mask=True)
+    else:
+        if is_axon:
+            nrn.anno.add_annotations("is_axon", [], mask=True)
 
     if synapses:
         features.add_synapses(
@@ -81,6 +96,7 @@ def rebuild_meshwork(
             timestamp=timestamp,
             live_query=True,
             metadata=False,
+            synapse_point_resolution=[1,1,1], # Nanometers, same as skeleton.
         )
 
     if restore_properties:
@@ -100,7 +116,41 @@ def get_meshwork_from_client(
     restore_graph: bool = False,
     restore_properties: bool = False,
     skeleton_version: Optional[int] = 4,
-):
+) -> meshwork.Meshwork:
+    """Generate a meshwork file from the information on the skeleton service.
+    Note: Requires skeleton service v0.12.3 or higher to be deployed.
+
+    Parameters
+    ----------
+    root_id : int
+        Object root id
+    client : CAVEclient
+        Initialized caveclient
+    synapses : bool, optional
+        Whether to add synapses under the annotations "pre_syn" and "post_syn", by default False
+    restore_graph : bool, optional
+        Whether to restore the level 2 graph, by default False.
+        Adds a significant amount of time to the rehydration,
+        however the `nrn.mesh` part will not be accurate if this is True.
+    restore_properties : bool, optional
+        Whether to restore `volume_properties` and `segment_properties`, by default False.
+        Adds a significant amount of time to the rehydration.
+    skeleton_version : Optional[int], optional
+        Which skeleton version to use, by default 4, which is the minimum needed for rehydration to work.
+
+    Returns
+    -------
+    meshparty.meshwork.MeshWork
+        Meshwork object with annotation properties:
+        * `compartment`: SWC compartment labels for vertices (1: soma, 2: axon, 3: dendrite)
+        * `is_axon`: Vertices with compartment label 2.
+        * `lvl2_ids`: Level 2 id for each vertex of the spatial graph.
+        * `pre_syn` and `post_syn` (optional): Synapse information.
+        * `segment_properties` and `volume_properties` (optional): Segment and volume information.
+
+        Note that the spatial graph (`nrn.mesh`) part of the file will _not_ be correct with this
+        function unless `restore_graph` is set to True, but the skeleton and annotations will be.
+    """
     sk = client.skeleton.get_skeleton(
         root_id, skeleton_version=skeleton_version, output_format="dict"
     )
