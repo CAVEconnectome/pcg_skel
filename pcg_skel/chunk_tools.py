@@ -219,14 +219,7 @@ def get_closest_lvl2_chunk(
         Closest point inside the object to the specified point. Only returned if return_point is True.
     """
     if cv is None:
-        cv = cloudvolume.CloudVolume(
-            client.info.segmentation_source(),
-            use_https=True,
-            bounded=False,
-            fill_missing=True,
-            progress=False,
-            secrets={"token": client.auth.token},
-        )
+        cv = client.info.segmentation_cloudvolume(progress=False)
 
     if voxel_resolution is None:
         voxel_resolution = np.array(cv.mip_resolution(0))
@@ -240,7 +233,10 @@ def get_closest_lvl2_chunk(
     lx = np.array(pt) - offset
     ux = np.array(pt) + offset
     bbox = cloudvolume.Bbox(lx.astype(int), ux.astype(int))
-    vol = cv.download(bbox, segids=[root_id])
+    
+    ts = client.chunkedgraph.get_root_timestamps(root_id, latest=True)[0]
+
+    vol = cv.download(bbox, segids=[root_id], timestamp=ts)
     vol = np.squeeze(vol)
     if not bool(np.any(vol > 0)):
         raise ValueError("No point of the root id is near the specified point")
@@ -254,7 +250,7 @@ def get_closest_lvl2_chunk(
 
     # Look up the level 2 supervoxel for that id.
     closest_sv = int(cv.download_point(closest_pt, size=1))
-    lvl2_id = client.chunkedgraph.get_root_id(closest_sv, level2=True)
+    lvl2_id = int(client.chunkedgraph.get_root_id(closest_sv, level2=True))
 
     if return_point:
         return lvl2_id, closest_pt * mip_scaling
@@ -288,7 +284,7 @@ def lvl2_fragment_locs(
     segmentation_fallback : bool, optional
         If True, uses segmentation to get the location if no mesh fragment is found.
         This is slower, but more robust. Default is True.
-    cache: str or None, optional
+cache: str or None, optional
         If a string, filename for a sqlite database used as a lookup cache for l2 ids.
         Default is None.
     save_to_cache: bool, optional
