@@ -4,7 +4,25 @@ title: Changelog
 
 `pcg_skel` aims to follow semantic versioning, such that major versions are potentially backward-incompatible, minor versions add new features, and patch versions are bug fixes. This changelog is a summary of the changes in each version.
 
+## [1.2.2]
+
+* Fixed `chunk_tools.get_closest_lvl2_chunk` to correctly handle out-of-date root ids.
+
+## [1.2.1]
+
+### Fixes
+
+* Fixed various issues with meshwork rehydration.
+
+## [1.2.0]
+
+### Features
+
+* Added hydration of meshwork objects from the new-ish CAVE skeleton service.
+
 ## [1.1.0]
+
+### Features
 
 * Added `add_synapse_count` and `aggregate_property_to_skeleton` functions to `features` module.
 * Updated tests to use the `CAVEclientMock` feature introduced in CAVEclient 6.4.0.

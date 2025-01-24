@@ -42,6 +42,7 @@ nav:
     - reference/pcg_skel.md
     - reference/pcg_anno.md
     - reference/features.md
+    - reference/service.md
 markdown_extensions:
   - pymdownx.critic
   - pymdownx.caret
