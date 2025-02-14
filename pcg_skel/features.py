@@ -127,6 +127,7 @@ def add_synapses(
     synapse_point_resolution: list[float] = None,
     synapse_representative_point_pre: str = "ctr_pt_position",
     synapse_representative_point_post: str = "ctr_pt_position",
+    synapse_reference_tables: dict = {},
 ) -> None:
     """Add synapses to a meshwork object based on l2ids
 
@@ -171,6 +172,7 @@ def add_synapses(
         timestamp=timestamp,
         metadata=metadata,
         synapse_point_resolution=synapse_point_resolution,
+        synapse_reference_tables=synapse_reference_tables,
     )
 
     if pre_syn_df is not None:

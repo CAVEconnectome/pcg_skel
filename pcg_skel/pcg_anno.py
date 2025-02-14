@@ -125,6 +125,7 @@ def get_level2_synapses(
     timestamp: Optional[datetime.datetime] = None,
     metadata: bool = False,
     synapse_point_resolution: Optional[List[float]] = None,
+    synapse_reference_tables: dict = {},
 ) -> Tuple[Optional[pd.DataFrame], Optional[pd.DataFrame]]:
     """Retrieve level 2 synapses for a given root ID.
 
@@ -176,6 +177,7 @@ def get_level2_synapses(
             timestamp=timestamp,
             metadata=metadata,
             synapse_point_resolution=synapse_point_resolution,
+            synapse_reference_tables=synapse_reference_tables,
         )
     else:
         pre_syn_df = None
@@ -192,6 +194,7 @@ def get_level2_synapses(
             timestamp=timestamp,
             metadata=metadata,
             synapse_point_resolution=synapse_point_resolution,
+            synapse_reference_tables=synapse_reference_tables,
         )
     else:
         post_syn_df = None
@@ -211,15 +214,24 @@ def _mapped_synapses(
     metadata,
     remove_crud=True,
     synapse_point_resolution=None,
+    synapse_reference_tables={},
 ):
     if timestamp:
-        syn_df = client.materialize.live_query(
+        syn_df = client.materialize.live_live_query(
             synapse_table,
             filter_equal_dict={f"{side}_pt_root_id": root_id},
             timestamp=timestamp,
             metadata=metadata,
             desired_resolution=synapse_point_resolution,
         )
+        for tbl in synapse_reference_tables.get(side, []):
+            aug_df = client.materialize.live_live_query(
+                tbl,
+                filter_in_dict={'target_id': syn_df['id'].values},
+                timestamp=timestamp,
+            )
+            aug_df.drop(["created", "superceded_id", "valid", "id"], inplace=True, errors="ignore")
+            syn_df = syn_df.merge(aug_df, left_on='id', right_on='target_id', how='left')
     else:
         syn_df = client.materialize.query_table(
             synapse_table,
@@ -227,6 +239,7 @@ def _mapped_synapses(
             metadata=metadata,
             desired_resolution=synapse_point_resolution,
         )
+
     if remove_crud:
         syn_df.drop(
             columns=["created", "superceded_id", "valid"], inplace=True, errors="ignore"
