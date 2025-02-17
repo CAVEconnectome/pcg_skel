@@ -1,0 +1,1565 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://caveconnectome.github.io/pcg_skel/reference/features/">
+      
+      
+        <link rel="prev" href="../pcg_anno/">
+      
+      
+        <link rel="next" href="../service/">
+      
+      
+      <link rel="icon" href="../../images/logo-cleanest.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.4">
+    
+    
+      
+        <title>features - pcg_skel</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.8608ea7d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Bitter:300,300i,400,400i,700,700i%7CInconsolata:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Bitter";--md-code-font:"Inconsolata"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue-grey" data-md-color-accent="deep-orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#pcg_skel.features.add_is_axon_annotation" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="pcg_skel" class="md-header__button md-logo" aria-label="pcg_skel" data-md-component="logo">
+      
+  <img src="../../images/logo-cleanest.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            pcg_skel
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              features
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/CAVEconnectome/pcg_skel/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    CAVEconnectome/pcg_skel
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+    
+  
+  About
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../background/" class="md-tabs__link">
+        
+  
+    
+  
+  Background
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../tutorial/" class="md-tabs__link">
+        
+  
+    
+  
+  Tutorial
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../changelog/" class="md-tabs__link">
+        
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../pcg_skel/" class="md-tabs__link">
+          
+  
+    
+  
+  Function Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="pcg_skel" class="md-nav__button md-logo" aria-label="pcg_skel" data-md-component="logo">
+      
+  <img src="../../images/logo-cleanest.png" alt="logo">
+
+    </a>
+    pcg_skel
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/CAVEconnectome/pcg_skel/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    CAVEconnectome/pcg_skel
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    About
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../background/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Background
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Tutorial
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../changelog/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Changelog
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+      
+    
+    
+      
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Function Reference
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Function Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pcg_skel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pcg_skel
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pcg_anno/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pcg_anno
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    features
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    features
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#pcg_skel.features.add_is_axon_annotation" class="md-nav__link">
+    <span class="md-ellipsis">
+      add_is_axon_annotation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pcg_skel.features.add_lvl2_ids" class="md-nav__link">
+    <span class="md-ellipsis">
+      add_lvl2_ids
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pcg_skel.features.add_segment_properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      add_segment_properties
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pcg_skel.features.add_synapse_count" class="md-nav__link">
+    <span class="md-ellipsis">
+      add_synapse_count
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pcg_skel.features.add_synapses" class="md-nav__link">
+    <span class="md-ellipsis">
+      add_synapses
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pcg_skel.features.add_volumetric_properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      add_volumetric_properties
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pcg_skel.features.aggregate_property_to_skeleton" class="md-nav__link">
+    <span class="md-ellipsis">
+      aggregate_property_to_skeleton
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../service/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    service
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>features</h1>
+
+<p>Helper functions for adding features from the L2cache to skeletons</p>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+
+    <div class="doc doc-contents first">
+
+
+
+
+
+
+
+
+
+<p><span class="doc-section-title">Functions:</span></p>
+    <ul>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="pcg_skel.features.add_is_axon_annotation" href="#pcg_skel.features.add_is_axon_annotation">add_is_axon_annotation</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Add an annotation property table specifying which vertices belong to the axon, based on synaptic input and output locations</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="pcg_skel.features.add_lvl2_ids" href="#pcg_skel.features.add_lvl2_ids">add_lvl2_ids</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Add meshwork annotation table associating level 2 ids with vertex ids.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="pcg_skel.features.add_segment_properties" href="#pcg_skel.features.add_segment_properties">add_segment_properties</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Use volumetric and topological properties to add descriptive properties for each skeleton vertex.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="pcg_skel.features.add_synapse_count" href="#pcg_skel.features.add_synapse_count">add_synapse_count</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Create a synapse count label across mesh vertices from existing synapse annotation.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="pcg_skel.features.add_synapses" href="#pcg_skel.features.add_synapses">add_synapses</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Add synapses to a meshwork object based on l2ids</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="pcg_skel.features.add_volumetric_properties" href="#pcg_skel.features.add_volumetric_properties">add_volumetric_properties</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Add L2 Cache properties as an annotation property table.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="pcg_skel.features.aggregate_property_to_skeleton" href="#pcg_skel.features.aggregate_property_to_skeleton">aggregate_property_to_skeleton</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Aggregate a meshwork annotation table to skeletons</p>
+            </div>
+          </li>
+    </ul>
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pcg_skel.features.add_is_axon_annotation" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">add_is_axon_annotation</span><span class="p">(</span><span class="n">nrn</span><span class="p">,</span> <span class="n">pre_anno</span><span class="p">,</span> <span class="n">post_anno</span><span class="p">,</span> <span class="n">annotation_name</span><span class="o">=</span><span class="s1">&#39;is_axon&#39;</span><span class="p">,</span> <span class="n">threshold_quality</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">extend_to_segment</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">n_times</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">return_quality</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
+
+<a href="#pcg_skel.features.add_is_axon_annotation" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Add an annotation property table specifying which vertices belong to the axon, based on synaptic input and output locations
+For the synapse flow centrality algorithm, see "Quantitative neuroanatomy for connectomics in Drosophila", Schneider-Mizell et al. eLife 2016.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>nrn</code></b>
+              (<code><span title="meshparty.meshwork.Meshwork">Meshwork</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Meshwork object</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>pre_anno</code></b>
+              (<code>str</code>)
+          –
+          <div class="doc-md-description">
+            <p>Annotation property table name for presynaptic sites (outputs).</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>post_anno</code></b>
+              (<code>str</code>)
+          –
+          <div class="doc-md-description">
+            <p>Annotation property table name for postsyanptic sites (inputs).</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>annotation_name</code></b>
+              (<code>str</code>, default:
+                  <code>&#39;is_axon&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Name of the new table specifying axon indices, by default "is_axon"</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>threshold_quality</code></b>
+              (<code>float</code>, default:
+                  <code>0.5</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Value between 0 and 1 setting the lower limit on input/output segregation quality, by default 0.5. If the segregatation quality is lower than this,
+a table is added but no vertices will be in the table.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>extend_to_segment</code></b>
+              (<code>bool</code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, the axon split point will be moved to the most root-ward point on the segment containing the highest synapse flow centrality, by default True</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>n_times</code></b>
+              (<code>int</code>, default:
+                  <code>1</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The number of times to run axon/dendrite detection in a row, by default 1.
+This should be set to the number of distinct axon branches on a cell, which surprisingly can be more than one even for mouse neurons.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>return_quality</code></b>
+              (<code>bool</code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, returns the split quality score (a float between 0-1). Default is False.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code>split_quality</code>
+          –
+          <div class="doc-md-description">
+            <p>Float between 0-1, with higher numbers indicating a better axon/dendrite segregation.</p>
+          </div>
+        </li>
+    </ul>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pcg_skel.features.add_lvl2_ids" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">add_lvl2_ids</span><span class="p">(</span><span class="n">nrn</span><span class="p">,</span> <span class="n">l2dict_mesh</span><span class="p">,</span> <span class="n">property_name</span><span class="o">=</span><span class="s1">&#39;lvl2_ids&#39;</span><span class="p">)</span></code>
+
+<a href="#pcg_skel.features.add_lvl2_ids" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Add meshwork annotation table associating level 2 ids with vertex ids.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>nrn</code></b>
+              (<code><span title="meshparty.meshwork.Meshwork">Meshwork</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Meshwork object</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>l2dict_mesh</code></b>
+              (<code>dict</code>)
+          –
+          <div class="doc-md-description">
+            <p>Dictionary mapping L2 ids to mesh graph indices.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>property_name</code></b>
+              (<code>str</code>, default:
+                  <code>&#39;lvl2_ids&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Name of the annotation table, by default "lvl2_ids"</p>
+          </div>
+        </li>
+    </ul>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pcg_skel.features.add_segment_properties" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">add_segment_properties</span><span class="p">(</span><span class="n">nrn</span><span class="p">,</span> <span class="n">segment_property_name</span><span class="o">=</span><span class="s1">&#39;segment_properties&#39;</span><span class="p">,</span> <span class="n">effective_radius</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">area_factor</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">strahler</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">strahler_by_compartment</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">volume_property_name</span><span class="o">=</span><span class="s1">&#39;vol_prop&#39;</span><span class="p">,</span> <span class="n">volume_col_name</span><span class="o">=</span><span class="s1">&#39;size_nm3&#39;</span><span class="p">,</span> <span class="n">area_col_name</span><span class="o">=</span><span class="s1">&#39;area_nm2&#39;</span><span class="p">,</span> <span class="n">root_as_sphere</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">comp_mask</span><span class="o">=</span><span class="s1">&#39;is_axon&#39;</span><span class="p">)</span></code>
+
+<a href="#pcg_skel.features.add_segment_properties" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Use volumetric and topological properties to add descriptive properties for each skeleton vertex.
+Note that properties are estimated per segment, the unbranched region between branch points and/or endpoints.</p>
+<p>This function assumes that the volume properties have already been added to the
+meshwork, which can be done using <code>add_volumetric_properties</code>.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>nrn</code></b>
+              (<code><span title="meshparty.meshwork.Meshwork">Meshwork</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Meshwork object</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>segment_property_name</code></b>
+              (<code>str</code>, default:
+                  <code>&#39;segment_properties&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Name of the new annotation property table, by default "segment_properties"</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>effective_radius</code></b>
+              (<code>bool</code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, add a column for a radius estimate found by computing the radius of an equivalent cylindar with the same length and volume as each segment, by default True</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>area_factor</code></b>
+              (<code>bool</code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, add a column with the ratio of the surface area of the segment and the surface area of an equivalent cylinder (without endcaps), by default True</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>strahler</code></b>
+              (<code>bool</code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, add a column with the strahler number of the segment, by default True</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>strahler_by_compartment</code></b>
+              (<code>bool</code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, computer strahler number for axon and dendrite separately, using the annotation property table specified in <code>comp_mask</code>, by default False</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>volume_property_name</code></b>
+              (<code>str</code>, default:
+                  <code>&#39;vol_prop&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Name of the volume properties table as generated by the function <code>add_volumetric_properties</code>, by default "vol_prop"</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>volume_col_name</code></b>
+              (<code>str</code>, default:
+                  <code>&#39;size_nm3&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Name of the column holding volume, by default "size_nm3"</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>area_col_name</code></b>
+              (<code>str</code>, default:
+                  <code>&#39;area_nm2&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Name of the column holding surface area, by default "area_nm2"</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>root_as_sphere</code></b>
+              (<code>bool</code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Treats the root location as a sphere for setting the effective radius, by default True</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>comp_mask</code></b>
+              (<code>str</code>, default:
+                  <code>&#39;is_axon&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Sets the annotation table to mask off for strahler number computation, by default "is_axon".</p>
+          </div>
+        </li>
+    </ul>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pcg_skel.features.add_synapse_count" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">add_synapse_count</span><span class="p">(</span><span class="n">nrn</span><span class="p">,</span> <span class="n">anno_name</span><span class="o">=</span><span class="s1">&#39;synapse_count&#39;</span><span class="p">,</span> <span class="n">pre_syn</span><span class="o">=</span><span class="s1">&#39;pre_syn&#39;</span><span class="p">,</span> <span class="n">post_syn</span><span class="o">=</span><span class="s1">&#39;post_syn&#39;</span><span class="p">,</span> <span class="n">pre_syn_index</span><span class="o">=</span><span class="s1">&#39;pre_pt_mesh_ind&#39;</span><span class="p">,</span> <span class="n">post_syn_index</span><span class="o">=</span><span class="s1">&#39;post_pt_mesh_ind&#39;</span><span class="p">,</span> <span class="n">aggregate_size</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
+
+<a href="#pcg_skel.features.add_synapse_count" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Create a synapse count label across mesh vertices from existing synapse annotation.</p>
+<p>This function adds a synapse count annotation to the mesh vertices of a neuron. It aggregates
+synapse data from pre-synaptic and post-synaptic annotations and optionally calculates the mean
+size of the synapses.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>nrn</code></b>
+              (<code><span title="meshparty.meshwork.Meshwork">Meshwork</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>The neuron meshwork object containing the mesh and annotations.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>anno_name</code></b>
+              (<code>str</code>, default:
+                  <code>&#39;synapse_count&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The name of the annotation table to be created, by default "synapse_count".</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>pre_syn</code></b>
+              (<code>str</code>, default:
+                  <code>&#39;pre_syn&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The name of the pre-synaptic annotation table, by default "pre_syn".
+If set to None, presynaptic points will be skipped.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>post_syn</code></b>
+              (<code>str</code>, default:
+                  <code>&#39;post_syn&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The name of the post-synaptic annotation table, by default "post_syn".
+If set to None, postsynaptic points will be skipped</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>pre_syn_index</code></b>
+              (<code>str</code>, default:
+                  <code>&#39;pre_pt_mesh_ind&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The mesh index column for pre-synaptic annotation, by default "pre_pt_mesh_ind".</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>post_syn_index</code></b>
+              (<code>str</code>, default:
+                  <code>&#39;post_pt_mesh_ind&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The mesh index column for post-synaptic annotation, by default "post_pt_mesh_ind".</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>aggregate_size</code></b>
+              (<code>bool</code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Whether to aggregate the size of synapses, by default True.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code>None</code>
+          –
+          <div class="doc-md-description">
+            <p>The function modifies the neuron meshwork object in place by adding the synapse count annotation.</p>
+          </div>
+        </li>
+    </ul>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pcg_skel.features.add_synapses" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">add_synapses</span><span class="p">(</span><span class="n">nrn</span><span class="p">,</span> <span class="n">synapse_table</span><span class="p">,</span> <span class="n">l2dict_mesh</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">root_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pre</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">post</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">remove_self_synapse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">live_query</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">synapse_partners</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">synapse_point_resolution</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">synapse_representative_point_pre</span><span class="o">=</span><span class="s1">&#39;ctr_pt_position&#39;</span><span class="p">,</span> <span class="n">synapse_representative_point_post</span><span class="o">=</span><span class="s1">&#39;ctr_pt_position&#39;</span><span class="p">,</span> <span class="n">synapse_reference_tables</span><span class="o">=</span><span class="p">{})</span></code>
+
+<a href="#pcg_skel.features.add_synapses" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Add synapses to a meshwork object based on l2ids</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>nrn</code></b>
+              (<code><span title="meshparty.meshwork.Meshwork">Meshwork</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Meshwork object</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>synapse_table</code></b>
+              (<code>str</code>)
+          –
+          <div class="doc-md-description">
+            <p>Annotation table to use for synapses</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>l2dict_mesh</code></b>
+              (<code>dict</code>)
+          –
+          <div class="doc-md-description">
+            <p>Dictionary mapping l2ids to vertex ids</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>client</code></b>
+              (<code><span title="caveclient.CAVEclient">CAVEclient</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Caveclient to use to get annotations</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>root_id</code></b>
+              (<code>int</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Root id of the cell, by default None. If none, uses the root id set in nrn.seg_id.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>pre</code></b>
+              (<code>bool</code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, add presynaptic synpases (i.e. outputs), by default False</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>post</code></b>
+              (<code>bool</code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, add postsynaptic synapses (i.e. inputs), by default False</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>remove_self_synapse</code></b>
+              (<code>bool</code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, omit synapses where the pre and post root ids are the same, by default True</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>timestamp</code></b>
+              (<code><span title="datetime.datetime">datetime</span></code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Datetime to use for root id lookups if not using a materialized version, by default None</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>live_query</code></b>
+              (<code>bool</code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, use a timestamp to look up root ids, by default False</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>synapse_partners</code></b>
+              (<code>bool</code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, returns the root id of synapses partners in the dataframe.
+By default, this is False because partner root ids change with editing and are not specified by this cell's data alone.</p>
+          </div>
+        </li>
+    </ul>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pcg_skel.features.add_volumetric_properties" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">add_volumetric_properties</span><span class="p">(</span><span class="n">nrn</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">attributes</span><span class="o">=</span><span class="n">VOL_PROPERTIES</span><span class="p">,</span> <span class="n">l2id_anno_name</span><span class="o">=</span><span class="s1">&#39;lvl2_ids&#39;</span><span class="p">,</span> <span class="n">l2id_col_name</span><span class="o">=</span><span class="s1">&#39;lvl2_id&#39;</span><span class="p">,</span> <span class="n">property_name</span><span class="o">=</span><span class="s1">&#39;vol_prop&#39;</span><span class="p">)</span></code>
+
+<a href="#pcg_skel.features.add_volumetric_properties" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Add L2 Cache properties as an annotation property table.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>nrn</code></b>
+              (<code><span title="meshparty.meshwork.Meshwork">Meshwork</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Meshwork object</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>client</code></b>
+              (<code><span title="caveclient.CAVEclient">CAVEclient</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Initialized caveclient</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>attributes</code></b>
+              (<code>list</code>, default:
+                  <code><span title="pcg_skel.features.VOL_PROPERTIES">VOL_PROPERTIES</span></code>
+)
+          –
+          <div class="doc-md-description">
+            <p>List of attributes to download, by default: ["area_nm2", "size_nm3", "mean_dt_nm", "max_dt_nm"].</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>l2id_anno_name</code></b>
+              (<code>str</code>, default:
+                  <code>&#39;lvl2_ids&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Name of the annotation property table holding L2 ids, by default "lvl2_ids"</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>l2id_col_name</code></b>
+              (<code>str</code>, default:
+                  <code>&#39;lvl2_id&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Name of the column in the property table holding L2 ids, by default "lvl2_id"</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>property_name</code></b>
+              (<code>str</code>, default:
+                  <code>&#39;vol_prop&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Name of the new volume property table, by default "vol_prop"</p>
+          </div>
+        </li>
+    </ul>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pcg_skel.features.aggregate_property_to_skeleton" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">aggregate_property_to_skeleton</span><span class="p">(</span><span class="n">nrn</span><span class="p">,</span> <span class="n">anno_table</span><span class="p">,</span> <span class="n">agg_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></code>
+
+<a href="#pcg_skel.features.aggregate_property_to_skeleton" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Aggregate a meshwork annotation table to skeletons</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>nrn</code></b>
+              (<code><span title="meshparty.meshwork.Meshwork">Meshwork</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Meshwork object with mesh,skeleton, and annotations</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>anno_table</code></b>
+              (<code>str</code>)
+          –
+          <div class="doc-md-description">
+            <p>Name of the annotation table</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>agg_dict</code></b>
+              (<code>dict</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Dictionary of column names and aggregation functions that can be used by pandas pd.NamedAgg.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>fill_value</code></b>
+              (<code>float</code>, default:
+                  <code>0</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Value to use to fill missing or NaN values, by default 0</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-external" title="pandas.DataFrame" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame">DataFrame</a></code>
+          –
+          <div class="doc-md-description">
+            <p>Dataframe with one row per skeleton index and columns aggregating mesh annotation values
+using the aggregation function specified in the aggregation_dict.</p>
+          </div>
+        </li>
+    </ul>
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../pcg_anno/" class="md-footer__link md-footer__link--prev" aria-label="Previous: pcg_anno">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                pcg_anno
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../service/" class="md-footer__link md-footer__link--next" aria-label="Next: service">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                service
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.indexes", "navigation.instant", "navigation.footer", "navigation.prune", "navigation.tabs", "navigation.tabs.sticky", "toc.follow", "toc.integrate", "navigation.top", "search.suggest", "search.highlight", "search.share", "content.code.copy"], "search": "../../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.f1b6f286.min.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

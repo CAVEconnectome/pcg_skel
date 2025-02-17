@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://caveconnectome.github.io/pcg_skel/</loc>
+         <lastmod>2025-02-17</lastmod>
+    </url>
+    <url>
+         <loc>https://caveconnectome.github.io/pcg_skel/background/</loc>
+         <lastmod>2025-02-17</lastmod>
+    </url>
+    <url>
+         <loc>https://caveconnectome.github.io/pcg_skel/changelog/</loc>
+         <lastmod>2025-02-17</lastmod>
+    </url>
+    <url>
+         <loc>https://caveconnectome.github.io/pcg_skel/tutorial/</loc>
+         <lastmod>2025-02-17</lastmod>
+    </url>
+    <url>
+         <loc>https://caveconnectome.github.io/pcg_skel/reference/features/</loc>
+         <lastmod>2025-02-17</lastmod>
+    </url>
+    <url>
+         <loc>https://caveconnectome.github.io/pcg_skel/reference/pcg_anno/</loc>
+         <lastmod>2025-02-17</lastmod>
+    </url>
+    <url>
+         <loc>https://caveconnectome.github.io/pcg_skel/reference/pcg_skel/</loc>
+         <lastmod>2025-02-17</lastmod>
+    </url>
+    <url>
+         <loc>https://caveconnectome.github.io/pcg_skel/reference/service/</loc>
+         <lastmod>2025-02-17</lastmod>
+    </url>
+</urlset>

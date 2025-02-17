@@ -1,0 +1,1523 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://caveconnectome.github.io/pcg_skel/reference/pcg_skel/">
+      
+      
+        <link rel="prev" href="../../changelog/">
+      
+      
+        <link rel="next" href="../pcg_anno/">
+      
+      
+      <link rel="icon" href="../../images/logo-cleanest.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.4">
+    
+    
+      
+        <title>pcg_skel - pcg_skel</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.8608ea7d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Bitter:300,300i,400,400i,700,700i%7CInconsolata:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Bitter";--md-code-font:"Inconsolata"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue-grey" data-md-color-accent="deep-orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#pcg_skel.pcg_skel.pcg_graph" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="pcg_skel" class="md-header__button md-logo" aria-label="pcg_skel" data-md-component="logo">
+      
+  <img src="../../images/logo-cleanest.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            pcg_skel
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              pcg_skel
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/CAVEconnectome/pcg_skel/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    CAVEconnectome/pcg_skel
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+    
+  
+  About
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../background/" class="md-tabs__link">
+        
+  
+    
+  
+  Background
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../tutorial/" class="md-tabs__link">
+        
+  
+    
+  
+  Tutorial
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../changelog/" class="md-tabs__link">
+        
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
+          
+  
+    
+  
+  Function Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="pcg_skel" class="md-nav__button md-logo" aria-label="pcg_skel" data-md-component="logo">
+      
+  <img src="../../images/logo-cleanest.png" alt="logo">
+
+    </a>
+    pcg_skel
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/CAVEconnectome/pcg_skel/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    CAVEconnectome/pcg_skel
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    About
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../background/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Background
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Tutorial
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../changelog/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Changelog
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+      
+    
+    
+      
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Function Reference
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Function Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    pcg_skel
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    pcg_skel
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#pcg_skel.pcg_skel.pcg_graph" class="md-nav__link">
+    <span class="md-ellipsis">
+      pcg_graph
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pcg_skel.pcg_skel.pcg_skeleton" class="md-nav__link">
+    <span class="md-ellipsis">
+      pcg_skeleton
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pcg_skel.pcg_skel.pcg_skeleton_direct" class="md-nav__link">
+    <span class="md-ellipsis">
+      pcg_skeleton_direct
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pcg_skel.pcg_skel.pcg_meshwork" class="md-nav__link">
+    <span class="md-ellipsis">
+      pcg_meshwork
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pcg_anno/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pcg_anno
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    features
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../service/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    service
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>pcg_skel</h1>
+
+<p>Basic functions for generating chunk-resolution skeletons from a pychunkedgraph.</p>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+
+    <div class="doc doc-contents first">
+
+
+
+
+
+
+
+
+
+<p><span class="doc-section-title">Functions:</span></p>
+    <ul>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="pcg_skel.pcg_skel.pcg_graph" href="#pcg_skel.pcg_skel.pcg_graph">pcg_graph</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Compute the level 2 spatial graph (or mesh) of a given root id using the l2cache.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="pcg_skel.pcg_skel.pcg_skeleton" href="#pcg_skel.pcg_skel.pcg_skeleton">pcg_skeleton</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Produce a skeleton from the level 2 graph.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="pcg_skel.pcg_skel.pcg_skeleton_direct" href="#pcg_skel.pcg_skel.pcg_skeleton_direct">pcg_skeleton_direct</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Produce a skeleton from an already-computed l2graph.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="pcg_skel.pcg_skel.pcg_meshwork" href="#pcg_skel.pcg_skel.pcg_meshwork">pcg_meshwork</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Generate a meshwork file based on the level 2 graph.</p>
+            </div>
+          </li>
+    </ul>
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pcg_skel.pcg_skel.pcg_graph" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">pcg_graph</span><span class="p">(</span><span class="n">root_id</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_l2dict</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">nan_rounds</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">require_complete</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">level2_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#pcg_skel.pcg_skel.pcg_graph" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Compute the level 2 spatial graph (or mesh) of a given root id using the l2cache.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>root_id</code></b>
+              (<code>int</code>)
+          –
+          <div class="doc-md-description">
+            <p>Root id of a segment</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>client</code></b>
+              (<code><span title="caveclient.CAVEclient.caveclient">caveclient</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Initialized CAVEclient for the dataset.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>cv</code></b>
+              (<code><span title="cloudvolume.CloudVolume">CloudVolume</span></code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Initialized CloudVolume object for the dataset. This does not replace the caveclient, but
+a pre-initizialized cloudvolume can save some time during batch processing.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>return_l2dict</code></b>
+              (<code>bool</code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, returns the mappings between l2 ids and vertices.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>nan_rounds</code></b>
+              (<code>int</code>, default:
+                  <code>10</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If vertices are missing (or not computed), this sets the number of iterations for smoothing over them.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>require_complete</code></b>
+              (<code>bool</code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, raise an Exception if any vertices are missing from the cache.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>level2_graph</code></b>
+              (<code><a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Level 2 graph for the root id as returned by client.chunkedgraph.level2_chunk_graph.
+A list of lists of edges between level 2 chunks, as defined by their chunk ids.
+If None, will query the chunkedgraph for the level 2 graph. Optional, by default None.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>mesh</code></b> (              <code><span title="meshparty.trimesh_io.Mesh">Mesh</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>Object with a vertex for every level 2 id and edges between all connected level 2 chunks.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+<b><code>l2dict</code></b> (              <code>(dict, optional)</code>
+)          –
+          <div class="doc-md-description">
+            <p>Dictionary with keys as level 2 ids and values as mesh vertex index. Optional, only returned if <code>return_l2dict</code> is True.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+<b><code>l2dict_reverse</code></b> (              <code>(dict, optional)</code>
+)          –
+          <div class="doc-md-description">
+            <p>Dictionary with keys as mesh vertex indices and values as level 2 id. Optional, only returned if <code>return_l2dict</code> is True.</p>
+          </div>
+        </li>
+    </ul>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pcg_skel.pcg_skel.pcg_skeleton" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">pcg_skeleton</span><span class="p">(</span><span class="n">root_id</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">datastack_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">invalidation_d</span><span class="o">=</span><span class="mi">7500</span><span class="p">,</span> <span class="n">return_mesh</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">return_l2dict</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">return_l2dict_mesh</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">root_point</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">root_point_resolution</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">collapse_soma</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">collapse_radius</span><span class="o">=</span><span class="mi">7500</span><span class="p">,</span> <span class="n">nan_rounds</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">require_complete</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">level2_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#pcg_skel.pcg_skel.pcg_skeleton" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Produce a skeleton from the level 2 graph.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>root_id</code></b>
+              (<code>int</code>)
+          –
+          <div class="doc-md-description">
+            <p>Root id of a segment</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>client</code></b>
+              (<code><span title="caveclient.CAVEclient.caveclient.CAVEclientFull">CAVEclientFull</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Initialized CAVEclient for the dataset.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>datastack_name</code></b>
+              (<code>string</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If client is None, initializes a CAVEclient at this datastack.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>cv</code></b>
+              (<code><span title="cloudvolume.CloudVolume">CloudVolume</span></code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Initialized CloudVolume object for the dataset. This does not replace the caveclient, but
+a pre-initizialized cloudvolume can save some time during batch processing.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>invalidation_d</code></b>
+              (<code>int</code>, default:
+                  <code>7500</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Distance (in nanometers) for TEASAR skeleton invalidation.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>return_mesh</code></b>
+              (<code>bool</code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, returns the mesh graph as well as the skeleton.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>return_l2dict</code></b>
+              (<code>bool</code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, returns the mappings between l2 ids and skeleton vertices.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>return_l2dict_mesh</code></b>
+              (<code>bool</code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, returns mappings between l2 ids and mesh graph vertices.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>root_point</code></b>
+              (<code><span title="npt.ArrayLike">ArrayLike</span></code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>3-element list or array with the x,y,z location of the root point.
+If None, the most distant tip is set to root.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>root_point_resolution</code></b>
+              (<code><span title="npt.ArrayLike">ArrayLike</span></code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>3-element list or array with the x,y,z resolution of the root point, in nanometers per voxel dimension.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>collapse_soma</code></b>
+              (<code>bool</code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, collapse nearby vertices into the root point.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>collapse_radius</code></b>
+              (<code>int</code>, default:
+                  <code>7500</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Distance (in nanometers) for soma collapse.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>nan_rounds</code></b>
+              (<code>int</code>, default:
+                  <code>10</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If vertices are missing (or not computed), this sets the number of iterations for smoothing over them.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>require_complete</code></b>
+              (<code>bool</code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, raise an Exception if any vertices are missing from the cache.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>level2_graph</code></b>
+              (<code><a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Level 2 graph for the root id as returned by client.chunkedgraph.level2_chunk_graph.
+A list of lists of edges between level 2 chunks, as defined by their chunk ids.
+If None, will query the chunkedgraph for the level 2 graph. Optional, by default None.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>sk</code></b> (              <code><span title="meshparty.skeleton.Skeleton">Skeleton</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>Skeleton for the root id</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+<b><code>mesh</code></b> (              <code>(<span title="meshparty.trimesh_io.Mesh">Mesh</span>, optional)</code>
+)          –
+          <div class="doc-md-description">
+            <p>Mesh graph that the skeleton is based on, only returned if return_mesh is True.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+              <code>(l2dict_skel, l2dict_skel_reverse): (dict, dict), optional</code>
+          –
+          <div class="doc-md-description">
+            <p>Dictionaries mapping l2 ids to skeleton vertices and skeleton vertices to l2 ids, respectively. Only returned if return_l2dict is True.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+              <code>(l2dict_mesh, l2dict_mesh_reverse): (dict, dict), optional</code>
+          –
+          <div class="doc-md-description">
+            <p>Dictionaries mapping l2 ids to mesh graph vertices and mesh_graph vertices to l2 ids, respectively. Only returned if return_l2dict is True.</p>
+          </div>
+        </li>
+    </ul>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pcg_skel.pcg_skel.pcg_skeleton_direct" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">pcg_skeleton_direct</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">invalidation_d</span><span class="o">=</span><span class="n">DEFAULT_INVALIDATION_D</span><span class="p">,</span> <span class="n">root_point</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">collapse_soma</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">collapse_radius</span><span class="o">=</span><span class="n">DEFAULT_COLLAPSE_RADIUS</span><span class="p">,</span> <span class="n">root_id</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#pcg_skel.pcg_skel.pcg_skeleton_direct" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Produce a skeleton from an already-computed l2graph.
+This is effectively a wrapper for meshparty skeletonize with a consistent set of parameters and format.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>vertices</code></b>
+              (<code><a class="autorefs autorefs-external" title="numpy.array" href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array">array</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>Array of vertices for the mesh graph.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>edges</code></b>
+              (<code><a class="autorefs autorefs-external" title="numpy.array" href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array">array</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>Array of edges for the mesh graph.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>invalidation_d</code></b>
+              (<code>int</code>, default:
+                  <code><span title="pcg_skel.pcg_skel.DEFAULT_INVALIDATION_D">DEFAULT_INVALIDATION_D</span></code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Distance (in nanometers) for TEASAR skeleton invalidation.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>root_point</code></b>
+              (<code><a class="autorefs autorefs-external" title="numpy.array" href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array">array</a></code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>3-element list or array with the x,y,z location of the root point in same units as vertices.
+If None, the most distant tip is set to root.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>collapse_soma</code></b>
+              (<code>bool</code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, collapse nearby vertices into the root point.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>collapse_radius</code></b>
+              (<code>int</code>, default:
+                  <code><span title="pcg_skel.pcg_skel.DEFAULT_COLLAPSE_RADIUS">DEFAULT_COLLAPSE_RADIUS</span></code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Distance (in nanometers) for soma collapse.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>root_id</code></b>
+              (<code>int</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Root id of the segment, used in metadata. Optional, by default None.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>level2_graph</code></b>
+              (<code><a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>Level 2 graph for the root id as returned by client.chunkedgraph.level2_chunk_graph.
+A list of lists of edges between level 2 chunks, as defined by their chunk ids.
+If None, will query the chunkedgraph for the level 2 graph. Optional, by default None.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>sk</code></b> (              <code><span title="meshparty.skeleton.Skeleton">Skeleton</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>Skeleton for the l2graph.</p>
+          </div>
+        </li>
+    </ul>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pcg_skel.pcg_skel.pcg_meshwork" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">pcg_meshwork</span><span class="p">(</span><span class="n">root_id</span><span class="p">,</span> <span class="n">datastack_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">client</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">root_point</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">root_point_resolution</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">collapse_soma</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">collapse_radius</span><span class="o">=</span><span class="n">DEFAULT_COLLAPSE_RADIUS</span><span class="p">,</span> <span class="n">synapses</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">synapse_table</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">remove_self_synapse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">synapse_reference_tables</span><span class="o">=</span><span class="p">{},</span> <span class="n">live_query</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">invalidation_d</span><span class="o">=</span><span class="n">DEFAULT_INVALIDATION_D</span><span class="p">,</span> <span class="n">require_complete</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">synapse_partners</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">synapse_point_resolution</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">synapse_representative_point_pre</span><span class="o">=</span><span class="s1">&#39;ctr_pt_position&#39;</span><span class="p">,</span> <span class="n">synapse_representative_point_post</span><span class="o">=</span><span class="s1">&#39;ctr_pt_position&#39;</span><span class="p">,</span> <span class="n">level2_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#pcg_skel.pcg_skel.pcg_meshwork" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Generate a meshwork file based on the level 2 graph.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>root_id</code></b>
+              (<code>int</code>)
+          –
+          <div class="doc-md-description">
+            <p>Root id of an object in the pychunkedgraph.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>datastack_name</code></b>
+              (<code>str or None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Datastack name to use to initialize a client, if none is provided. By default None.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>client</code></b>
+              (<code><span title="pcg_skel.features.caveclient.CAVEclientFull">CAVEclientFull</span> or None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Initialized CAVE client. If None is given, will use the datastack_name to create one. By default None</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>cv</code></b>
+              (<code><span title="cloudvolume.CloudVolume">CloudVolume</span> or None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Initialized cloudvolume. If none is given, the client info will be used to create one. By default None</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>root_point</code></b>
+              (<code>array - like or None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>3 element xyz location for the location to set the root in units set by root_point_resolution,
+by default None. If None, a distal tip is selected.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>root_point_resolution</code></b>
+              (<code>array - like</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Resolution in euclidean space of the root_point, by default [4, 4, 40]</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>collapse_soma</code></b>
+              (<code>(bool, optional)</code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, collapses vertices within a given radius of the root point into the root vertex, typically to better
+represent primary neurite branches. Requires a specified root_point. Default if False.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>collapse_radius</code></b>
+              (<code>float</code>, default:
+                  <code><span title="pcg_skel.pcg_skel.DEFAULT_COLLAPSE_RADIUS">DEFAULT_COLLAPSE_RADIUS</span></code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Max distance in euclidean space for soma collapse. Default is 10,000 nm (10 microns).</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>synapses</code></b>
+              (<code>&#39;pre&#39;, &#39;post&#39;, &#39;all&#39;, True, or None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If not None, queries the synapse_table for presynaptic synapses (if 'pre'),  postsynaptic sites (if 'post'), or both (if 'all' or True). By default None</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>synapse_table</code></b>
+              (<code>str</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Name of the synapse table to query if synapses are requested, by default None</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>remove_self_synapse</code></b>
+              (<code>bool</code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, filters out synapses whose pre- and postsynaptic root ids are the same neuron, by default True</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>synapse_reference_tables</code></b>
+              (<code>dict</code>, default:
+                  <code>{}</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>A dictionary of synapse reference tables to attach to synapses.
+Keys are 'pre' and 'post', values are table names. Defaults to {}.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>live_query</code></b>
+              (<code>bool</code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, expect a timestamp for querying at a give point in time. Otherwise, use the materializatio set by the client. Optional, by default False.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>timestamp</code></b>
+              (<code><span title="typing.Optional">Optional</span>[<span title="datetime.datetime">datetime</span>]</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If set, acts as the time at which all root ids and annotations are found at.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>invalidation_d</code></b>
+              (<code>int</code>, default:
+                  <code><span title="pcg_skel.pcg_skel.DEFAULT_INVALIDATION_D">DEFAULT_INVALIDATION_D</span></code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Invalidation radius in hops for the mesh skeletonization along the chunk adjacency graph, by default 3</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>require_complete</code></b>
+              (<code>bool</code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, raise an Exception if any vertices are missing from the cache, by default False</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>metadata</code></b>
+              (<code>bool</code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, adds metadata to the meshwork annotations. By default False.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>synapse_partners</code></b>
+              (<code>bool</code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, includes the partner root id to the synapse annotation. By default False, because partner roots can change across time.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>synapse_point_resolution</code></b>
+              (<code>array - like</code>, default:
+                  <code>[1, 1, 1]</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Resolution in euclidean space of the synapse points, by default None. If None, the resolution will be the default of the synapse table.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>synapse_representative_point_pre</code></b>
+              (<code>str</code>, default:
+                  <code>&#39;ctr_pt_position&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If set, uses the specified column in the synapse table for the pre-synaptic points. By default 'ctr_pt_position'.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>synapse_representative_point_post</code></b>
+              (<code>str</code>, default:
+                  <code>&#39;ctr_pt_position&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If set, uses the specified column in the synapse table for the post-synaptic points. By default 'ctr_pt_position'.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="meshparty.meshwork.Meshwork">Meshwork</span></code>
+          –
+          <div class="doc-md-description">
+            <p>Meshwork object with skeleton based on the level 2 graph. See documentation for details.</p>
+          </div>
+        </li>
+    </ul>
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../../changelog/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Changelog">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Changelog
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../pcg_anno/" class="md-footer__link md-footer__link--next" aria-label="Next: pcg_anno">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                pcg_anno
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.indexes", "navigation.instant", "navigation.footer", "navigation.prune", "navigation.tabs", "navigation.tabs.sticky", "toc.follow", "toc.integrate", "navigation.top", "search.suggest", "search.highlight", "search.share", "content.code.copy"], "search": "../../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.f1b6f286.min.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>
