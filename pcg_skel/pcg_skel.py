@@ -348,6 +348,9 @@ def pcg_meshwork(
         Name of the synapse table to query if synapses are requested, by default None
     remove_self_synapse : bool, optional
         If True, filters out synapses whose pre- and postsynaptic root ids are the same neuron, by default True
+    synapse_reference_tables : dict, optional
+        A dictionary of synapse reference tables to attach to synapses.
+        Keys are 'pre' and 'post', values are table names. Defaults to {}.
     live_query : bool, optional
         If True, expect a timestamp for querying at a give point in time. Otherwise, use the materializatio set by the client. Optional, by default False.
     timestamp = datetime.datetime, optional

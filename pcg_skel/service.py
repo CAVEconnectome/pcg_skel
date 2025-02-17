@@ -138,6 +138,9 @@ def get_meshwork_from_client(
     restore_properties : bool, optional
         Whether to restore `volume_properties` and `segment_properties`, by default False.
         Adds a significant amount of time to the rehydration.
+    synapse_reference_tables : dict, optional
+        A dictionary of synapse reference tables to attach to synapses.
+        Keys are 'pre' and 'post', values are table names. Defaults to {}.
     skeleton_version : Optional[int], optional
         Which skeleton version to use, by default 4, which is the minimum needed for rehydration to work.
 

@@ -153,6 +153,9 @@ def get_level2_synapses(
         Whether to include metadata in the query results. Defaults to False.
     synapse_point_resolution : list, optional
         The resolution of the synapse points. Defaults to None.
+    synapse_reference_tables : dict, optional
+        A dictionary of synapse reference tables to attach to synapses.
+        Keys are 'pre' and 'post', values are table names. Defaults to {}.
 
     Returns
     -------
