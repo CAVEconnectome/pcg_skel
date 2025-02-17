@@ -5,4 +5,4 @@ from .service import get_meshwork_from_client
 from . import utils
 from . import chunk_tools
 
-__version__ = "1.2.2"
+__version__ = "1.3.0"
