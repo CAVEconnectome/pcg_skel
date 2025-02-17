@@ -235,8 +235,8 @@ def _mapped_synapses(
                     timestamp=timestamp,
                     log_warning=False,
                 )
-                aug_df.drop(["created", "superceded_id", "valid", "id"], inplace=True, errors="ignore")
-                syn_df = syn_df.merge(aug_df, left_on='id', right_on='target_id', how='left')
+                aug_df.drop(columns=["created", "superceded_id", "valid", "id"], inplace=True, errors="ignore")
+                syn_df = syn_df.merge(aug_df.rename(columns={'target_id': 'id'}), on='id', how='left')
     else:
         syn_df = client.materialize.query_table(
             synapse_table,
