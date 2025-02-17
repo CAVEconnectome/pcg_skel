@@ -219,19 +219,24 @@ def _mapped_synapses(
     if timestamp:
         syn_df = client.materialize.live_live_query(
             synapse_table,
-            filter_equal_dict={f"{side}_pt_root_id": root_id},
+            filter_equal_dict={synapse_table: {f"{side}_pt_root_id": root_id}},
             timestamp=timestamp,
             metadata=metadata,
             desired_resolution=synapse_point_resolution,
+            log_warning=False,
         )
+        if isinstance(synapse_reference_tables.get(side), str):
+            synapse_reference_tables[side] = [synapse_reference_tables[side]]
         for tbl in synapse_reference_tables.get(side, []):
-            aug_df = client.materialize.live_live_query(
-                tbl,
-                filter_in_dict={'target_id': syn_df['id'].values},
-                timestamp=timestamp,
-            )
-            aug_df.drop(["created", "superceded_id", "valid", "id"], inplace=True, errors="ignore")
-            syn_df = syn_df.merge(aug_df, left_on='id', right_on='target_id', how='left')
+            if len(syn_df)>0:
+                aug_df = client.materialize.live_live_query(
+                    tbl,
+                    filter_in_dict={tbl: {'target_id': syn_df['id'].values.tolist()}},
+                    timestamp=timestamp,
+                    log_warning=False,
+                )
+                aug_df.drop(["created", "superceded_id", "valid", "id"], inplace=True, errors="ignore")
+                syn_df = syn_df.merge(aug_df, left_on='id', right_on='target_id', how='left')
     else:
         syn_df = client.materialize.query_table(
             synapse_table,
