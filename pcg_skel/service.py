@@ -30,6 +30,7 @@ def rebuild_meshwork(
     timestamp: Optional[datetime.datetime] = None,
     restore_graph: bool = False,
     restore_properties: bool = False,
+    synapse_reference_tables: dict = {},
 ):
     if metadata is None:
         metadata = {}
@@ -97,6 +98,7 @@ def rebuild_meshwork(
             live_query=True,
             metadata=False,
             synapse_point_resolution=[1,1,1], # Nanometers, same as skeleton.
+            synapse_reference_tables=synapse_reference_tables,
         )
 
     if restore_properties:
@@ -115,6 +117,7 @@ def get_meshwork_from_client(
     synapses: bool = False,
     restore_graph: bool = False,
     restore_properties: bool = False,
+    synapse_reference_tables: dict = {},
     skeleton_version: Optional[int] = 4,
 ) -> meshwork.Meshwork:
     """Generate a meshwork file from the information on the skeleton service.
@@ -170,4 +173,5 @@ def get_meshwork_from_client(
         timestamp=ts,
         restore_graph=restore_graph,
         restore_properties=restore_properties,
+        synapse_reference_tables=synapse_reference_tables,
     )

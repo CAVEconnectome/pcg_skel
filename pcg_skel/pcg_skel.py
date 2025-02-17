@@ -308,6 +308,7 @@ def pcg_meshwork(
     synapses: Optional[Union[bool, str]] = None,
     synapse_table: Optional[str] = None,
     remove_self_synapse: bool = True,
+    synapse_reference_tables: dict = {},
     live_query: bool = False,
     timestamp: Optional[datetime.datetime] = None,
     invalidation_d: Numeric = DEFAULT_INVALIDATION_D,
@@ -427,6 +428,7 @@ def pcg_meshwork(
             synapse_point_resolution=synapse_point_resolution,
             synapse_representative_point_pre=synapse_representative_point_pre,
             synapse_representative_point_post=synapse_representative_point_post,
+            synapse_reference_tables=synapse_reference_tables,
         )
 
     features.add_lvl2_ids(nrn, l2dict_mesh)
