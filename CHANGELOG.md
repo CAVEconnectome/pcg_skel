@@ -2,6 +2,18 @@
 
 This project attempts to use semantic versioning whereever possible.
 
+## [1.3.1] - 2025-04-14
+
+### Changed
+
+* Improvements in handling single vertex root ids. Correct metadata is added and creation is more efficient.
+
+## [1.3.0] - 2025-02-17
+
+### Added
+
+* `pcg_skel.services.get_meshwork_from_client` can add synapse reference tables to synapses.
+
 ## [1.2.1] - 2024-01-15
 
 ### Added

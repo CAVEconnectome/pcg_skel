@@ -117,7 +117,7 @@ def get_meshwork_from_client(
     synapses: bool = False,
     restore_graph: bool = False,
     restore_properties: bool = False,
-    synapse_reference_tables: dict = {},
+    synapse_reference_tables: Optional[dict] = None,
     skeleton_version: Optional[int] = 4,
 ) -> meshwork.Meshwork:
     """Generate a meshwork file from the information on the skeleton service.
@@ -161,6 +161,8 @@ def get_meshwork_from_client(
         root_id, skeleton_version=skeleton_version, output_format="dict"
     )
     ts = client.chunkedgraph.get_root_timestamps(root_id, latest=True)[0]
+    if synapse_reference_tables is None:
+        synapse_reference_tables = {}
     return rebuild_meshwork(
         root_id=root_id,
         sk_verts=np.array(sk["vertices"]),

@@ -61,9 +61,7 @@ def pcg_graph(
     l2dict_reverse : dict, optional
         Dictionary with keys as mesh vertex indices and values as level 2 id. Optional, only returned if `return_l2dict` is True.
     """
-    if cv is None:
-        cv = client.info.segmentation_cloudvolume(progress=False)
-
+ 
     if level2_graph is None:
         lvl2_eg = client.chunkedgraph.level2_chunk_graph(root_id)
     else:
@@ -77,7 +75,7 @@ def pcg_graph(
 
     eg, l2dict_mesh, l2dict_r_mesh, x_ch = chunk_tools.build_spatial_graph(
         lvl2_eg,
-        cv,
+        cv=cv,
         client=client,
         method="service",
         require_complete=require_complete,
@@ -232,10 +230,14 @@ def pcg_skeleton(
     """
     if client is None:
         client = CAVEclient(datastack_name)
-    if cv is None:
-        cv = client.info.segmentation_cloudvolume(progress=False)
-
-    if root_point_resolution is None:
+ 
+    if root_point_resolution is None and root_point is not None:
+        if cv is None:
+            cv = client.info.segmentation_cloudvolume(progress=False)
+        if cv is None:
+            raise ValueError(
+                "Must provide either a client or cv object to get the root_point_resolution."
+            )
         root_point_resolution = cv.mip_resolution(0)
     if root_point is not None:
         root_point = np.array(root_point) * root_point_resolution
@@ -259,6 +261,11 @@ def pcg_skeleton(
             mesh_to_skel_map=np.array([0]),
             mesh_index=np.array([0, 0]),
             remove_zero_length_edges=False,
+            meta={
+                "root_id": root_id,
+                "skeleton_type": skeleton_type,
+                "meta": metameta,
+            },
         )
         l2dict, l2dict_r = l2dict_mesh.copy(), l2dict_r_mesh.copy()
         # Assign a fake l2id of zero to the duplicate vertex
@@ -377,11 +384,15 @@ def pcg_meshwork(
     """
     if client is None:
         client = CAVEclient(datastack_name)
-    if cv is None:
-        cv = client.info.segmentation_cloudvolume(progress=True, parallel=1)
-    if root_point_resolution is None:
+    if root_point_resolution is None and root_point is not None:
+        if cv is None:
+            cv = client.info.segmentation_cloudvolume(progress=False, parallel=1)
+        if cv is None:
+            raise ValueError(
+                "Must provide either a client or cv object to get the root_point_resolution."
+            )
         root_point_resolution = cv.mip_resolution(0)
-    if synapse_table is None:
+    if synapse_table is None and synapses is not None:
         synapse_table = client.materialize.synapse_table
 
     sk, mesh, (l2dict_mesh, l2dict_mesh_r) = pcg_skeleton(

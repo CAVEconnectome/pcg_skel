@@ -39,6 +39,7 @@ dev = [
     "ipykernel",
     "bump-my-version",
     "responses",
+    "line-profiler",
 ]
 docs = [
     "mkdocs",

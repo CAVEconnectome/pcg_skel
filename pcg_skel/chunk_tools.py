@@ -30,7 +30,7 @@ def build_graph_topology(lvl2_edge_graph):
 
 
 def build_spatial_graph(
-    lvl2_edge_graph, cv, client=None, method="chunk", require_complete=False
+    lvl2_edge_graph, cv=None, client=None, method="chunk", require_complete=False
 ):
     """Extract spatial graph and level 2 id lookups from chunkedgraph "lvl2_graph" endpoint.
 
@@ -54,6 +54,10 @@ def build_spatial_graph(
     """
     eg_arr_rm, l2dict, l2dict_reversed, lvl2_ids = build_graph_topology(lvl2_edge_graph)
     if method == "chunk":
+        if cv is None and client is None:
+            raise ValueError("Either cv or client must be provided")
+        if cv is None:
+            cv = client.info.segmentation_cloudvolume(progress=False)
         x_ch = [np.array(cv.mesh.meta.meta.decode_chunk_position(l)) for l in lvl2_ids]
     elif method == "service":
         x_ch = dense_spatial_lookup(
